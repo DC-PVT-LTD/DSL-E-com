@@ -12,9 +12,10 @@ export interface CustomerUser {
   id: string;
   name: string;
   email: string;
-  phone: string;
+  phone?: string;
+  role?: string;
   addresses: (ShippingAddress & { id: string; isDefault?: boolean })[];
   wishlistProductIds: string[];
   savedLists: SavedList[];
-  isDemoAccount: boolean;
+  isDemoAccount?: boolean;
 }

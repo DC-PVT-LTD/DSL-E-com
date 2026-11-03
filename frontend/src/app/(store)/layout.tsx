@@ -13,11 +13,11 @@ export default function StoreLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  // Only the standalone cover page (root / or /welcome) is full-screen
-  const isCoverPage = pathname === '/' || pathname === '/welcome';
+  // Only standalone landing cover (/welcome) hides common store chrome
+  const isCoverPage = pathname === '/welcome';
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FFFDF0] text-[#292525]">
+    <div className="min-h-screen flex flex-col bg-[#FFF8ED] text-[#10285D]">
       {!isCoverPage && <DemoBanner />}
       {!isCoverPage && <Navbar />}
       <CartDrawer />

@@ -41,9 +41,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     const isHttpException = exception instanceof HttpException;
-    const status = isHttpException
-      ? exception.getStatus()
-      : HttpStatus.INTERNAL_SERVER_ERROR;
+    const errorWithStatus = exception as { status?: number; statusCode?: number; message?: string };
+    
+    let status: number = HttpStatus.INTERNAL_SERVER_ERROR;
+    if (isHttpException) {
+      status = exception.getStatus();
+    } else if (typeof errorWithStatus?.status === 'number') {
+      status = errorWithStatus.status;
+    } else if (typeof errorWithStatus?.statusCode === 'number') {
+      status = errorWithStatus.statusCode;
+    }
 
     let message = 'Internal server error';
     let errorCode = STATUS_CODE_TO_ERROR_CODE[status] || 'ERROR';
@@ -72,13 +79,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
         }
       }
     } else if (exception instanceof Error) {
-      // In development, we can log the internal error safely on the server side
-      this.logger.error(
-        `Unhandled exception on ${request?.method} ${request?.url}: ${exception.message}`,
-        exception.stack
-      );
-      // But never expose the raw internal error or stack to the client
-      message = 'An unexpected server error occurred';
+      if (status < 500) {
+        message = exception.message;
+      } else {
+        // In development, we can log the internal error safely on the server side
+        this.logger.error(
+          `Unhandled exception on ${request?.method} ${request?.url}: ${exception.message}`,
+          exception.stack
+        );
+        // But never expose the raw internal error or stack to the client
+        message = 'An unexpected server error occurred';
+      }
     }
 
     // Log client/server error with safe metadata

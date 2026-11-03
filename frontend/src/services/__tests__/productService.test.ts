@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { productService } from '../productService';
+import { apiClient } from '@/lib/api/apiClient';
 
 describe('productService', () => {
   beforeEach(() => {
@@ -61,5 +62,185 @@ describe('productService', () => {
     // Update
     productService.updateProduct(created.id, { priceCents: 18000 });
     expect(productService.getById(created.id)?.priceCents).toBe(18000);
+  });
+
+  describe('variant management API methods', () => {
+    it('creates a variant and increments aggregate product stock', async () => {
+      const product = productService.getAll()[0];
+      const initialStock = product.stockQuantity;
+
+      vi.spyOn(apiClient, 'post').mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'var-test-1',
+          productId: product.id,
+          name: 'Blue 0.7mm',
+          sku: 'TEST-VAR-BL',
+          priceCents: 6500,
+          stockQuantity: 15,
+        },
+      } as any);
+
+      const created = await productService.createVariant(product.id, {
+        name: 'Blue 0.7mm',
+        sku: 'TEST-VAR-BL',
+        priceCents: 6500,
+        stockQuantity: 15,
+      });
+
+      expect(created.id).toBe('var-test-1');
+      const updatedProd = productService.getById(product.id);
+      expect(updatedProd?.stockQuantity).toBe(initialStock + 15);
+      expect(updatedProd?.variants?.some((v) => v.id === 'var-test-1')).toBe(true);
+    });
+
+    it('fetches variants from API and caches in product', async () => {
+      const product = productService.getAll()[0];
+
+      vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
+        success: true,
+        data: [
+          {
+            id: 'var-1',
+            productId: product.id,
+            name: 'Single Line',
+            sku: 'VAR-SL',
+            priceCents: 5000,
+            stockQuantity: 10,
+          },
+        ],
+      } as any);
+
+      const variants = await productService.fetchVariants(product.id);
+      expect(variants).toHaveLength(1);
+      expect(productService.getById(product.id)?.variants).toHaveLength(1);
+    });
+
+    it('updates variant in product cache', async () => {
+      const product = productService.getAll()[0];
+      productService.updateProduct(product.id, {
+        variants: [
+          {
+            id: 'var-1',
+            productId: product.id,
+            name: 'Single Line',
+            sku: 'VAR-SL',
+            priceCents: 5000,
+            stockQuantity: 10,
+            attributes: {},
+          } as any,
+        ],
+      });
+
+      vi.spyOn(apiClient, 'patch').mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'var-1',
+          name: 'Single Line Deluxe',
+          priceCents: 5500,
+        },
+      } as any);
+
+      const updated = await productService.updateVariant(product.id, 'var-1', {
+        name: 'Single Line Deluxe',
+        priceCents: 5500,
+      });
+
+      expect(updated.name).toBe('Single Line Deluxe');
+      const cached = productService.getById(product.id);
+      expect(cached?.variants?.[0].name).toBe('Single Line Deluxe');
+    });
+
+    it('deletes variant from product cache', async () => {
+      const product = productService.getAll()[0];
+      productService.updateProduct(product.id, {
+        variants: [
+          {
+            id: 'var-del',
+            productId: product.id,
+            name: 'To Delete',
+            sku: 'VAR-DEL',
+            priceCents: 5000,
+            stockQuantity: 5,
+            attributes: {},
+          } as any,
+        ],
+      });
+
+      vi.spyOn(apiClient, 'delete').mockResolvedValueOnce({
+        success: true,
+      } as any);
+
+      const ok = await productService.deleteVariant(product.id, 'var-del');
+      expect(ok).toBe(true);
+      expect(productService.getById(product.id)?.variants?.length).toBe(0);
+    });
+  });
+
+  describe('backend product API CRUD methods', () => {
+    it('creates product via backend API', async () => {
+      vi.spyOn(apiClient, 'post').mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'prod-api-1',
+          name: 'API Created Book',
+          sku: 'API-BK-01',
+          priceCents: 25000,
+          stockQuantity: 100,
+          isActive: true,
+        },
+      } as any);
+
+      const created = await productService.createProductApi({
+        name: 'API Created Book',
+        sku: 'API-BK-01',
+        priceCents: 25000,
+      });
+
+      expect(created.id).toBe('prod-api-1');
+      expect(productService.getById('prod-api-1')?.name).toBe('API Created Book');
+    });
+
+    it('updates product via backend API', async () => {
+      vi.spyOn(apiClient, 'patch').mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'prod-api-1',
+          name: 'API Updated Book',
+          priceCents: 27500,
+        },
+      } as any);
+
+      const updated = await productService.updateProductApi('prod-api-1', {
+        name: 'API Updated Book',
+        priceCents: 27500,
+      });
+
+      expect(updated.name).toBe('API Updated Book');
+    });
+
+    it('toggles product status via backend API', async () => {
+      vi.spyOn(apiClient, 'patch').mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'prod-api-1',
+          isActive: false,
+        },
+      } as any);
+
+      const res = await productService.toggleProductStatusApi('prod-api-1');
+      expect(res.isActive).toBe(false);
+    });
+
+    it('deletes product via backend API', async () => {
+      vi.spyOn(apiClient, 'delete').mockResolvedValueOnce({
+        success: true,
+        data: { id: 'prod-api-1' },
+      } as any);
+
+      const ok = await productService.deleteProductApi('prod-api-1');
+      expect(ok).toBe(true);
+      expect(productService.getById('prod-api-1')).toBeUndefined();
+    });
   });
 });

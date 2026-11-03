@@ -168,6 +168,77 @@ class CategoryService {
     };
   }
 
+  /**
+   * Create a new category via backend NestJS API.
+   */
+  public async createCategoryApi(data: {
+    name: string;
+    slug: string;
+    description: string;
+    iconName?: string;
+    image?: string;
+    featured?: boolean;
+    displayOrder?: number;
+  }): Promise<ProductCategory> {
+    const res = await apiClient.post<BackendApiResponse<ProductCategory>>('categories', data);
+    if (res.success && res.data) {
+      const idx = this.categories.findIndex((c) => c.id === res.data.id);
+      if (idx !== -1) {
+        this.categories[idx] = res.data;
+      } else {
+        this.categories.push(res.data);
+      }
+      this.persistAndNotify();
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to create category');
+  }
+
+  /**
+   * Update category via backend NestJS API.
+   */
+  public async updateCategoryApi(
+    id: string,
+    data: Partial<{
+      name: string;
+      slug: string;
+      description: string;
+      iconName?: string;
+      image?: string;
+      featured?: boolean;
+      displayOrder?: number;
+    }>
+  ): Promise<ProductCategory> {
+    const res = await apiClient.patch<BackendApiResponse<ProductCategory>>(
+      `categories/${encodeURIComponent(id)}`,
+      data
+    );
+    if (res.success && res.data) {
+      const idx = this.categories.findIndex((c) => c.id === id);
+      if (idx !== -1) {
+        this.categories[idx] = { ...this.categories[idx], ...res.data };
+      }
+      this.persistAndNotify();
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to update category');
+  }
+
+  /**
+   * Delete / deactivate category via backend NestJS API.
+   */
+  public async deleteCategoryApi(id: string): Promise<boolean> {
+    const res = await apiClient.delete<BackendApiResponse<{ id: string }>>(
+      `categories/${encodeURIComponent(id)}`
+    );
+    if (res.success) {
+      this.categories = this.categories.filter((c) => c.id !== id);
+      this.persistAndNotify();
+      return true;
+    }
+    throw new Error(res.message || 'Failed to delete category');
+  }
+
   // Categories synchronous cache getters
   public getCategories(): ProductCategory[] {
     return [...this.categories];

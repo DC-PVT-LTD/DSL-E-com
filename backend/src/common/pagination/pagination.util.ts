@@ -1,9 +1,37 @@
 import { z } from 'zod';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationMeta } from '../interfaces/api-response.interface';
 
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 20;
 export const MAX_LIMIT = 100;
+
+export class BasePaginationQueryDto {
+  @ApiPropertyOptional({
+    description: 'Page number (minimum 1)',
+    example: 1,
+    default: DEFAULT_PAGE,
+    minimum: 1,
+  })
+  page!: number;
+
+  @ApiPropertyOptional({
+    description: `Number of items per page (maximum ${MAX_LIMIT})`,
+    example: 20,
+    default: DEFAULT_LIMIT,
+    minimum: 1,
+    maximum: MAX_LIMIT,
+  })
+  limit!: number;
+
+  @ApiPropertyOptional({
+    description: 'Sort direction',
+    enum: ['asc', 'desc'],
+    default: 'desc',
+    example: 'desc',
+  })
+  sortOrder?: 'asc' | 'desc';
+}
 
 /**
  * Calculates pagination metadata safely.
@@ -38,25 +66,77 @@ export function calculatePaginationSkip(page: number, limit: number): number {
 }
 
 /**
+ * Helper to validate and transform integer query parameters safely without truncating decimals.
+ */
+function createSafeIntegerParam(
+  defaultValue: number,
+  min: number,
+  max: number,
+  paramName: string
+) {
+  return z
+    .union([z.string(), z.number()])
+    .optional()
+    .default(defaultValue)
+    .superRefine((val, ctx) => {
+      if (typeof val === 'number') {
+        if (!Number.isSafeInteger(val)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `${paramName} must be a safe integer`,
+          });
+          return;
+        }
+        if (val < min || val > max) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `${paramName} must be an integer between ${min} and ${max}`,
+          });
+          return;
+        }
+      } else if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (trimmed === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `${paramName} cannot be empty`,
+          });
+          return;
+        }
+        // Strict integer check: digits only (no decimals, signs, or alphabets)
+        if (!/^\d+$/.test(trimmed)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `${paramName} must be a valid integer`,
+          });
+          return;
+        }
+        const num = Number(trimmed);
+        if (!Number.isSafeInteger(num)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `${paramName} must be a safe integer`,
+          });
+          return;
+        }
+        if (num < min || num > max) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `${paramName} must be an integer between ${min} and ${max}`,
+          });
+          return;
+        }
+      }
+    })
+    .transform((val) => (typeof val === 'number' ? val : Number(val.trim())));
+}
+
+/**
  * Base pagination query schema with validation for page, limit, and sortOrder.
  */
 export const basePaginationSchema = z.object({
-  page: z
-    .union([z.string(), z.number()])
-    .optional()
-    .default(DEFAULT_PAGE)
-    .transform((val) => (typeof val === 'string' ? parseInt(val, 10) : val))
-    .refine((val) => !isNaN(val) && val >= 1, {
-      message: 'page must be a positive integer >= 1',
-    }),
-  limit: z
-    .union([z.string(), z.number()])
-    .optional()
-    .default(DEFAULT_LIMIT)
-    .transform((val) => (typeof val === 'string' ? parseInt(val, 10) : val))
-    .refine((val) => !isNaN(val) && val >= 1 && val <= MAX_LIMIT, {
-      message: `limit must be an integer between 1 and ${MAX_LIMIT}`,
-    }),
+  page: createSafeIntegerParam(DEFAULT_PAGE, 1, Number.MAX_SAFE_INTEGER, 'page'),
+  limit: createSafeIntegerParam(DEFAULT_LIMIT, 1, MAX_LIMIT, 'limit'),
   sortOrder: z
     .enum(['asc', 'desc'])
     .optional()

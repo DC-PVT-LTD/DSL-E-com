@@ -1,21 +1,47 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Plus, Trash2, MapPin, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Plus, Trash2, MapPin, Check, Loader2 } from 'lucide-react';
 import { AccountNav } from '@/components/common/AccountNav';
 import { useUserStore } from '@/services/userStore';
 
 export default function AccountAddressesPage() {
+  const router = useRouter();
   const currentUser = useUserStore((state) => state.currentUser);
+  const fetchCurrentUser = useUserStore((state) => state.fetchCurrentUser);
   const addAddress = useUserStore((state) => state.addAddress);
   const removeAddress = useUserStore((state) => state.removeAddress);
 
+  const [isChecking, setIsChecking] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [addressLine1, setAddressLine1] = useState('');
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('Colombo');
+
+  useEffect(() => {
+    let mounted = true;
+    const init = async () => {
+      try {
+        await fetchCurrentUser();
+      } catch {
+      } finally {
+        if (mounted) setIsChecking(false);
+      }
+    };
+    init();
+    return () => {
+      mounted = false;
+    };
+  }, [fetchCurrentUser]);
+
+  useEffect(() => {
+    if (!isChecking && !currentUser) {
+      router.push('/login');
+    }
+  }, [isChecking, currentUser, router]);
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +61,15 @@ export default function AccountAddressesPage() {
     setCity('');
     setIsAdding(false);
   };
+
+  if (isChecking || !currentUser) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-24 flex flex-col items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#0066CC]" />
+        <p className="mt-3 text-xs text-[#292525]/60 font-medium">Loading addresses...</p>
+      </div>
+    );
+  }
 
   const addresses = currentUser?.addresses || [];
 

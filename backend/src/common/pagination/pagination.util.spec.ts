@@ -100,8 +100,32 @@ describe('Pagination Utilities', () => {
       expect(() => basePaginationSchema.parse({ page: '-5' })).toThrow();
     });
 
+    it('fails on decimal string or number for page', () => {
+      expect(() => basePaginationSchema.parse({ page: '1.5' })).toThrow();
+      expect(() => basePaginationSchema.parse({ page: 1.5 })).toThrow();
+    });
+
+    it('fails on decimal string or number for limit', () => {
+      expect(() => basePaginationSchema.parse({ limit: '2.5' })).toThrow();
+      expect(() => basePaginationSchema.parse({ limit: 2.5 })).toThrow();
+    });
+
+    it('fails on empty string for page or limit', () => {
+      expect(() => basePaginationSchema.parse({ page: '' })).toThrow();
+      expect(() => basePaginationSchema.parse({ limit: '' })).toThrow();
+    });
+
+    it('fails on alphabetic string for page or limit', () => {
+      expect(() => basePaginationSchema.parse({ page: 'abc' })).toThrow();
+      expect(() => basePaginationSchema.parse({ limit: 'xyz' })).toThrow();
+    });
+
     it('fails when limit exceeds maximum limit (100)', () => {
       expect(() => basePaginationSchema.parse({ limit: '101' })).toThrow();
+    });
+
+    it('fails on unsafe integers', () => {
+      expect(() => basePaginationSchema.parse({ page: '9999999999999999999999' })).toThrow();
     });
 
     it('fails on invalid sortOrder', () => {

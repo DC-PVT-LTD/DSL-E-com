@@ -1,10 +1,12 @@
 import {
   Injectable,
   Inject,
+  Optional,
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { CategoryQueryDto } from './dto/category-query.dto';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/create-category.dto';
 import {
@@ -16,7 +18,17 @@ import { excludeSensitiveFieldsMany } from '../../common/utils/serialization.uti
 
 @Injectable()
 export class CategoriesService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Optional() @Inject(AuditService) private readonly auditService?: AuditService,
+  ) {}
+
+  private async executeTx<T>(cb: (tx: any) => Promise<T>): Promise<T> {
+    if (typeof this.prisma.$transaction === 'function') {
+      return this.prisma.$transaction(cb);
+    }
+    return cb(this.prisma);
+  }
 
   async findAll(query: CategoryQueryDto): Promise<PaginatedResponse<any>> {
     const where: any = {};
@@ -139,7 +151,7 @@ export class CategoriesService {
     return createPaginatedResponse(items, meta);
   }
 
-  async create(dto: CreateCategoryDto) {
+  async create(dto: CreateCategoryDto, actorId?: string | null) {
     const existing = await this.prisma.category.findUnique({
       where: { slug: dto.slug },
     });
@@ -148,31 +160,79 @@ export class CategoriesService {
       throw new ConflictException(`Category with slug "${dto.slug}" already exists`);
     }
 
-    return this.prisma.category.create({
-      data: dto,
+    return this.executeTx(async (tx) => {
+      const category = await tx.category.create({
+        data: dto,
+      });
+
+      if (this.auditService) {
+        await this.auditService.recordAuditLog(
+          {
+            action: 'CATEGORY_CREATE',
+            entityType: 'category',
+            entityId: category.id,
+            userId: actorId,
+            summary: `Created category "${category.name}" (Slug: ${category.slug})`,
+            changes: {
+              name: { new: category.name },
+              slug: { new: category.slug },
+            },
+          },
+          tx
+        );
+      }
+
+      return category;
     });
   }
 
-  async update(id: string, dto: UpdateCategoryDto) {
-    await this.findById(id);
+  async update(id: string, dto: UpdateCategoryDto, actorId?: string | null) {
+    const existing = await this.findById(id);
 
     if (dto.slug) {
-      const existing = await this.prisma.category.findUnique({
+      const existingSlug = await this.prisma.category.findUnique({
         where: { slug: dto.slug },
       });
-      if (existing && existing.id !== id) {
+      if (existingSlug && existingSlug.id !== id) {
         throw new ConflictException(`Category with slug "${dto.slug}" already exists`);
       }
     }
 
-    return this.prisma.category.update({
-      where: { id },
-      data: dto,
+    return this.executeTx(async (tx) => {
+      const updated = await tx.category.update({
+        where: { id },
+        data: dto,
+      });
+
+      if (this.auditService) {
+        const changes = this.auditService.computeDiff(existing, updated, [
+          'name',
+          'slug',
+          'description',
+          'image',
+          'parentId',
+          'isActive',
+          'displayOrder',
+        ]);
+        await this.auditService.recordAuditLog(
+          {
+            action: 'CATEGORY_UPDATE',
+            entityType: 'category',
+            entityId: id,
+            userId: actorId,
+            summary: `Updated category "${updated.name}"`,
+            changes,
+          },
+          tx
+        );
+      }
+
+      return updated;
     });
   }
 
-  async delete(id: string) {
-    await this.findById(id);
+  async delete(id: string, actorId?: string | null) {
+    const existing = await this.findById(id);
 
     // Guard: Prevent deletion of categories that have products attached
     const productCount = await this.prisma.product.count({
@@ -185,8 +245,25 @@ export class CategoriesService {
       );
     }
 
-    return this.prisma.category.delete({
-      where: { id },
+    return this.executeTx(async (tx) => {
+      const deleted = await tx.category.delete({
+        where: { id },
+      });
+
+      if (this.auditService) {
+        await this.auditService.recordAuditLog(
+          {
+            action: 'CATEGORY_DELETE',
+            entityType: 'category',
+            entityId: id,
+            userId: actorId,
+            summary: `Deleted category "${existing.name}"`,
+          },
+          tx
+        );
+      }
+
+      return deleted;
     });
   }
 }

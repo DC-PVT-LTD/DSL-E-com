@@ -2,58 +2,189 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { CustomerUser, SavedList } from '@/types/user';
 import { ShippingAddress } from '@/types/order';
-import { INITIAL_CUSTOMERS } from '@/mocks/customers';
+import { apiClient } from '@/lib/api/apiClient';
 
 interface UserState {
   currentUser: CustomerUser | null;
   isAdminLoggedIn: boolean;
   adminEmail: string | null;
+  isLoading: boolean;
 
-  // Customer actions
-  loginCustomer: (email: string) => boolean;
-  logoutCustomer: () => void;
+  // Real backend auth actions
+  loginCustomer: (email: string, password?: string) => Promise<boolean>;
+  registerCustomer: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
+  logoutCustomer: () => Promise<void>;
+  fetchCurrentUser: () => Promise<void>;
+
+  // Customer account preferences
   toggleWishlist: (productId: string) => void;
   isInWishlist: (productId: string) => boolean;
-  addAddress: (address: ShippingAddress & { isDefault?: boolean }) => void;
-  removeAddress: (addressId: string) => void;
+  addAddress: (address: ShippingAddress & { isDefault?: boolean }) => Promise<void>;
+  removeAddress: (addressId: string) => Promise<void>;
   createSavedList: (title: string, productIds: string[], description?: string) => void;
   removeSavedList: (listId: string) => void;
 
-  // Admin demo auth
-  loginAdmin: (email: string) => void;
-  logoutAdmin: () => void;
+  // Admin auth
+  loginAdmin: (email: string, password?: string) => Promise<boolean>;
+  logoutAdmin: () => Promise<void>;
 }
 
 export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
-      currentUser: INITIAL_CUSTOMERS[0], // Default logged-in demo customer for rich out-of-the-box demo
-      isAdminLoggedIn: true, // Default active demo admin session
-      adminEmail: 'admin@dslstationery.lk',
+      currentUser: null,
+      isAdminLoggedIn: false,
+      adminEmail: null,
+      isLoading: false,
 
-      loginCustomer: (email: string) => {
-        const found = INITIAL_CUSTOMERS.find((c) => c.email.toLowerCase() === email.toLowerCase());
-        if (found) {
-          set({ currentUser: found });
-          return true;
+      fetchCurrentUser: async () => {
+        try {
+          const res = await apiClient.get<{ success: boolean; data: any }>('/auth/me');
+          if (res?.data) {
+            const u = res.data;
+            const current = get().currentUser;
+            set({
+              currentUser: {
+                id: u.id,
+                name: u.name,
+                email: u.email,
+                phone: u.phone || '',
+                role: u.role,
+                addresses: current?.addresses || [],
+                wishlistProductIds: current?.wishlistProductIds || [],
+                savedLists: current?.savedLists || [],
+              },
+              isAdminLoggedIn: u.role === 'ADMIN' || u.role === 'MANAGER',
+              adminEmail: u.role === 'ADMIN' || u.role === 'MANAGER' ? u.email : null,
+            });
+          }
+        } catch {
+          // Token expired or unauthenticated
         }
-        // Create demo account for any new email
-        const newCustomer: CustomerUser = {
-          id: `cust-${Date.now()}`,
-          name: email.split('@')[0],
-          email,
-          phone: '+94 77 000 0000',
-          addresses: [],
-          wishlistProductIds: [],
-          savedLists: [],
-          isDemoAccount: true,
-        };
-        set({ currentUser: newCustomer });
-        return true;
       },
 
-      logoutCustomer: () => {
-        set({ currentUser: null });
+      loginCustomer: async (email: string, password = 'Password123!') => {
+        set({ isLoading: true });
+        try {
+          const res = await apiClient.post<{ success: boolean; data: any }>('/auth/login', {
+            email,
+            password,
+          });
+
+          if (res?.data) {
+            const u = res.data;
+            const current = get().currentUser;
+            set({
+              currentUser: {
+                id: u.id,
+                name: u.name,
+                email: u.email,
+                phone: u.phone || '',
+                role: u.role,
+                addresses: current?.addresses || [],
+                wishlistProductIds: current?.wishlistProductIds || [],
+                savedLists: current?.savedLists || [],
+              },
+              isAdminLoggedIn: u.role === 'ADMIN' || u.role === 'MANAGER',
+              adminEmail: u.role === 'ADMIN' || u.role === 'MANAGER' ? u.email : null,
+              isLoading: false,
+            });
+            return true;
+          }
+          set({ isLoading: false });
+          return false;
+        } catch (err) {
+          set({ isLoading: false });
+          throw err;
+        }
+      },
+
+      registerCustomer: async (name: string, email: string, password: string, phone?: string) => {
+        set({ isLoading: true });
+        try {
+          const res = await apiClient.post<{ success: boolean; data: any }>('/auth/register', {
+            name,
+            email,
+            password,
+            phone,
+          });
+
+          if (res?.data) {
+            const u = res.data;
+            set({
+              currentUser: {
+                id: u.id,
+                name: u.name,
+                email: u.email,
+                phone: u.phone || '',
+                role: u.role,
+                addresses: [],
+                wishlistProductIds: [],
+                savedLists: [],
+              },
+              isLoading: false,
+            });
+            return true;
+          }
+          set({ isLoading: false });
+          return false;
+        } catch (err) {
+          set({ isLoading: false });
+          throw err;
+        }
+      },
+
+      logoutCustomer: async () => {
+        try {
+          await apiClient.post('/auth/logout');
+        } catch {
+          // Continue local cleanup even if network fails
+        }
+        set({ currentUser: null, isAdminLoggedIn: false, adminEmail: null });
+      },
+
+      loginAdmin: async (email: string, password = 'AdminPassword123!') => {
+        set({ isLoading: true });
+        try {
+          const res = await apiClient.post<{ success: boolean; data: any }>('/auth/login', {
+            email,
+            password,
+          });
+
+          if (res?.data) {
+            const u = res.data;
+            if (u.role !== 'ADMIN' && u.role !== 'MANAGER') {
+              throw new Error('Access denied: administrative role required');
+            }
+            set({
+              isAdminLoggedIn: true,
+              adminEmail: u.email,
+              currentUser: {
+                id: u.id,
+                name: u.name,
+                email: u.email,
+                role: u.role,
+                addresses: [],
+                wishlistProductIds: [],
+                savedLists: [],
+              },
+              isLoading: false,
+            });
+            return true;
+          }
+          set({ isLoading: false });
+          return false;
+        } catch (err) {
+          set({ isLoading: false });
+          throw err;
+        }
+      },
+
+      logoutAdmin: async () => {
+        try {
+          await apiClient.post('/auth/logout');
+        } catch {}
+        set({ isAdminLoggedIn: false, adminEmail: null });
       },
 
       toggleWishlist: (productId: string) => {
@@ -78,30 +209,61 @@ export const useUserStore = create<UserState>()(
         return user ? user.wishlistProductIds.includes(productId) : false;
       },
 
-      addAddress: (address) => {
+      addAddress: async (address) => {
         const user = get().currentUser;
         if (!user) return;
 
-        const newAddr = {
-          ...address,
-          id: `addr-${Date.now()}`,
-        };
+        try {
+          const res = await apiClient.post<{ success: boolean; data: any }>('/auth/me/addresses', {
+            fullName: address.fullName,
+            phone: address.phone,
+            email: address.email,
+            addressLine1: address.addressLine1,
+            addressLine2: address.addressLine2,
+            city: address.city,
+            district: address.district,
+            postalCode: address.postalCode,
+            isDefault: address.isDefault || false,
+          });
 
-        const currentAddresses = address.isDefault
-          ? user.addresses.map((a) => ({ ...a, isDefault: false }))
-          : user.addresses;
+          const created = res.data;
+          const currentAddresses = address.isDefault
+            ? user.addresses.map((a) => ({ ...a, isDefault: false }))
+            : user.addresses;
 
-        set({
-          currentUser: {
-            ...user,
-            addresses: [...currentAddresses, newAddr],
-          },
-        });
+          set({
+            currentUser: {
+              ...user,
+              addresses: [...currentAddresses, created],
+            },
+          });
+        } catch {
+          // Fallback to local storage if API call fails
+          const newAddr = {
+            ...address,
+            id: `addr-${Date.now()}`,
+          };
+          const currentAddresses = address.isDefault
+            ? user.addresses.map((a) => ({ ...a, isDefault: false }))
+            : user.addresses;
+
+          set({
+            currentUser: {
+              ...user,
+              addresses: [...currentAddresses, newAddr],
+            },
+          });
+        }
       },
 
-      removeAddress: (addressId) => {
+      removeAddress: async (addressId) => {
         const user = get().currentUser;
         if (!user) return;
+
+        try {
+          await apiClient.delete(`/auth/me/addresses/${addressId}`);
+        } catch {}
+
         set({
           currentUser: {
             ...user,
@@ -140,17 +302,9 @@ export const useUserStore = create<UserState>()(
           },
         });
       },
-
-      loginAdmin: (email) => {
-        set({ isAdminLoggedIn: true, adminEmail: email });
-      },
-
-      logoutAdmin: () => {
-        set({ isAdminLoggedIn: false, adminEmail: null });
-      },
     }),
     {
-      name: 'dsl_user_v1',
+      name: 'dsl_auth_v2',
       storage: createJSONStorage(() => localStorage),
     }
   )

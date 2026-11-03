@@ -11,6 +11,7 @@
 export interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined | null>;
   timeoutMs?: number;
+  _retryCount?: number;
 }
 
 export class ApiError extends Error {
@@ -53,6 +54,7 @@ export interface BackendPaginatedResponse<T> {
 class ApiClient {
   private baseUrl: string;
   private isMockMode: boolean;
+  private refreshPromise: Promise<boolean> | null = null;
 
   constructor() {
     this.baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1').replace(/\/+$/, '');
@@ -94,27 +96,83 @@ class ApiClient {
   }
 
   /**
+   * Coordinated silent token refresh. Ensures simultaneous 401s share a single refresh request.
+   */
+  private async refreshSession(): Promise<boolean> {
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = (async () => {
+      try {
+        const fullUrl = this.buildUrl('/auth/refresh');
+        const res = await fetch(fullUrl, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        });
+        return res.ok;
+      } catch {
+        return false;
+      } finally {
+        this.refreshPromise = null;
+      }
+    })();
+
+    return this.refreshPromise;
+  }
+
+  /**
    * Performs an HTTP request and parses JSON response with strict error extraction.
    */
   public async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    const { params, timeoutMs = 10000, ...fetchOptions } = options;
+    const { params, timeoutMs = 10000, _retryCount = 0, ...fetchOptions } = options;
     const fullUrl = this.buildUrl(endpoint, params);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
+    // Add credentials and CSRF protection headers
+    const method = (fetchOptions.method || 'GET').toUpperCase();
+    const isMutating = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+
+    const isFormData = typeof FormData !== 'undefined' && fetchOptions.body instanceof FormData;
+
+    const headers: Record<string, string> = {
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      Accept: 'application/json',
+      ...(isMutating ? { 'X-Requested-With': 'XMLHttpRequest' } : {}),
+      ...(fetchOptions.headers as Record<string, string>),
+    };
+
+    if (isFormData) {
+      delete headers['Content-Type'];
+    }
+
     try {
       const response = await fetch(fullUrl, {
         ...fetchOptions,
+        credentials: 'include',
         signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          ...fetchOptions.headers,
-        },
+        headers,
       });
 
       clearTimeout(timeoutId);
+
+      // Handle 401: attempt silent refresh if request is eligible
+      const isAuthEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/refresh') || endpoint.includes('/auth/register');
+      if (response.status === 401 && !isAuthEndpoint && _retryCount === 0) {
+        const refreshed = await this.refreshSession();
+        if (refreshed) {
+          return this.request<T>(endpoint, {
+            ...options,
+            _retryCount: _retryCount + 1,
+          });
+        }
+      }
 
       let responseBody: any = null;
       const contentType = response.headers.get('content-type');

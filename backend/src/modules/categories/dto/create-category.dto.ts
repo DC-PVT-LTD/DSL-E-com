@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 
 export const createCategorySchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -15,5 +16,52 @@ export const createCategorySchema = z.object({
 
 export const updateCategorySchema = createCategorySchema.partial();
 
-export type CreateCategoryDto = z.infer<typeof createCategorySchema>;
-export type UpdateCategoryDto = z.infer<typeof updateCategorySchema>;
+export class CreateCategoryDto {
+  @ApiProperty({
+    description: 'Category name',
+    example: 'Pens & Writing Instruments',
+    minLength: 2,
+  })
+  name: string;
+
+  @ApiProperty({
+    description: 'URL-friendly unique slug',
+    example: 'pens-and-writing',
+  })
+  slug: string;
+
+  @ApiProperty({
+    description: 'Detailed category description',
+    example: 'Ballpoint pens, gel pens, fountain pens, markers, and highlighters for students and professionals.',
+    minLength: 5,
+  })
+  description: string;
+
+  @ApiPropertyOptional({
+    description: 'Lucide icon name identifier',
+    example: 'PenTool',
+  })
+  iconName?: string;
+
+  @ApiPropertyOptional({
+    description: 'Cover / banner image URL',
+    example: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=800',
+  })
+  image?: string;
+
+  @ApiPropertyOptional({
+    description: 'Whether category is featured on the homepage navigation',
+    example: true,
+    default: false,
+  })
+  featured?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Display order priority (ascending)',
+    example: 1,
+    default: 0,
+  })
+  displayOrder?: number;
+}
+
+export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {}

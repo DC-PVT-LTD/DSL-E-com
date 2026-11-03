@@ -378,6 +378,170 @@ class ProductService {
     const newStock = Math.max(0, product.stockQuantity + delta);
     return this.updateProduct(id, { stockQuantity: newStock });
   }
+
+  // ============================================================================
+  // BACKEND PRODUCT API CRUD METHODS
+  // ============================================================================
+
+  /**
+   * Create a new product via backend NestJS API.
+   */
+  public async createProductApi(data: Record<string, any>): Promise<Product> {
+    const res = await apiClient.post<BackendApiResponse<Product>>('products', data);
+    if (res.success && res.data) {
+      const existingIdx = this.products.findIndex((p) => p.id === res.data.id);
+      if (existingIdx !== -1) {
+        this.products[existingIdx] = res.data;
+      } else {
+        this.products.unshift(res.data);
+      }
+      this.persistAndNotify();
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to create product');
+  }
+
+  /**
+   * Update an existing product via backend NestJS API.
+   */
+  public async updateProductApi(id: string, data: Record<string, any>): Promise<Product> {
+    const res = await apiClient.patch<BackendApiResponse<Product>>(`products/${encodeURIComponent(id)}`, data);
+    if (res.success && res.data) {
+      const existingIdx = this.products.findIndex((p) => p.id === id);
+      if (existingIdx !== -1) {
+        this.products[existingIdx] = { ...this.products[existingIdx], ...res.data };
+      } else {
+        this.products.unshift(res.data);
+      }
+      this.persistAndNotify();
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to update product');
+  }
+
+  /**
+   * Uploads an image to the backend and returns the public asset URL.
+   */
+  public async uploadProductImage(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await apiClient.post<BackendApiResponse<{ url: string }>>('uploads', formData, {
+      params: { folder: 'products' },
+    });
+
+    if (res.success && res.data?.url) {
+      return res.data.url;
+    }
+    throw new Error(res.message || 'Failed to upload image');
+  }
+
+  /**
+   * Toggle product active/hidden status via backend NestJS API.
+   */
+  public async toggleProductStatusApi(id: string): Promise<Product> {
+    const res = await apiClient.patch<BackendApiResponse<Product>>(`products/${encodeURIComponent(id)}/status`, {});
+    if (res.success && res.data) {
+      const existingIdx = this.products.findIndex((p) => p.id === id);
+      if (existingIdx !== -1) {
+        this.products[existingIdx] = { ...this.products[existingIdx], ...res.data };
+      }
+      this.persistAndNotify();
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to toggle product status');
+  }
+
+  /**
+   * Soft-delete / deactivate product via backend NestJS API.
+   */
+  public async deleteProductApi(id: string): Promise<boolean> {
+    const res = await apiClient.delete<BackendApiResponse<{ id: string }>>(`products/${encodeURIComponent(id)}`);
+    if (res.success) {
+      this.products = this.products.filter((p) => p.id !== id);
+      this.persistAndNotify();
+      return true;
+    }
+    throw new Error(res.message || 'Failed to delete product');
+  }
+
+  // ============================================================================
+  // PRODUCT VARIANT API METHODS
+  // ============================================================================
+
+  /**
+   * Fetch variants for a product from the backend API.
+   */
+  public async fetchVariants(productId: string): Promise<any[]> {
+    try {
+      const res = await apiClient.get<BackendApiResponse<any[]>>(`products/${productId}/variants`);
+      if (res.success && Array.isArray(res.data)) {
+        // Synchronize in local product cache
+        const prod = this.getById(productId);
+        if (prod) {
+          this.updateProduct(productId, { variants: res.data });
+        }
+        return res.data;
+      }
+    } catch (err) {
+      console.warn(`Failed to fetch variants for product "${productId}":`, err);
+    }
+    return this.getById(productId)?.variants || [];
+  }
+
+  /**
+   * Create a variant for an existing product.
+   */
+  public async createVariant(productId: string, data: any): Promise<any> {
+    const res = await apiClient.post<BackendApiResponse<any>>(`products/${productId}/variants`, data);
+    if (res.success && res.data) {
+      const prod = this.getById(productId);
+      if (prod) {
+        const variants = [...(prod.variants || []).filter((v) => v.id !== res.data.id), res.data];
+        const newAggregate = prod.stockQuantity + (res.data.stockQuantity || 0);
+        this.updateProduct(productId, { variants, stockQuantity: newAggregate });
+      }
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to create variant');
+  }
+
+  /**
+   * Update an existing product variant.
+   */
+  public async updateVariant(productId: string, variantId: string, data: any): Promise<any> {
+    const res = await apiClient.patch<BackendApiResponse<any>>(
+      `products/${productId}/variants/${variantId}`,
+      data
+    );
+    if (res.success && res.data) {
+      const prod = this.getById(productId);
+      if (prod && prod.variants) {
+        const updatedVariants = prod.variants.map((v) => (v.id === variantId ? { ...v, ...res.data } : v));
+        this.updateProduct(productId, { variants: updatedVariants });
+      }
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to update variant');
+  }
+
+  /**
+   * Deactivate a product variant.
+   */
+  public async deleteVariant(productId: string, variantId: string): Promise<boolean> {
+    const res = await apiClient.delete<BackendApiResponse<any>>(
+      `products/${productId}/variants/${variantId}`
+    );
+    if (res.success) {
+      const prod = this.getById(productId);
+      if (prod && prod.variants) {
+        const updatedVariants = prod.variants.filter((v) => v.id !== variantId);
+        this.updateProduct(productId, { variants: updatedVariants });
+      }
+      return true;
+    }
+    return false;
+  }
 }
 
 export const productService = new ProductService();
