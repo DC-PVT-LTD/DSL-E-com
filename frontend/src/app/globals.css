@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-cream: #FFFDF0;
+  --color-brand-pastel-pink: #C6E7FF;
+  --color-brand-pastel-blue: #C6E7FF;
+  --color-brand-coral: #0066CC;
+  --color-brand-blue: #0066CC;
+  --color-brand-navy: #08275E;
+  --color-brand-lavender: #EBD5FA;
+  --color-brand-yellow: #FFD84D;
+  --color-brand-powder-blue: #B9D5FF;
+  --color-brand-charcoal: #292525;
+  --color-brand-card-white: #FFFFFF;
+
+  /* Legacy aliases for backward compatibility */
+  --color-brand-navy-light: #103b8c;
+  --color-brand-navy-dark: #041638;
+  --color-brand-yellow-hover: #e6bd10;
+  --color-brand-yellow-pale: #fff9e6;
+  --color-brand-blue-soft: #eff6ff;
+  --color-brand-blue-accent: #0066CC;
+}
+
+:root {
+  --background: #FFFDF0;
+  --foreground: #292525;
+  --cream: #FFFDF0;
+  --pastel-pink: #C6E7FF;
+  --pastel-blue: #C6E7FF;
+  --coral-pink: #0066CC;
+  --dsl-blue: #0066CC;
+  --lavender: #EBD5FA;
+  --butter-yellow: #FFD84D;
+  --powder-blue: #B9D5FF;
+  --charcoal: #292525;
+  --card-white: #FFFFFF;
+}
+
+body {
+  background-color: #FFFDF0;
+  color: #292525;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar matching pastel blue aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FFFDF0;
+}
+::-webkit-scrollbar-thumb {
+  background: #C6E7FF;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0066CC;
+}
+
+/* Scalloped decorative wave dividers */
+.scallop-divider-bottom {
+  position: relative;
+}
+.scallop-divider-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  background-image: radial-gradient(circle at 12px 18px, transparent 12px, #FFFDF0 12.5px);
+  background-size: 24px 18px;
+  background-repeat: repeat-x;
+  z-index: 10;
+}
+
+.scallop-divider-top {
+  position: relative;
+}
+.scallop-divider-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  background-image: radial-gradient(circle at 12px 0, transparent 12px, #FFFDF0 12.5px);
+  background-size: 24px 18px;
+  background-repeat: repeat-x;
+  z-index: 10;
+}
+
+/* Pastel Gingham / Checkerboard decorative pattern */
+.bg-gingham-yellow {
+  background-color: #FFFDF0;
+  background-image: 
+    linear-gradient(45deg, #FFD84D 25%, transparent 25%), 
+    linear-gradient(-45deg, #FFD84D 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #FFD84D 75%), 
+    linear-gradient(-45deg, transparent 75%, #FFD84D 75%);
+  background-size: 28px 28px;
+  background-position: 0 0, 0 14px, 14px -14px, -14px 0px;
+}
+
+/* Daisy pattern for lavender banner */
+.bg-lavender-daisy {
+  background-color: #EBD5FA;
+  background-image: radial-gradient(#FFFFFF 20%, transparent 20%), radial-gradient(#C6E7FF 20%, transparent 20%);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* Shooting Star Custom Font */
+@font-face {
+  font-family: 'ShootingStar';
+  src: url('/fonts/ShootingStar.ttf') format('truetype'),
+       url('/fonts/shooting-star-personal-use/Shooting%20Star.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-shooting-star {
+  font-family: 'ShootingStar', cursive, system-ui, sans-serif;
+}
+
+/* Heylowitch Custom Font */
+@font-face {
+  font-family: 'Heylowitch';
+  src: url('/fonts/Heylowitch-Regular.otf') format('opentype'),
+       url('/fonts/heylowitch/Heylowitch-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-heylowitch {
+  font-family: 'Heylowitch', cursive, system-ui, sans-serif;
+}
+
+@keyframes loading-bar {
+  0% { transform: translateX(-100%); width: 40%; }
+  50% { transform: translateX(50%); width: 60%; }
+  100% { transform: translateX(200%); width: 40%; }
+}
+
+.animate-loading-pulse {
+  animation: loading-bar 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}

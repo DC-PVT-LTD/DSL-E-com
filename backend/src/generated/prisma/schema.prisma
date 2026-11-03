@@ -1,0 +1,534 @@
+// ==============================================================================
+// DSL Stationery E-Commerce — Production Database Schema
+// Engine: PostgreSQL 18.4 (dsl_stationery)
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ------------------------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------------------------
+
+enum UserRole {
+  CUSTOMER
+  STAFF
+  MANAGER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH_ON_DELIVERY
+  BANK_TRANSFER
+  CARD_PAYHERE
+  KOKO_BNPL
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum InventoryChangeReason {
+  RESTOCK
+  CORRECTION
+  DAMAGED
+  ORDER_FULFILLMENT
+  DEMO_RESET
+}
+
+enum DocumentStatus {
+  UPLOADED
+  PROCESSING
+  PROCESSED
+  REVIEWED
+  CONVERTED_TO_CART
+}
+
+enum ItemConfidence {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum MatchStatus {
+  MATCHED
+  UNMATCHED
+  CUSTOM_SELECTED
+  SKIPPED
+}
+
+// ------------------------------------------------------------------------------
+// USERS & ADDRESSES
+// ------------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  phone        String?
+  name         String
+  role         UserRole @default(CUSTOMER)
+  passwordHash String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Brute-force protection
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
+  // Password reset (stores only a SHA-256 hash — never the raw token)
+  passwordResetTokenHash String?
+  passwordResetExpiresAt DateTime?
+
+  addresses     Address[]
+  orders        Order[]
+  wishlist      WishlistItem[]
+  savedLists    SavedStationeryList[]
+  documents     UploadedDocument[]
+  auditLogs     AuditLog[]
+  refreshTokens RefreshToken[]
+
+  @@index([email])
+  @@index([phone])
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName     String
+  phone        String
+  email        String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  district     String // One of 25 Sri Lanka districts
+  postalCode   String?
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([district])
+}
+
+// ------------------------------------------------------------------------------
+// REFRESH TOKENS (Authentication Sessions)
+// ------------------------------------------------------------------------------
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique // SHA-256 of the raw refresh token — raw token is NEVER stored
+  isRevoked Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  // Note: @unique on tokenHash already creates a B-tree unique index.
+  // A redundant @@index([tokenHash]) is intentionally omitted.
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ------------------------------------------------------------------------------
+// CATALOG (CATEGORIES, BRANDS, PRODUCTS & VARIANTS)
+// ------------------------------------------------------------------------------
+
+model Category {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  description  String
+  iconName     String?
+  image        String?
+  featured     Boolean  @default(false)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  products Product[]
+
+  @@index([slug])
+  @@index([featured])
+}
+
+model Brand {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String
+  logo          String?
+  originCountry String
+  featured      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  products Product[]
+
+  @@index([slug])
+}
+
+model Product {
+  id                  String   @id @default(cuid())
+  name                String
+  slug                String   @unique
+  sku                 String   @unique
+  barcode             String?  @unique
+  description         String
+  shortDescription    String
+  categoryId          String
+  category            Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  brandId             String
+  brand               Brand    @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  priceCents          Int // Price in integer cents (e.g. 45000 = Rs. 450.00)
+  compareAtPriceCents Int?
+  costPriceCents      Int?
+  stockQuantity       Int      @default(0)
+  lowStockThreshold   Int      @default(5)
+  isActive            Boolean  @default(true)
+  isFeatured          Boolean  @default(false)
+  isNewArrival        Boolean  @default(false)
+  isBestSeller        Boolean  @default(false)
+  images              String[] @default([])
+  tags                String[] @default([]) // Keywords including Sinhala/Tamil
+  rating              Float    @default(5.0)
+  reviewCount         Int      @default(0)
+  specifications      Json     @default("{}")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  variants           ProductVariant[]
+  movements          InventoryMovement[]
+  orderItems         OrderItem[]
+  packItems          SchoolPackItem[]
+  matchedUploadItems ExtractedStationeryItem[]
+  wishlistItems      WishlistItem[]
+
+  @@index([slug])
+  @@index([sku])
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([isActive])
+  @@index([priceCents])
+}
+
+model ProductVariant {
+  id                  String   @id @default(cuid())
+  productId           String
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name                String // e.g. "Blue Ink / Single Line"
+  sku                 String   @unique
+  priceCents          Int
+  compareAtPriceCents Int?
+  stockQuantity       Int      @default(0)
+  attributes          Json // { "color": "Blue", "ruling": "Single Line" }
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  orderItems OrderItem[]
+  movements  InventoryMovement[]
+
+  @@index([productId])
+  @@index([sku])
+}
+
+model InventoryMovement {
+  id               String                @id @default(cuid())
+  productId        String
+  product          Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId        String?
+  variant          ProductVariant?       @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  previousQuantity Int
+  newQuantity      Int
+  changeAmount     Int
+  reason           InventoryChangeReason
+  note             String?
+  performedById    String?
+  createdAt        DateTime              @default(now())
+
+  @@index([productId])
+  @@index([createdAt])
+}
+
+// ------------------------------------------------------------------------------
+// SCHOOL PACKS & BUNDLES
+// ------------------------------------------------------------------------------
+
+model SchoolPack {
+  id                String   @id @default(cuid())
+  name              String
+  slug              String   @unique
+  grade             String // e.g. "Grade 1-2", "Grade 6-9", "O/L"
+  tier              String // "essential", "standard", "premium"
+  description       String
+  savingsPercentage Int      @default(10)
+  totalPriceCents   Int
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  items SchoolPackItem[]
+
+  @@index([slug])
+  @@index([grade])
+}
+
+model SchoolPackItem {
+  id                   String     @id @default(cuid())
+  packId               String
+  pack                 SchoolPack @relation(fields: [packId], references: [id], onDelete: Cascade)
+  productId            String
+  product              Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+  defaultQuantity      Int        @default(1)
+  unitPriceCents       Int
+  substituteProductIds String[]   @default([])
+  createdAt            DateTime   @default(now())
+
+  @@index([packId])
+  @@index([productId])
+}
+
+// ------------------------------------------------------------------------------
+// ORDERS & IMMUTABLE SNAPSHOTS
+// ------------------------------------------------------------------------------
+
+model Order {
+  id                    String        @id @default(cuid())
+  orderNumber           String        @unique // e.g. "DSL-2026-4891"
+  userId                String?
+  user                  User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName          String
+  customerEmail         String
+  customerPhone         String
+  subtotalCents         Int
+  discountCents         Int           @default(0)
+  deliveryCents         Int           @default(0)
+  totalCents            Int
+  paymentMethod         PaymentMethod
+  paymentStatus         PaymentStatus @default(PENDING)
+  orderStatus           OrderStatus   @default(PENDING)
+  notes                 String?
+  trackingNumber        String?
+  estimatedDeliveryDate DateTime?
+  promotionId           String?
+  promotion             Promotion?    @relation(fields: [promotionId], references: [id], onDelete: SetNull)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  addressSnapshot OrderAddressSnapshot?
+  items           OrderItem[]
+
+  @@index([orderNumber])
+  @@index([customerEmail])
+  @@index([customerPhone])
+  @@index([orderStatus])
+  @@index([createdAt])
+}
+
+model OrderAddressSnapshot {
+  id            String  @id @default(cuid())
+  orderId       String  @unique
+  order         Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fullName      String
+  phone         String
+  email         String
+  addressLine1  String
+  addressLine2  String?
+  city          String
+  district      String // One of 25 Sri Lanka districts
+  postalCode    String?
+  deliveryNotes String?
+}
+
+model OrderItem {
+  id              String          @id @default(cuid())
+  orderId         String
+  order           Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  variantId       String?
+  variant         ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  productName     String // Frozen name snapshot
+  variantName     String? // Frozen variant name snapshot
+  sku             String // Frozen SKU snapshot
+  unitPriceCents  Int // Frozen price snapshot at purchase time
+  quantity        Int
+  totalPriceCents Int // unitPriceCents * quantity
+  createdAt       DateTime        @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// ------------------------------------------------------------------------------
+// PROMOTIONS & VOUCHERS
+// ------------------------------------------------------------------------------
+
+model Promotion {
+  id                  String       @id @default(cuid())
+  code                String       @unique
+  title               String
+  description         String
+  discountType        DiscountType
+  discountValue       Int // Percentage (e.g. 10) or Fixed Rupees
+  minOrderAmountCents Int?
+  maxDiscountCents    Int?
+  startDate           DateTime
+  endDate             DateTime
+  isActive            Boolean      @default(true)
+  usageLimit          Int?
+  usageCount          Int          @default(0)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  orders Order[]
+
+  @@index([code])
+  @@index([isActive])
+}
+
+// ------------------------------------------------------------------------------
+// UPLOADED BOOKLIST DOCUMENTS & OCR EXTRACTIONS
+// ------------------------------------------------------------------------------
+
+model UploadedDocument {
+  id             String         @id @default(cuid())
+  userId         String?
+  user           User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  fileName       String
+  fileUrl        String
+  fileSizeBytes  Int
+  fileType       String
+  status         DocumentStatus @default(UPLOADED)
+  isSimulatedOCR Boolean        @default(false)
+  customerNotes  String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  extractedItems ExtractedStationeryItem[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model ExtractedStationeryItem {
+  id                  String           @id @default(cuid())
+  documentId          String
+  document            UploadedDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  rawText             String
+  itemDescription     String
+  quantity            Int              @default(1)
+  confidence          ItemConfidence   @default(MEDIUM)
+  confidenceScore     Float            @default(0.8)
+  matchedProductId    String?
+  matchedProduct      Product?         @relation(fields: [matchedProductId], references: [id], onDelete: SetNull)
+  candidateProductIds String[]         @default([])
+  status              MatchStatus      @default(MATCHED)
+  createdAt           DateTime         @default(now())
+
+  @@index([documentId])
+  @@index([matchedProductId])
+}
+
+// ------------------------------------------------------------------------------
+// WISHLIST & SAVED LISTS
+// ------------------------------------------------------------------------------
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+model SavedStationeryList {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?
+  itemProductIds String[] @default([])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ------------------------------------------------------------------------------
+// AUDIT LOGS, BANNERS & STORE SETTINGS
+// ------------------------------------------------------------------------------
+
+model StoreBanner {
+  id              String   @id @default(cuid())
+  title           String
+  subtitle        String
+  ctaText         String
+  ctaLink         String
+  badgeText       String?
+  backgroundColor String   @default("#0066CC")
+  textColor       String   @default("#FFFFFF")
+  imageUrl        String?
+  isActive        Boolean  @default(true)
+  displayOrder    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String // e.g. "INVENTORY_ADJUST", "ORDER_STATUS_UPDATE"
+  entityType  String // "product", "order", "promotion", "inventory"
+  entityId    String
+  description String
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model StoreSettings {
+  id                         String   @id @default("default")
+  flatDeliveryFeeCents       Int      @default(35000) // Rs. 350.00
+  freeDeliveryThresholdCents Int      @default(500000) // Rs. 5,000.00
+  hotlinePhone               String   @default("+94 11 200 9000")
+  whatsappNumber             String   @default("+94 77 123 4567")
+  contactEmail               String   @default("support@dslstationery.lk")
+  codEnabled                 Boolean  @default(true)
+  bankTransferEnabled        Boolean  @default(true)
+  onlineCardEnabled          Boolean  @default(false)
+  updatedAt                  DateTime @updatedAt
+}
