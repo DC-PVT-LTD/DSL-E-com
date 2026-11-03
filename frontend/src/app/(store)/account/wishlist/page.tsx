@@ -1,15 +1,51 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Heart, ShoppingBag, ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Heart, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react';
 import { AccountNav } from '@/components/common/AccountNav';
 import { useUserStore } from '@/services/userStore';
 import { productService } from '@/services/productService';
 import { ProductCard } from '@/components/products/ProductCard';
 
 export default function AccountWishlistPage() {
+  const router = useRouter();
   const currentUser = useUserStore((state) => state.currentUser);
+  const fetchCurrentUser = useUserStore((state) => state.fetchCurrentUser);
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const init = async () => {
+      try {
+        await fetchCurrentUser();
+      } catch {
+      } finally {
+        if (mounted) setIsChecking(false);
+      }
+    };
+    init();
+    return () => {
+      mounted = false;
+    };
+  }, [fetchCurrentUser]);
+
+  useEffect(() => {
+    if (!isChecking && !currentUser) {
+      router.push('/login');
+    }
+  }, [isChecking, currentUser, router]);
+
+  if (isChecking || !currentUser) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-24 flex flex-col items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#0066CC]" />
+        <p className="mt-3 text-xs text-[#292525]/60 font-medium">Loading wishlist...</p>
+      </div>
+    );
+  }
+
   const wishlistIds = currentUser?.wishlistProductIds || [];
   const allProducts = productService.getAll();
   const wishlistProducts = allProducts.filter((p) => wishlistIds.includes(p.id));

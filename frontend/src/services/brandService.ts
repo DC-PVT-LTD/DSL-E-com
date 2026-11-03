@@ -154,6 +154,70 @@ class BrandService {
     };
   }
 
+  /**
+   * Create a new brand via backend NestJS API.
+   */
+  public async createBrandApi(data: {
+    name: string;
+    slug: string;
+    description: string;
+    originCountry: string;
+    logo?: string;
+    featured?: boolean;
+  }): Promise<Brand> {
+    const res = await apiClient.post<BackendApiResponse<Brand>>('brands', data);
+    if (res.success && res.data) {
+      this.brands.push(res.data);
+      this.persistAndNotify();
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to create brand');
+  }
+
+  /**
+   * Update brand via backend NestJS API.
+   */
+  public async updateBrandApi(
+    id: string,
+    data: Partial<{
+      name: string;
+      slug: string;
+      description: string;
+      originCountry: string;
+      logo?: string;
+      featured?: boolean;
+    }>
+  ): Promise<Brand> {
+    const res = await apiClient.patch<BackendApiResponse<Brand>>(
+      `brands/${encodeURIComponent(id)}`,
+      data
+    );
+    if (res.success && res.data) {
+      const idx = this.brands.findIndex((b) => b.id === id);
+      if (idx !== -1) {
+        this.brands[idx] = { ...this.brands[idx], ...res.data };
+      }
+      this.persistAndNotify();
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to update brand');
+  }
+
+  /**
+   * Delete / deactivate brand via backend NestJS API.
+   */
+  public async deleteBrandApi(id: string): Promise<boolean> {
+    const res = await apiClient.delete<BackendApiResponse<{ id: string }>>(
+      `brands/${encodeURIComponent(id)}`
+    );
+    if (res.success) {
+      this.brands = this.brands.filter((b) => b.id !== id);
+      this.persistAndNotify();
+      return true;
+    }
+    throw new Error(res.message || 'Failed to delete brand');
+  }
+
   // Synchronous cache getters
   public getBrands(): Brand[] {
     return [...this.brands];

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Search,
   ShoppingCart,
@@ -13,8 +13,6 @@ import {
   ChevronDown,
   Sparkles,
   Upload,
-  ArrowRight,
-  Sparkle,
 } from 'lucide-react';
 import { Logo } from './Logo';
 import { useCartStore } from '@/services/cartStore';
@@ -26,6 +24,7 @@ import { formatLKR } from '@/lib/currency';
 
 export const Navbar: React.FC = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,6 +50,7 @@ export const Navbar: React.FC = () => {
     setIsMounted(true);
     setCategories(categoryService.getCategories());
     categoryService.fetchCategories();
+    useUserStore.getState().fetchCurrentUser();
 
     const unsubCat = categoryService.subscribe(() => {
       setCategories(categoryService.getCategories());
@@ -93,343 +93,433 @@ export const Navbar: React.FC = () => {
     }
   };
 
+  const isHomeActive = pathname === '/' || pathname === '/home';
+
   return (
-    <header className="sticky top-0 z-40 bg-[#FFFDF0]/95 backdrop-blur-md border-b border-[#C6E7FF]/50 transition-all">
-      {/* Main Header Container */}
-      <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16">
-        <div className="flex items-center justify-between h-20 gap-4">
-          {/* Left: Mobile Menu Trigger & Logo */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 text-[#292525] hover:bg-[#C6E7FF]/30 rounded-full transition-colors"
-              aria-label="Toggle navigation drawer"
-            >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-            <Logo />
-          </div>
-
-          {/* Desktop Search Bar (Expandable or Inline) */}
-          <div className="hidden md:flex flex-1 max-w-md mx-4 relative" ref={searchRef}>
-            <form onSubmit={handleSearchSubmit} className="w-full relative">
-              <input
-                type="text"
-                placeholder="Search pastel pens, planners, notebooks, school packs..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchOpen(true)}
-                className="w-full pl-10 pr-20 py-2 rounded-full bg-white border border-[#C6E7FF] text-[#292525] placeholder:text-[#292525]/40 focus:outline-none focus:ring-2 focus:ring-[#0066CC] text-xs transition-all shadow-xs"
-              />
-              <Search className="w-4 h-4 text-[#0066CC] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <button
-                type="submit"
-                className="absolute right-1 top-1/2 -translate-y-1/2 bg-[#0066CC] hover:bg-[#0052a3] text-white text-[11px] font-bold px-3 py-1 rounded-full transition-colors shadow-xs"
-              >
-                Search
-              </button>
-            </form>
-
-            {/* Suggestions flyout */}
-            {isSearchOpen && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-[#C6E7FF]/80 p-2 z-50 animate-fade-in">
-                <div className="text-[10px] font-bold text-[#0066CC] uppercase tracking-wider px-3 py-1">
-                  Suggested Stationery
-                </div>
-                {suggestions.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/products/${p.slug}`}
-                    onClick={() => setIsSearchOpen(false)}
-                    className="flex items-center justify-between p-2 hover:bg-[#FFFDF0] rounded-xl transition-colors group"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-[#EBD5FA]/40 flex items-center justify-center text-[#292525] font-bold text-xs shrink-0">
-                        {p.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="text-xs font-semibold text-[#292525] group-hover:text-[#0066CC] line-clamp-1">
-                          {p.name}
-                        </div>
-                        <div className="text-[10px] text-[#292525]/50">{p.brandName} • {p.categoryName}</div>
-                      </div>
-                    </div>
-                    <div className="text-xs font-bold text-[#0066CC] shrink-0 ml-2">
-                      {formatLKR(p.priceCents)}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Right Action Icons: Search (mobile), Account, Wishlist, Cart */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            {/* Quick Find My Stationery Link */}
-            <Link
-              href="/find-my-stationery"
-              className="hidden xl:inline-flex items-center gap-1.5 bg-[#FFF4C7] hover:bg-[#ffeaa7] text-[#292525] text-xs font-bold px-3 py-1.5 rounded-full border border-[#FFD84D] transition-colors"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#0066CC]" />
-              <span>Find My Stationery</span>
-            </Link>
-
-            {/* Upload List */}
-            <Link
-              href="/upload-list"
-              className="hidden xl:inline-flex items-center gap-1.5 bg-[#B9D5FF]/30 hover:bg-[#B9D5FF]/50 text-[#292525] text-xs font-bold px-3 py-1.5 rounded-full border border-[#B9D5FF] transition-colors"
-            >
-              <Upload className="w-3.5 h-3.5 text-[#2563eb]" />
-              <span>Upload List</span>
-            </Link>
-
-            {/* Account Icon Dropdown */}
-            <div className="relative" ref={userDropdownRef}>
-              <button
-                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                className="p-2 sm:p-2.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] transition-colors"
-                aria-label="User Account"
-                title="Account"
-              >
-                <User className="w-5 h-5 text-[#292525]" />
-              </button>
-
-              {isUserDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-[#C6E7FF]/80 py-2 z-50 animate-fade-in text-xs">
-                  {currentUser ? (
-                    <>
-                      <div className="px-4 py-2 border-b border-[#C6E7FF]/30">
-                        <div className="font-bold text-[#292525] truncate">{currentUser.name}</div>
-                        <div className="text-[11px] text-[#292525]/60 truncate">{currentUser.email}</div>
-                      </div>
-                      <Link
-                        href="/account"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                        className="block px-4 py-2 text-[#292525] hover:bg-[#FFFDF0]"
-                      >
-                        Account Dashboard
-                      </Link>
-                      <Link
-                        href="/account/orders"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                        className="block px-4 py-2 text-[#292525] hover:bg-[#FFFDF0]"
-                      >
-                        My Orders
-                      </Link>
-                      <div className="border-t border-[#C6E7FF]/30 my-1" />
-                      <button
-                        onClick={() => {
-                          logoutCustomer();
-                          setIsUserDropdownOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-2 text-[#0066CC] hover:bg-rose-50 font-semibold"
-                      >
-                        Sign Out
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="px-4 py-2 text-[#292525]/70 border-b border-[#C6E7FF]/30">
-                        Welcome to DSL Stationery!
-                      </div>
-                      <Link
-                        href="/login"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                        className="block px-4 py-2 text-[#292525] hover:bg-[#FFFDF0] font-semibold"
-                      >
-                        Sign In
-                      </Link>
-                      <Link
-                        href="/register"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                        className="block px-4 py-2 text-[#0066CC] hover:bg-[#FFFDF0] font-bold"
-                      >
-                        Create Account
-                      </Link>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Wishlist Heart with Pink Counter */}
-            <Link
-              href="/account/wishlist"
-              className="relative p-2 sm:p-2.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] transition-colors"
-              aria-label="My Wishlist"
-              title="My Wishlist"
-            >
-              <Heart className="w-5 h-5 text-[#292525]" />
-              {isMounted && wishlistCount > 0 && (
-                <span className="absolute top-1 right-1 bg-[#0066CC] text-white font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
-
-            {/* Shopping Cart Drawer Trigger */}
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="relative p-2 sm:p-2.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] transition-colors"
-              aria-label="Shopping Cart"
-              title="Shopping Cart"
-            >
-              <ShoppingCart className="w-5 h-5 text-[#292525]" />
-              {isMounted && cartItemCount > 0 && (
-                <span className="absolute top-1 right-1 bg-[#0066CC] text-white font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
-                  {cartItemCount}
-                </span>
-              )}
-            </button>
-          </div>
+    <header className="sticky top-0 z-40 w-full bg-[#FFF8ED] select-none">
+      {/* Main Single Navbar Bar */}
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between h-16 sm:h-[68px]">
+        {/* Left: Brand Logo & Mobile Menu Toggle */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden p-1.5 -ml-1 text-[#10285D] hover:bg-[#FFEECB] rounded-lg transition-colors"
+            aria-label="Toggle Navigation Menu"
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+          <Logo href="/" />
         </div>
-      </div>
 
-      {/* Main Navigation Horizontal Menu (Section 4 requirements) */}
-      <nav className="hidden lg:block bg-[#FFFDF0] border-t border-[#C6E7FF]/40 text-xs text-[#292525] font-semibold">
-        <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 flex items-center justify-between py-2">
-          <div className="flex items-center gap-1 xl:gap-2">
-            <Link href="/home" className="px-3 py-1.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] hover:text-[#0066CC] transition-colors">
+        {/* Center: Navigation Links (Desktop) */}
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-sm font-semibold text-[#10285D]">
+          {/* 1. Home (active with small yellow underline) */}
+          <Link
+            href="/"
+            className="relative py-1 group transition-colors hover:text-[#0066CC]"
+          >
+            <span className={isHomeActive ? 'text-[#10285D] font-bold' : 'text-[#10285D]'}>
               Home
-            </Link>
-
-            <Link href="/shop" className="px-3 py-1.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] hover:text-[#0066CC] transition-colors">
-              Shop All
-            </Link>
-
-            {/* Categories Dropdown */}
-            <div className="relative" ref={catDropdownRef}>
-              <button
-                onClick={() => setIsCatDropdownOpen(!isCatDropdownOpen)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] hover:text-[#0066CC] transition-colors"
+            </span>
+            {isHomeActive && (
+              <svg
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-7 h-2 overflow-visible pointer-events-none"
+                viewBox="0 0 28 6"
+                fill="none"
               >
-                <span>Categories</span>
-                <ChevronDown className="w-3.5 h-3.5 text-[#0066CC]" />
-              </button>
+                <path
+                  d="M 1 2 Q 14 5.5 27 2"
+                  stroke="#FFD84D"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+          </Link>
 
-              {isCatDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-2xl shadow-xl border border-[#C6E7FF] py-2 z-50 animate-fade-in">
-                  <div className="px-3 py-1 text-[10px] font-bold text-[#0066CC] uppercase tracking-wider">
-                    Stationery Collections
-                  </div>
-                  {categories.map((cat) => (
+          {/* 2. Shop (with category dropdown) */}
+          <div
+            className="relative py-1"
+            ref={catDropdownRef}
+            onMouseEnter={() => setIsCatDropdownOpen(true)}
+            onMouseLeave={() => setIsCatDropdownOpen(false)}
+          >
+            <button
+              onClick={() => setIsCatDropdownOpen(!isCatDropdownOpen)}
+              className="flex items-center gap-1 hover:text-[#0066CC] transition-colors cursor-pointer"
+            >
+              <span>Shop</span>
+              <ChevronDown className="w-3.5 h-3.5 text-[#10285D]" />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isCatDropdownOpen && (
+              <div className="absolute top-full -left-4 mt-2 w-64 bg-[#FFF8ED] rounded-2xl shadow-xl border border-[#FFD84D]/40 p-2 z-50 animate-fade-in text-xs">
+                <div className="px-3 py-1.5 text-[10px] font-bold text-[#10285D]/60 uppercase tracking-wider">
+                  Product Categories
+                </div>
+                {categories.length > 0 ? (
+                  categories.map((cat) => (
                     <Link
                       key={cat.id}
                       href={`/categories/${cat.slug}`}
                       onClick={() => setIsCatDropdownOpen(false)}
-                      className="flex items-center justify-between px-3.5 py-2 text-xs text-[#292525] hover:bg-[#FFFDF0] hover:text-[#0066CC] font-medium transition-colors"
+                      className="flex items-center justify-between px-3 py-2 rounded-xl text-[#10285D] hover:bg-white/80 hover:text-[#0066CC] font-medium transition-colors"
                     >
                       <span>{cat.name}</span>
-                      <span className="text-[10px] text-[#292525]/60 bg-[#C6E7FF]/30 px-1.5 py-0.2 rounded-full">
-                        {cat.itemCount || 20}
+                      <span className="text-[10px] text-[#10285D]/60 bg-[#A9DFFF]/30 px-2 py-0.5 rounded-full font-bold">
+                        {cat.itemCount || 12}
                       </span>
                     </Link>
-                  ))}
-                  <div className="border-t border-[#C6E7FF]/30 mt-1 pt-1">
+                  ))
+                ) : (
+                  <>
+                    <Link
+                      href="/shop"
+                      onClick={() => setIsCatDropdownOpen(false)}
+                      className="block px-3 py-2 rounded-xl text-[#10285D] hover:bg-white/80 font-medium"
+                    >
+                      All Stationery Products
+                    </Link>
+                    <Link
+                      href="/school-packs"
+                      onClick={() => setIsCatDropdownOpen(false)}
+                      className="block px-3 py-2 rounded-xl text-[#10285D] hover:bg-white/80 font-medium"
+                    >
+                      School Essentials Packs
+                    </Link>
                     <Link
                       href="/categories"
                       onClick={() => setIsCatDropdownOpen(false)}
-                      className="block px-3.5 py-1.5 text-xs font-bold text-[#0066CC] hover:underline"
+                      className="block px-3 py-2 rounded-xl text-[#10285D] hover:bg-white/80 font-medium"
                     >
-                      View All Categories →
+                      Art &amp; Craft Materials
                     </Link>
-                  </div>
+                  </>
+                )}
+                <div className="border-t border-[#10285D]/10 mt-1 pt-1.5 space-y-1">
+                  <Link
+                    href="/find-my-stationery"
+                    onClick={() => setIsCatDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-[#10285D] hover:text-[#0066CC]"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#FFB800]" />
+                    <span>Find My Stationery Quiz →</span>
+                  </Link>
+                  <Link
+                    href="/upload-list"
+                    onClick={() => setIsCatDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-[#10285D] hover:text-[#0066CC]"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-[#0066CC]" />
+                    <span>Upload Your Booklist →</span>
+                  </Link>
+                  <Link
+                    href="/shop"
+                    onClick={() => setIsCatDropdownOpen(false)}
+                    className="block px-3 py-1.5 text-xs font-bold text-[#10285D] hover:text-[#0066CC]"
+                  >
+                    View All Products →
+                  </Link>
                 </div>
-              )}
-            </div>
-
-            <Link href="/categories/school-stationery" className="px-3 py-1.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] hover:text-[#0066CC] transition-colors">
-              School Supplies
-            </Link>
-
-            <Link href="/categories/office-desktop-supplies" className="px-3 py-1.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] hover:text-[#0066CC] transition-colors">
-              Office Supplies
-            </Link>
-
-            <Link href="/categories/art-craft-materials" className="px-3 py-1.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] hover:text-[#0066CC] transition-colors">
-              Art and Craft
-            </Link>
-
-            <Link href="/shop?filter=best-sellers" className="px-3 py-1.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] hover:text-[#0066CC] transition-colors">
-              Bestsellers
-            </Link>
-
-            <Link href="/offers" className="px-3 py-1.5 rounded-full bg-[#EBD5FA]/50 hover:bg-[#EBD5FA] text-[#292525] font-bold transition-colors">
-              Offers 🌸
-            </Link>
-
-            <Link href="/about" className="px-3 py-1.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] hover:text-[#0066CC] transition-colors">
-              About Us
-            </Link>
-
-            <Link href="/contact" className="px-3 py-1.5 rounded-full hover:bg-[#C6E7FF]/30 text-[#292525] hover:text-[#0066CC] transition-colors">
-              Contact
-            </Link>
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-[#292525]/70">
-            <span className="hidden xl:inline text-[#0066CC] font-bold">✨ Curated for Refined Living</span>
+          {/* 3. School Essentials */}
+          <Link
+            href="/school-packs"
+            className="py-1 hover:text-[#0066CC] transition-colors"
+          >
+            School Essentials
+          </Link>
+
+          {/* 4. Art & Craft */}
+          <Link
+            href="/categories/art-craft-materials"
+            className="py-1 hover:text-[#0066CC] transition-colors"
+          >
+            Art &amp; Craft
+          </Link>
+
+          {/* 5. Find My Stationery */}
+          <Link
+            href="/find-my-stationery"
+            className="py-1 flex items-center gap-1.5 hover:text-[#0066CC] transition-colors"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#FFB800]" />
+            <span>Find My Stationery</span>
+          </Link>
+
+          {/* 6. Upload Your List */}
+          <Link
+            href="/upload-list"
+            className="py-1 flex items-center gap-1.5 hover:text-[#0066CC] transition-colors"
+          >
+            <Upload className="w-3.5 h-3.5 text-[#0066CC]" />
+            <span>Upload List</span>
+          </Link>
+
+          {/* 7. Offers (soft pastel-pink pill with decorative flower icon) */}
+          <Link
+            href="/offers"
+            className="inline-flex items-center gap-1.5 bg-[#FF6B91] hover:bg-[#ff5580] text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-xs hover:shadow transition-all duration-150 hover:scale-105"
+          >
+            <span>Offers</span>
+            {/* Small decorative flower icon */}
+            <svg
+              className="w-3.5 h-3.5 text-white fill-white"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="7" r="3" />
+              <circle cx="17" cy="10" r="3" />
+              <circle cx="16" cy="16" r="3" />
+              <circle cx="8" cy="16" r="3" />
+              <circle cx="7" cy="10" r="3" />
+              <circle cx="12" cy="12" r="2.5" fill="#FFD84D" />
+            </svg>
+          </Link>
+
+          {/* 8. About Us */}
+          <Link
+            href="/about"
+            className="py-1 hover:text-[#0066CC] transition-colors"
+          >
+            About Us
+          </Link>
+        </nav>
+
+        {/* Right: Search, Account, Wishlist, Cart */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Search Trigger & Popover */}
+          <div className="relative" ref={searchRef}>
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="p-2 text-[#10285D] hover:bg-[#FFEECB] rounded-full transition-colors"
+              aria-label="Search Stationery"
+              title="Search"
+            >
+              <Search className="w-5 h-5 stroke-[2.2]" />
+            </button>
+
+            {isSearchOpen && (
+              <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-2xl border border-[#FFD84D]/40 p-3 z-50 animate-fade-in">
+                <form onSubmit={handleSearchSubmit} className="relative">
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="Search pens, notebooks, school packs..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-16 py-2 text-xs rounded-full border border-[#10285D]/20 focus:outline-none focus:ring-2 focus:ring-[#10285D] bg-[#FFF8ED]"
+                  />
+                  <Search className="w-4 h-4 text-[#10285D] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <button
+                    type="submit"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 bg-[#10285D] text-white text-[10px] font-bold px-2.5 py-1 rounded-full hover:bg-[#0066CC] transition-colors"
+                  >
+                    Go
+                  </button>
+                </form>
+
+                {suggestions.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-[#10285D]/10 space-y-1">
+                    {suggestions.map((p) => (
+                      <Link
+                        key={p.id}
+                        href={`/products/${p.slug}`}
+                        onClick={() => setIsSearchOpen(false)}
+                        className="flex items-center justify-between p-1.5 hover:bg-[#FFF8ED] rounded-xl text-xs text-[#10285D]"
+                      >
+                        <span className="truncate max-w-[160px] font-medium">{p.name}</span>
+                        <span className="font-bold text-[#0066CC] text-[11px] shrink-0">
+                          {formatLKR(p.priceCents)}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
+          {/* Account Icon */}
+          <div className="relative" ref={userDropdownRef}>
+            <button
+              onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+              className="p-2 text-[#10285D] hover:bg-[#FFEECB] rounded-full transition-colors"
+              aria-label="User Account"
+              title="Account"
+            >
+              <User className="w-5 h-5 stroke-[2.2]" />
+            </button>
+
+            {isUserDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-[#FFD84D]/40 py-2 z-50 animate-fade-in text-xs">
+                {currentUser ? (
+                  <>
+                    <div className="px-4 py-2 border-b border-[#10285D]/10">
+                      <div className="font-bold text-[#10285D] truncate">{currentUser.name}</div>
+                      <div className="text-[11px] text-[#10285D]/60 truncate">{currentUser.email}</div>
+                    </div>
+                    <Link
+                      href="/account"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-[#10285D] hover:bg-[#FFF8ED]"
+                    >
+                      Account Dashboard
+                    </Link>
+                    <Link
+                      href="/account/orders"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-[#10285D] hover:bg-[#FFF8ED]"
+                    >
+                      My Orders
+                    </Link>
+                    <div className="border-t border-[#10285D]/10 my-1" />
+                    <button
+                      onClick={() => {
+                        logoutCustomer();
+                        setIsUserDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-[#FF6B91] hover:bg-rose-50 font-semibold"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="px-4 py-2 text-[#10285D]/70 border-b border-[#10285D]/10">
+                      Welcome to DSL Stationery!
+                    </div>
+                    <Link
+                      href="/login"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-[#10285D] hover:bg-[#FFF8ED] font-semibold"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/register"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-[#0066CC] hover:bg-[#FFF8ED] font-bold"
+                    >
+                      Create Account
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Wishlist Icon */}
+          <Link
+            href="/account/wishlist"
+            className="relative p-2 text-[#10285D] hover:bg-[#FFEECB] rounded-full transition-colors"
+            aria-label="Wishlist"
+            title="Wishlist"
+          >
+            <Heart className="w-5 h-5 stroke-[2.2]" />
+            {isMounted && wishlistCount > 0 && (
+              <span className="absolute top-1 right-1 bg-[#FF6B91] text-white font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
+
+          {/* Shopping Cart Trigger with Yellow Badge */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="relative p-2 text-[#10285D] hover:bg-[#FFEECB] rounded-full transition-colors cursor-pointer"
+            aria-label="Shopping Cart"
+            title="Shopping Cart"
+          >
+            <ShoppingCart className="w-5 h-5 stroke-[2.2]" />
+            {isMounted && (
+              <span className="absolute -top-0.5 -right-0.5 bg-[#FFD84D] text-[#10285D] font-extrabold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs ring-1 ring-white">
+                {cartItemCount}
+              </span>
+            )}
+          </button>
         </div>
-      </nav>
+      </div>
 
-      {/* Mobile Drawer */}
+      {/* Irregular Torn-Paper Bottom Edge */}
+      <div className="w-full overflow-hidden leading-none pointer-events-none select-none">
+        <img
+          src="/images/hero/natural_torn_edge.svg"
+          alt=""
+          aria-hidden="true"
+          className="w-full h-3 sm:h-4 md:h-5 object-cover object-top block"
+        />
+      </div>
+
+      {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-[#FFFDF0] border-t border-[#C6E7FF]/60 px-5 py-5 space-y-4 shadow-xl animate-fade-in">
-          {/* Mobile Search */}
-          <form onSubmit={handleSearchSubmit} className="relative">
-            <input
-              type="text"
-              placeholder="Search stationery..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-full bg-white border border-[#C6E7FF] text-xs text-[#292525]"
-            />
-            <Search className="w-4 h-4 text-[#0066CC] absolute left-3 top-1/2 -translate-y-1/2" />
-          </form>
-
-          {/* Nav Links */}
-          <div className="flex flex-col space-y-2 text-sm font-semibold text-[#292525] pt-2">
-            <Link href="/home" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 hover:text-[#0066CC]">
-              Home
-            </Link>
-            <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 hover:text-[#0066CC]">
-              Shop All
-            </Link>
-            <Link href="/categories" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 hover:text-[#0066CC]">
-              Categories
-            </Link>
-            <Link href="/categories/school-stationery" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 hover:text-[#0066CC]">
-              School Supplies
-            </Link>
-            <Link href="/categories/office-desktop-supplies" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 hover:text-[#0066CC]">
-              Office Supplies
-            </Link>
-            <Link href="/categories/art-craft-materials" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 hover:text-[#0066CC]">
-              Art and Craft
-            </Link>
-            <Link href="/shop?filter=best-sellers" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 hover:text-[#0066CC]">
-              Bestsellers
-            </Link>
-            <Link href="/offers" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 text-[#0066CC] font-bold">
-              Special Offers 🌸
-            </Link>
-            <Link href="/find-my-stationery" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 hover:text-[#0066CC]">
-              Find My Stationery
-            </Link>
-            <Link href="/upload-list" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 hover:text-[#0066CC]">
-              Upload Your List
-            </Link>
-            <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 hover:text-[#0066CC]">
-              About Us
-            </Link>
-            <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="py-1.5 hover:text-[#0066CC]">
-              Contact
-            </Link>
-          </div>
+        <div className="lg:hidden bg-[#FFF8ED] border-b border-[#FFD84D]/40 px-6 py-5 space-y-4 shadow-xl animate-fade-in text-sm font-semibold text-[#10285D]">
+          <Link
+            href="/"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block py-2 border-b border-[#10285D]/10"
+          >
+            Home
+          </Link>
+          <Link
+            href="/shop"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block py-2 border-b border-[#10285D]/10"
+          >
+            Shop
+          </Link>
+          <Link
+            href="/school-packs"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block py-2 border-b border-[#10285D]/10"
+          >
+            School Essentials
+          </Link>
+          <Link
+            href="/categories/art-craft-materials"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block py-2 border-b border-[#10285D]/10"
+          >
+            Art &amp; Craft
+          </Link>
+          <Link
+            href="/find-my-stationery"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center gap-2 py-2 border-b border-[#10285D]/10"
+          >
+            <Sparkles className="w-4 h-4 text-[#FFB800]" />
+            <span>Find My Stationery</span>
+          </Link>
+          <Link
+            href="/upload-list"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center gap-2 py-2 border-b border-[#10285D]/10"
+          >
+            <Upload className="w-4 h-4 text-[#0066CC]" />
+            <span>Upload Your List</span>
+          </Link>
+          <Link
+            href="/offers"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="inline-flex items-center gap-1.5 bg-[#FF6B91] text-white text-xs font-bold px-3 py-1.5 rounded-full"
+          >
+            <span>Offers</span>
+            <span>🌸</span>
+          </Link>
+          <Link
+            href="/about"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block py-2 border-t border-[#10285D]/10"
+          >
+            About Us
+          </Link>
         </div>
       )}
     </header>
   );
 };
-

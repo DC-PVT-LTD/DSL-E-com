@@ -69,5 +69,50 @@ describe('brandService', () => {
     expect(brand).not.toBeNull();
     expect(brand?.name).toBe('Amigo');
   });
+
+  it('creates, updates, and deletes brand via backend API', async () => {
+    vi.spyOn(apiClient, 'post').mockResolvedValueOnce({
+      success: true,
+      data: {
+        id: 'brand-natraj',
+        name: 'Natraj',
+        slug: 'natraj',
+        originCountry: 'India',
+        description: 'Pencils and erasers',
+      },
+    } as any);
+
+    const created = await brandService.createBrandApi({
+      name: 'Natraj',
+      slug: 'natraj',
+      originCountry: 'India',
+      description: 'Pencils and erasers',
+    });
+
+    expect(created.id).toBe('brand-natraj');
+    expect(brandService.getBrandById('brand-natraj')?.name).toBe('Natraj');
+
+    vi.spyOn(apiClient, 'patch').mockResolvedValueOnce({
+      success: true,
+      data: {
+        id: 'brand-natraj',
+        name: 'Natraj Deluxe',
+      },
+    } as any);
+
+    const updated = await brandService.updateBrandApi('brand-natraj', {
+      name: 'Natraj Deluxe',
+    });
+    expect(updated.name).toBe('Natraj Deluxe');
+
+    vi.spyOn(apiClient, 'delete').mockResolvedValueOnce({
+      success: true,
+      data: { id: 'brand-natraj' },
+    } as any);
+
+    const deleted = await brandService.deleteBrandApi('brand-natraj');
+    expect(deleted).toBe(true);
+    expect(brandService.getBrandById('brand-natraj')).toBeUndefined();
+  });
 });
 

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { UserPlus, ArrowRight, Sparkles } from 'lucide-react';
+import { UserPlus, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import { useUserStore } from '@/services/userStore';
 
 export default function RegisterPage() {
@@ -12,13 +12,33 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const loginCustomer = useUserStore((state) => state.loginCustomer);
+  const registerCustomer = useUserStore((state) => state.registerCustomer);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    loginCustomer(email);
-    router.push('/account');
+    setError(null);
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const ok = await registerCustomer(name, email, password, phone || undefined);
+      if (ok) {
+        router.push('/account');
+      } else {
+        setError('Registration failed. Please verify your details.');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Failed to create account. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -29,13 +49,15 @@ export default function RegisterPage() {
             <UserPlus className="w-7 h-7" />
           </div>
           <h1 className="text-2xl font-black text-[#292525] tracking-tight">Create Customer Account</h1>
-          <p className="text-xs text-[#292525]/70">Save your addresses and get 10% off your first stationery order</p>
+          <p className="text-xs text-[#292525]/70">Save your addresses and manage your stationery orders</p>
         </div>
 
-        <div className="bg-[#FFF9D2] border border-[#FFD84D] rounded-2xl p-3.5 text-[11px] text-[#594300] flex items-start gap-2 shadow-2xs">
-          <Sparkles className="w-4 h-4 text-[#B38A00] shrink-0 mt-0.5" />
-          <span>Demo mode registration: Your profile is safely handled locally in session storage.</span>
-        </div>
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-3.5 text-xs text-red-700 flex items-start gap-2 shadow-2xs">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
@@ -46,6 +68,7 @@ export default function RegisterPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              disabled={isSubmitting}
               className="w-full px-4 py-3 rounded-2xl border border-stone-200 focus:outline-none focus:border-[#0066CC] focus:ring-2 focus:ring-[#C6E7FF]/40 transition-all text-[#292525] bg-[#FFFDF0]/50"
             />
           </div>
@@ -58,6 +81,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={isSubmitting}
               className="w-full px-4 py-3 rounded-2xl border border-stone-200 focus:outline-none focus:border-[#0066CC] focus:ring-2 focus:ring-[#C6E7FF]/40 transition-all text-[#292525] bg-[#FFFDF0]/50"
             />
           </div>
@@ -69,7 +93,7 @@ export default function RegisterPage() {
               placeholder="+94 77 123 4567"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              required
+              disabled={isSubmitting}
               className="w-full px-4 py-3 rounded-2xl border border-stone-200 focus:outline-none focus:border-[#0066CC] focus:ring-2 focus:ring-[#C6E7FF]/40 transition-all text-[#292525] bg-[#FFFDF0]/50"
             />
           </div>
@@ -78,20 +102,31 @@ export default function RegisterPage() {
             <label className="font-bold text-[#292525] block mb-1.5">Password</label>
             <input
               type="password"
-              placeholder="••••••••"
+              placeholder="•••••••• (min 8 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={isSubmitting}
               className="w-full px-4 py-3 rounded-2xl border border-stone-200 focus:outline-none focus:border-[#0066CC] focus:ring-2 focus:ring-[#C6E7FF]/40 transition-all text-[#292525] bg-[#FFFDF0]/50"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white py-3.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg transition-all mt-3"
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] disabled:opacity-60 text-white py-3.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg transition-all mt-3 cursor-pointer"
           >
-            <span>Create Demo Account</span>
-            <ArrowRight className="w-4 h-4" />
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Creating Account...</span>
+              </>
+            ) : (
+              <>
+                <span>Create Account</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </form>
 

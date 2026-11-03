@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Package,
@@ -26,7 +26,13 @@ import { useUserStore } from '@/services/userStore';
 
 export const AdminSidebar: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const logoutAdmin = useUserStore((state) => state.logoutAdmin);
+
+  const handleLogout = async () => {
+    await logoutAdmin();
+    router.push('/admin/login');
+  };
 
   const navGroups = [
     {
@@ -111,8 +117,8 @@ export const AdminSidebar: React.FC = () => {
           <span>View Customer Store</span>
         </Link>
         <button
-          onClick={logoutAdmin}
-          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-stone-400 hover:text-white hover:bg-white/5 transition-colors"
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-stone-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
           <span>Exit Admin Session</span>

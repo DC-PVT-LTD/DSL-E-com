@@ -26,29 +26,69 @@ export default function AdminProductsPage() {
   const [selectedCat, setSelectedCat] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMutating, setIsMutating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const loadData = () => {
-    setProducts(productService.getAll(true));
-    setCategories(categoryService.getCategories());
+  const loadData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [prodRes, cats] = await Promise.all([
+        productService.fetchProducts({}, 'newest', 1, 100),
+        categoryService.fetchCategories(),
+      ]);
+      setProducts(prodRes.items);
+      setCategories(cats);
+    } catch (err: any) {
+      console.error('Failed to load products/categories:', err);
+      setError(err?.message || 'Failed to load products from server');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
     loadData();
-    const unsubProduct = productService.subscribe(loadData);
-    const unsubCat = categoryService.subscribe(loadData);
+    const unsubProduct = productService.subscribe(() => {
+      setProducts(productService.getAll(true));
+    });
+    const unsubCat = categoryService.subscribe(() => {
+      setCategories(categoryService.getCategories());
+    });
     return () => {
       unsubProduct();
       unsubCat();
     };
   }, []);
 
-  const handleToggleStatus = (id: string) => {
-    productService.toggleProductStatus(id);
+  const handleToggleStatus = async (id: string) => {
+    setIsMutating(true);
+    setError(null);
+    try {
+      await productService.toggleProductStatusApi(id);
+      await loadData();
+    } catch (err: any) {
+      console.error('Failed to toggle product status:', err);
+      setError(err?.message || 'Failed to toggle product status');
+    } finally {
+      setIsMutating(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    productService.deleteProduct(id);
-    setDeleteConfirmId(null);
+  const handleDelete = async (id: string) => {
+    setIsMutating(true);
+    setError(null);
+    try {
+      await productService.deleteProductApi(id);
+      setDeleteConfirmId(null);
+      await loadData();
+    } catch (err: any) {
+      console.error('Failed to delete product:', err);
+      setError(err?.message || 'Failed to delete product');
+    } finally {
+      setIsMutating(false);
+    }
   };
 
   const filteredProducts = products.filter((p) => {
@@ -75,14 +115,33 @@ export default function AdminProductsPage() {
           </p>
         </div>
 
-        <Link
-          href="/admin/products/new"
-          className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-colors self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4 text-[#FFD21C]" />
-          <span>Add New Product</span>
-        </Link>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={loadData}
+            disabled={isLoading || isMutating}
+            className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-2.5 rounded-xl transition-colors disabled:opacity-50"
+            title="Refresh from server"
+          >
+            <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+          <Link
+            href="/admin/products/new"
+            className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-colors"
+          >
+            <Plus className="w-4 h-4 text-[#FFD21C]" />
+            <span>Add New Product</span>
+          </Link>
+        </div>
       </div>
+
+      {error && (
+        <div className="bg-rose-50 border border-rose-200 p-4 rounded-2xl flex items-center gap-3 text-rose-800 text-xs">
+          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+          <div className="flex-1 font-medium">{error}</div>
+          <button onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700 font-bold">Dismiss</button>
+        </div>
+      )}
 
       {/* Filters & Search Toolbar */}
       <div className="bg-white rounded-3xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3 shadow-xs text-xs">
@@ -144,7 +203,27 @@ export default function AdminProductsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredProducts.map((p) => (
+              {isLoading && products.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                    <div className="inline-flex items-center gap-2">
+                      <RotateCcw className="w-4 h-4 animate-spin text-[#08275E]" />
+                      <span>Loading products from server...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                    <div className="flex flex-col items-center justify-center gap-1">
+                      <Package className="w-8 h-8 text-slate-300 mb-1" />
+                      <p className="font-semibold text-slate-600">No products found</p>
+                      <p className="text-[11px] text-slate-400">Try adjusting your search or filters, or add a new product</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredProducts.map((p) => (
                 <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                   <td className="py-3.5 px-4 font-bold text-slate-900 max-w-xs truncate">
                     {p.name}
@@ -211,7 +290,7 @@ export default function AdminProductsPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

@@ -24,6 +24,7 @@ import { schoolPackService } from '@/services/schoolPackService';
 import { Product, ProductCategory } from '@/types/product';
 import { SchoolPack } from '@/types/school-pack';
 import { ProductCard } from '@/components/products/ProductCard';
+import { ScrapbookHero } from '@/components/home/ScrapbookHero';
 import { formatLKR } from '@/lib/currency';
 
 export default function HomeStorefrontPage() {
@@ -97,97 +98,9 @@ export default function HomeStorefrontPage() {
   };
 
   return (
-    <div className="bg-[#FFFDF0] text-[#292525] space-y-16 sm:space-y-24 pb-20 overflow-hidden w-full">
-      {/* SECTION A: HERO BANNER (100% EDGE-TO-EDGE FULL-WIDTH FLAT-LAY PHOTO WITH SCALLOP DIVIDER) */}
-      <section className="relative w-full bg-[#FFFDF0]">
-        <div className="relative w-full overflow-hidden bg-[#FAF7EE] min-h-[480px] sm:min-h-[560px] lg:min-h-[620px] flex items-center">
-          {/* Background Editorial Stationery Flat-Lay Photo */}
-          <div className="absolute inset-0 z-0">
-            <img
-              src="/hero-stationery-hd.jpg"
-              alt="Pastel Stationery Flatlay with notebooks, pastel pens, planners and sticky notes"
-              className="w-full h-full object-cover object-center filter saturate-[1.15] brightness-[1.02]"
-            />
-            {/* Soft editorial pastel gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#FFFDF0]/92 via-[#FFFDF0]/70 to-transparent sm:w-3/5" />
-          </div>
-
-          {/* Hero Left Content */}
-          <div className="relative z-10 max-w-2xl px-6 sm:px-12 lg:px-20 xl:px-28 py-12 sm:py-16 space-y-5">
-            {/* Floating Editorial Badge */}
-            <div className="inline-flex items-center gap-2 bg-[#C6E7FF]/90 backdrop-blur-xs text-[#08275E] text-xs font-bold px-3.5 py-1.5 rounded-full border border-white/60 shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 text-[#0066CC]" />
-              <span>Your go-to store for everything stationery!</span>
-            </div>
-
-            {/* Main Heading */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-[#292525] tracking-tight leading-[1.12]">
-              Everything You Need to <br />
-              <span className="font-heylowitch text-4xl sm:text-6xl lg:text-7xl text-[#0066CC] font-normal inline-block mt-1">
-                Make Ideas Happen
-              </span>
-            </h1>
-
-            {/* Supporting Editorial Text */}
-            <p className="text-xs sm:text-sm text-[#292525]/75 leading-relaxed max-w-md font-medium">
-              Discover everyday stationery, school essentials, creative supplies, and office favourites — 
-              handpicked with love and delivered across Sri Lanka.
-            </p>
-
-            {/* Primary Call to Actions */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link
-                href="/shop"
-                className="bg-[#0066CC] hover:bg-[#0052a3] text-white font-bold text-xs sm:text-sm px-8 py-3.5 rounded-full shadow-md transition-all duration-200 hover:scale-105 inline-flex items-center gap-2"
-              >
-                <span>Shop Now</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-
-              <Link
-                href="/categories"
-                className="bg-white hover:bg-[#FFFDF0] text-[#292525] font-semibold text-xs sm:text-sm px-6 py-3.5 rounded-full border border-[#292525] transition-all duration-200 hover:scale-105 shadow-xs"
-              >
-                Explore Collections
-              </Link>
-            </div>
-
-            {/* Quick Trust Highlights */}
-            <div className="pt-4 flex items-center gap-4 text-[11px] text-[#292525]/70 font-medium">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#0066CC]" />
-                <span>Free Shipping Over Rs. 5,000</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#FFD84D]" />
-                <span>100% Genuine Brands</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side Editorial Callout Card */}
-          <div className="hidden lg:block absolute right-8 sm:right-14 lg:right-20 bottom-12 z-10 max-w-xs">
-            <div className="bg-white/95 backdrop-blur-md p-5 rounded-3xl border border-[#C6E7FF] shadow-xl rotate-1 hover:rotate-0 transition-transform">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">🌸</span>
-                <span className="font-heylowitch text-xl text-[#292525]">Handmade with love!</span>
-              </div>
-              <p className="text-[11px] text-[#292525]/70 leading-relaxed">
-                Carefully packed book bundles, smooth gel pens, and joyful notebooks ready to inspire your study desk.
-              </p>
-              <div className="mt-3 pt-2 border-t border-[#C6E7FF]/30 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-[#0066CC] uppercase">DSL Stationery</span>
-                <Link href="/shop" className="text-xs font-bold text-[#292525] hover:text-[#0066CC] underline">
-                  Shop collection →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Decorative Scallop Bottom Divider running 100% full width */}
-        <div className="scallop-divider-bottom h-5 sm:h-6 w-full" />
-      </section>
+    <div className="bg-[#FFF8ED] text-[#10285D] space-y-16 sm:space-y-24 pb-20 overflow-hidden w-full">
+      {/* SECTION A: SCRAPBOOK HERO BANNER MATCHING REFERENCE SCREENSHOT */}
+      <ScrapbookHero />
 
       {/* SECTION B: INTRODUCTION */}
       <section className="max-w-4xl mx-auto px-4 text-center space-y-4">

@@ -2,14 +2,42 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Package, ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Package, ArrowRight, Loader2 } from 'lucide-react';
 import { AccountNav } from '@/components/common/AccountNav';
 import { orderService } from '@/services/orderService';
+import { useUserStore } from '@/services/userStore';
 import { Order } from '@/types/order';
 import { formatLKR } from '@/lib/currency';
 
 export default function AccountOrdersPage() {
+  const router = useRouter();
+  const currentUser = useUserStore((state) => state.currentUser);
+  const fetchCurrentUser = useUserStore((state) => state.fetchCurrentUser);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const init = async () => {
+      try {
+        await fetchCurrentUser();
+      } catch {
+      } finally {
+        if (mounted) setIsChecking(false);
+      }
+    };
+    init();
+    return () => {
+      mounted = false;
+    };
+  }, [fetchCurrentUser]);
+
+  useEffect(() => {
+    if (!isChecking && !currentUser) {
+      router.push('/login');
+    }
+  }, [isChecking, currentUser, router]);
 
   useEffect(() => {
     setOrders(orderService.getAll());
@@ -18,6 +46,15 @@ export default function AccountOrdersPage() {
     });
     return () => unsub();
   }, []);
+
+  if (isChecking || !currentUser) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-24 flex flex-col items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#0066CC]" />
+        <p className="mt-3 text-xs text-[#292525]/60 font-medium">Loading orders...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">

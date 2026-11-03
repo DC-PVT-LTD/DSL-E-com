@@ -23,6 +23,16 @@ describe('ProductsService', () => {
       brand: {
         findUnique: vi.fn(),
       },
+      productVariant: {
+        findMany: vi.fn(),
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      },
+      inventoryMovement: {
+        create: vi.fn(),
+      },
+      $transaction: vi.fn(async (cb) => cb(mockPrisma)),
     };
 
     service = new ProductsService(mockPrisma as unknown as PrismaService);
@@ -156,6 +166,116 @@ describe('ProductsService', () => {
           specifications: {},
         })
       ).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('variant management', () => {
+    it('creates a variant and increments parent aggregate stock', async () => {
+      mockPrisma.product.findUnique
+        .mockResolvedValueOnce({ id: 'prod-1', name: 'Atlas Book', sku: 'ATL-1', isActive: true }) // findById
+        .mockResolvedValueOnce(null); // sku check
+      mockPrisma.productVariant.findUnique.mockResolvedValueOnce(null); // sku check
+
+      mockPrisma.productVariant.create.mockResolvedValueOnce({
+        id: 'var-1',
+        productId: 'prod-1',
+        name: 'Single Line',
+        sku: 'ATL-1-SL',
+        priceCents: 4500,
+        stockQuantity: 20,
+        isActive: true,
+      });
+
+      const result = await service.createVariant('prod-1', {
+        name: 'Single Line',
+        sku: 'ATL-1-SL',
+        priceCents: 4500,
+        stockQuantity: 20,
+        attributes: { ruling: 'Single Line' },
+        isActive: true,
+      });
+
+      expect(result.id).toBe('var-1');
+      expect(mockPrisma.product.update).toHaveBeenCalledWith({
+        where: { id: 'prod-1' },
+        data: { stockQuantity: { increment: 20 } },
+      });
+      expect(mockPrisma.inventoryMovement.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          productId: 'prod-1',
+          variantId: 'var-1',
+          changeAmount: 20,
+        }),
+      });
+    });
+
+    it('rejects variant creation with duplicate SKU', async () => {
+      mockPrisma.product.findUnique
+        .mockResolvedValueOnce({ id: 'prod-1', name: 'Atlas Book', sku: 'ATL-1', isActive: true })
+        .mockResolvedValueOnce(null);
+      mockPrisma.productVariant.findUnique.mockResolvedValueOnce({ id: 'existing-var', sku: 'ATL-1-SL' });
+
+      await expect(
+        service.createVariant('prod-1', {
+          name: 'Single Line',
+          sku: 'ATL-1-SL',
+          priceCents: 4500,
+          stockQuantity: 0,
+          attributes: {},
+        })
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('finds variants belonging to product', async () => {
+      mockPrisma.product.findUnique.mockResolvedValueOnce({ id: 'prod-1', isActive: true });
+      mockPrisma.productVariant.findMany.mockResolvedValueOnce([
+        { id: 'var-1', productId: 'prod-1', name: 'Variant 1' },
+      ]);
+
+      const result = await service.findVariants('prod-1');
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('var-1');
+    });
+
+    it('updates variant details', async () => {
+      mockPrisma.product.findUnique.mockResolvedValueOnce({ id: 'prod-1', isActive: true });
+      mockPrisma.productVariant.findUnique.mockResolvedValueOnce({
+        id: 'var-1',
+        productId: 'prod-1',
+        name: 'Single Line',
+        sku: 'ATL-1-SL',
+        isActive: true,
+      });
+      mockPrisma.productVariant.update.mockResolvedValueOnce({
+        id: 'var-1',
+        name: 'Single Line Premium',
+      });
+
+      const updated = await service.updateVariant('prod-1', 'var-1', {
+        name: 'Single Line Premium',
+      });
+
+      expect(updated.name).toBe('Single Line Premium');
+    });
+
+    it('soft-deletes variant by setting isActive to false', async () => {
+      mockPrisma.product.findUnique.mockResolvedValueOnce({ id: 'prod-1', isActive: true });
+      mockPrisma.productVariant.findUnique.mockResolvedValueOnce({
+        id: 'var-1',
+        productId: 'prod-1',
+        isActive: true,
+      });
+      mockPrisma.productVariant.update.mockResolvedValueOnce({
+        id: 'var-1',
+        isActive: false,
+      });
+
+      const deleted = await service.deleteVariant('prod-1', 'var-1');
+      expect(deleted.isActive).toBe(false);
+      expect(mockPrisma.productVariant.update).toHaveBeenCalledWith({
+        where: { id: 'var-1' },
+        data: { isActive: false },
+      });
     });
   });
 });

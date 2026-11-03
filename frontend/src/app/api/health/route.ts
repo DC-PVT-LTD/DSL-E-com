@@ -1,34 +1,51 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  try {
-    // Perform harmless read-only query to verify connection
-    const healthResult = await prisma.$queryRaw<Array<{ result: number }>>`SELECT 1 as result`;
-    const productCount = await prisma.product.count();
-    const categoryCount = await prisma.category.count();
+  const backendBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1').replace(/\/+$/, '');
+  const targetUrl = `${backendBase}/health`;
 
-    return NextResponse.json({
-      status: 'healthy',
-      database: 'connected',
-      querySuccessful: healthResult.length > 0 && healthResult[0].result === 1,
-      stats: {
-        products: productCount,
-        categories: categoryCount,
-      },
-      timestamp: new Date().toISOString(),
+  try {
+    const res = await fetch(targetUrl, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
     });
-  } catch (error) {
-    console.error('Prisma health check failed:', error);
+
+    if (res.ok) {
+      const backendHealth = await res.json();
+      return NextResponse.json({
+        status: 'healthy',
+        service: 'dsl-stationery-frontend',
+        backend: backendHealth,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     return NextResponse.json(
       {
-        status: 'unhealthy',
-        database: 'disconnected',
-        error: error instanceof Error ? error.message : 'Database query failed',
+        status: 'degraded',
+        service: 'dsl-stationery-frontend',
+        backend: {
+          status: 'unhealthy',
+          statusCode: res.status,
+        },
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 503 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      {
+        status: 'degraded',
+        service: 'dsl-stationery-frontend',
+        backend: {
+          status: 'unreachable',
+          error: error instanceof Error ? error.message : 'Backend unreachable',
+        },
+        timestamp: new Date().toISOString(),
+      },
+      { status: 503 }
     );
   }
 }

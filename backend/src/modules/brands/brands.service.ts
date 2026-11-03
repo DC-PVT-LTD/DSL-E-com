@@ -1,10 +1,12 @@
 import {
   Injectable,
   Inject,
+  Optional,
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { BrandQueryDto } from './dto/brand-query.dto';
 import { CreateBrandDto, UpdateBrandDto } from './dto/create-brand.dto';
 import {
@@ -16,7 +18,17 @@ import { excludeSensitiveFieldsMany } from '../../common/utils/serialization.uti
 
 @Injectable()
 export class BrandsService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Optional() @Inject(AuditService) private readonly auditService?: AuditService,
+  ) {}
+
+  private async executeTx<T>(cb: (tx: any) => Promise<T>): Promise<T> {
+    if (typeof this.prisma.$transaction === 'function') {
+      return this.prisma.$transaction(cb);
+    }
+    return cb(this.prisma);
+  }
 
   async findAll(query: BrandQueryDto): Promise<PaginatedResponse<any>> {
     const where: any = {};
@@ -137,7 +149,7 @@ export class BrandsService {
     return createPaginatedResponse(items, meta);
   }
 
-  async create(dto: CreateBrandDto) {
+  async create(dto: CreateBrandDto, actorId?: string | null) {
     const existing = await this.prisma.brand.findUnique({
       where: { slug: dto.slug },
     });
@@ -146,31 +158,79 @@ export class BrandsService {
       throw new ConflictException(`Brand with slug "${dto.slug}" already exists`);
     }
 
-    return this.prisma.brand.create({
-      data: dto,
+    return this.executeTx(async (tx) => {
+      const brand = await tx.brand.create({
+        data: dto,
+      });
+
+      if (this.auditService) {
+        await this.auditService.recordAuditLog(
+          {
+            action: 'BRAND_CREATE',
+            entityType: 'brand',
+            entityId: brand.id,
+            userId: actorId,
+            summary: `Created brand "${brand.name}" (Slug: ${brand.slug})`,
+            changes: {
+              name: { new: brand.name },
+              slug: { new: brand.slug },
+              originCountry: { new: brand.originCountry },
+            },
+          },
+          tx
+        );
+      }
+
+      return brand;
     });
   }
 
-  async update(id: string, dto: UpdateBrandDto) {
-    await this.findById(id);
+  async update(id: string, dto: UpdateBrandDto, actorId?: string | null) {
+    const existing = await this.findById(id);
 
     if (dto.slug) {
-      const existing = await this.prisma.brand.findUnique({
+      const existingSlug = await this.prisma.brand.findUnique({
         where: { slug: dto.slug },
       });
-      if (existing && existing.id !== id) {
+      if (existingSlug && existingSlug.id !== id) {
         throw new ConflictException(`Brand with slug "${dto.slug}" already exists`);
       }
     }
 
-    return this.prisma.brand.update({
-      where: { id },
-      data: dto,
+    return this.executeTx(async (tx) => {
+      const updated = await tx.brand.update({
+        where: { id },
+        data: dto,
+      });
+
+      if (this.auditService) {
+        const changes = this.auditService.computeDiff(existing, updated, [
+          'name',
+          'slug',
+          'description',
+          'logo',
+          'originCountry',
+          'featured',
+        ]);
+        await this.auditService.recordAuditLog(
+          {
+            action: 'BRAND_UPDATE',
+            entityType: 'brand',
+            entityId: id,
+            userId: actorId,
+            summary: `Updated brand "${updated.name}"`,
+            changes,
+          },
+          tx
+        );
+      }
+
+      return updated;
     });
   }
 
-  async delete(id: string) {
-    await this.findById(id);
+  async delete(id: string, actorId?: string | null) {
+    const existing = await this.findById(id);
 
     const productCount = await this.prisma.product.count({
       where: { brandId: id },
@@ -182,8 +242,25 @@ export class BrandsService {
       );
     }
 
-    return this.prisma.brand.delete({
-      where: { id },
+    return this.executeTx(async (tx) => {
+      const deleted = await tx.brand.delete({
+        where: { id },
+      });
+
+      if (this.auditService) {
+        await this.auditService.recordAuditLog(
+          {
+            action: 'BRAND_DELETE',
+            entityType: 'brand',
+            entityId: id,
+            userId: actorId,
+            summary: `Deleted brand "${existing.name}"`,
+          },
+          tx
+        );
+      }
+
+      return deleted;
     });
   }
 }

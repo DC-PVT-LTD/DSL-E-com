@@ -2,12 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { User, Package, MapPin, Heart, Bookmark, LogOut } from 'lucide-react';
 import { useUserStore } from '@/services/userStore';
 
 export const AccountNav: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const logoutCustomer = useUserStore((state) => state.logoutCustomer);
 
   const links = [
@@ -17,6 +18,11 @@ export const AccountNav: React.FC = () => {
     { href: '/account/wishlist', label: 'Wishlist', icon: Heart },
     { href: '/account/saved-lists', label: 'Saved Stationery Lists', icon: Bookmark },
   ];
+
+  const handleLogout = async () => {
+    await logoutCustomer();
+    router.push('/login');
+  };
 
   return (
     <div className="bg-white rounded-3xl border border-[#C6E7FF]/60 p-4 space-y-1 shadow-sm">
@@ -43,8 +49,8 @@ export const AccountNav: React.FC = () => {
       })}
       <div className="pt-2 border-t border-[#C6E7FF]/30">
         <button
-          onClick={logoutCustomer}
-          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
           <span>Sign Out</span>

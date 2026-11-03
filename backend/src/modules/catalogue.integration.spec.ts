@@ -3,12 +3,15 @@ import 'reflect-metadata';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { AppModule } from '../app.module';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 
 describe('Catalogue Endpoints Integration Test (HTTP Level)', () => {
   let app: INestApplication;
   let baseUrl: string;
+  let adminToken: string;
+  let customerToken: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -25,6 +28,18 @@ describe('Catalogue Endpoints Integration Test (HTTP Level)', () => {
     const address = app.getHttpServer().address();
     const port = typeof address === 'object' && address !== null ? address.port : 4000;
     baseUrl = `http://localhost:${port}/api/v1`;
+
+    const jwtService = app.get(JwtService);
+    adminToken = jwtService.sign({
+      sub: 'cmw07gefq0000pousyxdsoal6',
+      email: 'admin@dslstationery.lk',
+      role: 'ADMIN',
+    });
+    customerToken = jwtService.sign({
+      sub: 'cmw0b90vk0000jsush3ey8h72',
+      email: 'qa-customer@dslstationery.lk',
+      role: 'CUSTOMER',
+    });
   });
 
   afterAll(async () => {
@@ -187,6 +202,120 @@ describe('Catalogue Endpoints Integration Test (HTTP Level)', () => {
       expect(res.status).toBe(401);
       const json = await res.json();
       expect(json.statusCode).toBe(401);
+    });
+  });
+
+  describe('Product Variants API', () => {
+    it('GET /api/v1/products/:id/variants returns list of variants for product', async () => {
+      const res = await fetch(`${baseUrl}/products/prod-speed-rim-blue/variants`);
+      expect(res.status).toBe(200);
+
+      const json = await res.json();
+      expect(json.success).toBe(true);
+      expect(Array.isArray(json.data)).toBe(true);
+    });
+
+    it('GET /api/v1/products/missing-prod/variants returns HTTP 404', async () => {
+      const res = await fetch(`${baseUrl}/products/missing-prod-uuid/variants`);
+      expect(res.status).toBe(404);
+    });
+
+    it('POST /api/v1/products/:id/variants without auth returns HTTP 401', async () => {
+      const res = await fetch(`${baseUrl}/products/prod-speed-rim-blue/variants`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Unauth Variant',
+          sku: 'UNAUTH-VAR-1',
+          priceCents: 5000,
+        }),
+      });
+
+      expect(res.status).toBe(401);
+    });
+
+    it('POST /api/v1/products/:id/variants with CUSTOMER token returns HTTP 403 Forbidden', async () => {
+      const res = await fetch(`${baseUrl}/products/prod-speed-rim-blue/variants`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${customerToken}`,
+        },
+        body: JSON.stringify({
+          name: 'Forbidden Variant',
+          sku: 'FORBIDDEN-VAR-1',
+          priceCents: 5000,
+        }),
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('manages full variant lifecycle with ADMIN token (create, read, update, soft-delete)', async () => {
+      const uniqueSku = `DSL-TEST-VAR-${Date.now()}`;
+
+      // 1. Create variant
+      const createRes = await fetch(`${baseUrl}/products/prod-speed-rim-blue/variants`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({
+          name: 'Integration Test Variant',
+          sku: uniqueSku,
+          priceCents: 6500,
+          compareAtPriceCents: 7500,
+          stockQuantity: 10,
+          attributes: { color: 'Blue', tip: '0.7mm' },
+        }),
+      });
+
+      expect(createRes.status).toBe(201);
+      const createJson = await createRes.json();
+      expect(createJson.success).toBe(true);
+      expect(createJson.data.sku).toBe(uniqueSku);
+      expect(createJson.data.priceCents).toBe(6500);
+
+      const variantId = createJson.data.id;
+
+      // 2. Read variant by ID
+      const getRes = await fetch(`${baseUrl}/products/prod-speed-rim-blue/variants/${variantId}`);
+      expect(getRes.status).toBe(200);
+      const getJson = await getRes.json();
+      expect(getJson.data.name).toBe('Integration Test Variant');
+
+      // 3. Update variant
+      const updateRes = await fetch(`${baseUrl}/products/prod-speed-rim-blue/variants/${variantId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({
+          name: 'Integration Test Variant (Updated)',
+          priceCents: 6800,
+        }),
+      });
+      expect(updateRes.status).toBe(200);
+      const updateJson = await updateRes.json();
+      expect(updateJson.data.name).toBe('Integration Test Variant (Updated)');
+      expect(updateJson.data.priceCents).toBe(6800);
+
+      // 4. Soft-delete variant
+      const deleteRes = await fetch(`${baseUrl}/products/prod-speed-rim-blue/variants/${variantId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+        },
+      });
+      expect(deleteRes.status).toBe(200);
+
+      // Verify variant is now deactivated (no longer in active list)
+      const listRes = await fetch(`${baseUrl}/products/prod-speed-rim-blue/variants`);
+      const listJson = await listRes.json();
+      const found = listJson.data.some((v: any) => v.id === variantId);
+      expect(found).toBe(false);
     });
   });
 });

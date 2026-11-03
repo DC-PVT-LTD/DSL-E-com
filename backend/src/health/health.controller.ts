@@ -1,11 +1,41 @@
 import { Controller, Get, ServiceUnavailableException, Inject } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
 
+@ApiTags('Health')
 @Controller('health')
 export class HealthController {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   @Get()
+  @ApiOperation({
+    summary: 'System health check',
+    description: 'Checks backend process uptime and live PostgreSQL database connectivity and latency.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Service and database are operational and healthy',
+    schema: {
+      example: {
+        status: 'healthy',
+        service: 'dsl-stationery-backend',
+        timestamp: '2026-11-03T11:00:00.000Z',
+        uptime: 120.45,
+        database: {
+          status: 'connected',
+          latencyMs: 3.2,
+          counts: {
+            products: 8,
+            categories: 15,
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 503,
+    description: 'Database is unreachable or degraded',
+  })
   async checkHealth() {
     const dbHealth = await this.prisma.isHealthy();
 
