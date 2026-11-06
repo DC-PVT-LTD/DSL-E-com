@@ -27,6 +27,7 @@ import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { SavedListsModule } from './modules/saved-lists/saved-lists.module';
 import { BackInStockModule } from './modules/back-in-stock/back-in-stock.module';
 import { BannersModule } from './modules/banners/banners.module';
+import { NewsletterModule } from './modules/newsletter/newsletter.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { BannersModule } from './modules/banners/banners.module';
     SavedListsModule,
     BackInStockModule,
     BannersModule,
+    NewsletterModule,
   ],
   providers: [
     {

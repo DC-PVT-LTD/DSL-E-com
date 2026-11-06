@@ -903,3 +903,74 @@ model BackInStockAlert {
   @@index([status, leaseExpiresAt])
 }
 
+// ------------------------------------------------------------------------------
+// NEWSLETTER & CONSENT MANAGEMENT (Phase 15.6)
+// ------------------------------------------------------------------------------
+
+enum NewsletterSubscriberStatus {
+  PENDING
+  VERIFIED
+  UNSUBSCRIBED
+}
+
+enum NewsletterConsentEventType {
+  CONSENT_GIVEN
+  EMAIL_VERIFIED
+  UNSUBSCRIBED
+  RESUBSCRIPTION_REQUESTED
+}
+
+model NewsletterSubscriber {
+  id                 String                     @id @default(cuid())
+  email              String                     @unique
+  status             NewsletterSubscriberStatus @default(PENDING)
+  consentGivenAt     DateTime                   @default(now())
+  consentSource      String                     @default("WEBSITE_FOOTER")
+  consentTextVersion String                     @default("v1.0")
+  unsubscribeToken   String                     @unique @default(cuid())
+  verifiedAt         DateTime?
+  unsubscribedAt     DateTime?
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+
+  verificationTokens NewsletterVerificationToken[]
+  consentEvents      NewsletterConsentEvent[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("newsletter_subscribers")
+}
+
+model NewsletterVerificationToken {
+  id           String               @id @default(cuid())
+  subscriberId String
+  tokenHash    String               @unique
+  expiresAt    DateTime
+  usedAt       DateTime?
+  createdAt    DateTime             @default(now())
+
+  subscriber   NewsletterSubscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([subscriberId])
+  @@index([expiresAt])
+  @@map("newsletter_verification_tokens")
+}
+
+model NewsletterConsentEvent {
+  id                 String                     @id @default(cuid())
+  subscriberId       String
+  eventType          NewsletterConsentEventType
+  consentTextVersion String                     @default("v1.0")
+  consentSource      String                     @default("WEBSITE_FOOTER")
+  metadata           Json?
+  createdAt          DateTime                   @default(now())
+
+  subscriber         NewsletterSubscriber       @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([subscriberId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("newsletter_consent_events")
+}
+
+

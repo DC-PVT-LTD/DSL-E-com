@@ -29,6 +29,7 @@ import { ScrapbookHero } from '@/components/home/ScrapbookHero';
 import { DynamicHeroBanners } from '@/components/home/DynamicHeroBanners';
 import InteractiveAboutSection from '@/components/home/InteractiveAboutSection';
 import { formatLKR } from '@/lib/currency';
+import { NewsletterSubscriptionForm } from '@/components/newsletter/NewsletterSubscriptionForm';
 
 export default function HomeStorefrontPage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -37,8 +38,6 @@ export default function HomeStorefrontPage() {
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [schoolPacks, setSchoolPacks] = useState<SchoolPack[]>([]);
   const [copiedCode, setCopiedCode] = useState(false);
-  const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
 
   useEffect(() => {
     // Initial sync load from cache
@@ -92,16 +91,6 @@ export default function HomeStorefrontPage() {
     navigator.clipboard.writeText(code);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2000);
-  };
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newsletterEmail.trim()) {
-      setNewsletterSubscribed(true);
-      setTimeout(() => {
-        setNewsletterEmail('');
-      }, 3000);
-    }
   };
 
   return (
@@ -497,43 +486,7 @@ export default function HomeStorefrontPage() {
 
       {/* SECTION I: NEWSLETTER SUBSCRIPTION */}
       <section className="w-full max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
-        <div className="bg-white rounded-3xl border border-[#C6E7FF] p-8 sm:p-12 text-center shadow-sm space-y-4 relative overflow-hidden max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0066CC] uppercase tracking-wider">
-            <Mail className="w-4 h-4" />
-            <span>Join our stationery lovers club</span>
-          </div>
-
-          <h3 className="text-2xl sm:text-3xl font-black text-[#292525] tracking-tight">
-            Stay in the Loop &amp; Get 10% Off
-          </h3>
-
-          <p className="text-xs sm:text-sm text-[#292525]/70 max-w-md mx-auto leading-relaxed">
-            Subscribe for exclusive coupon drops, back-to-school bundle announcements, and new pastel stationery releases.
-          </p>
-
-          <form onSubmit={handleNewsletterSubmit} className="max-w-md mx-auto pt-2 flex flex-col sm:flex-row gap-2">
-            <input
-              type="email"
-              required
-              placeholder="Enter your email address..."
-              value={newsletterEmail}
-              onChange={(e) => setNewsletterEmail(e.target.value)}
-              className="flex-1 px-4 py-2.5 rounded-full border border-[#C6E7FF] text-xs text-[#292525] focus:outline-none focus:ring-2 focus:ring-[#0066CC] bg-[#FFFDF0]"
-            />
-            <button
-              type="submit"
-              className="bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold px-6 py-2.5 rounded-full shadow-xs transition-colors shrink-0"
-            >
-              {newsletterSubscribed ? 'Subscribed!' : 'Subscribe'}
-            </button>
-          </form>
-
-          {newsletterSubscribed && (
-            <div className="text-xs font-semibold text-emerald-700 bg-emerald-50 py-1.5 px-3 rounded-full inline-block animate-fade-in">
-              🎉 Thank you for subscribing! Check your inbox for your 10% discount demo voucher.
-            </div>
-          )}
-        </div>
+        <NewsletterSubscriptionForm variant="card" source="HOMEPAGE" />
       </section>
     </div>
   );

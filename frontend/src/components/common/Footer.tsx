@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Logo } from './Logo';
 import { Mail, Phone, MapPin, Truck, ShieldCheck, Clock, RotateCcw, Heart } from 'lucide-react';
+import { NewsletterSubscriptionForm } from '@/components/newsletter/NewsletterSubscriptionForm';
 
 export const Footer: React.FC = () => {
   return (
@@ -54,6 +55,26 @@ export const Footer: React.FC = () => {
               <p className="text-[11px] text-[#292525]/70 mt-0.5">
                 Simple 7-day return policy for unopened stationery items.
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Newsletter Subscription Banner */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#C6E7FF]/80 shadow-xs">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="lg:col-span-5 space-y-1">
+              <span className="text-[11px] font-extrabold text-[#0066CC] uppercase tracking-wider">
+                Exclusive Deals &amp; School Updates
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-[#292525] tracking-tight">
+                Subscribe to our Newsletter
+              </h3>
+              <p className="text-xs text-[#292525]/70 leading-relaxed font-medium">
+                Join thousands of Sri Lankan parents, students, and stationery lovers for coupon drops and booklist alerts.
+              </p>
+            </div>
+            <div className="lg:col-span-7">
+              <NewsletterSubscriptionForm variant="footer" source="WEBSITE_FOOTER" />
             </div>
           </div>
         </div>

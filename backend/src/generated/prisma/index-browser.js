@@ -619,6 +619,39 @@ exports.Prisma.BackInStockAlertScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.NewsletterSubscriberScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  status: 'status',
+  consentGivenAt: 'consentGivenAt',
+  consentSource: 'consentSource',
+  consentTextVersion: 'consentTextVersion',
+  unsubscribeToken: 'unsubscribeToken',
+  verifiedAt: 'verifiedAt',
+  unsubscribedAt: 'unsubscribedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.NewsletterVerificationTokenScalarFieldEnum = {
+  id: 'id',
+  subscriberId: 'subscriberId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.NewsletterConsentEventScalarFieldEnum = {
+  id: 'id',
+  subscriberId: 'subscriberId',
+  eventType: 'eventType',
+  consentTextVersion: 'consentTextVersion',
+  consentSource: 'consentSource',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -763,6 +796,19 @@ exports.BackInStockAlertStatus = exports.$Enums.BackInStockAlertStatus = {
   CANCELLED: 'CANCELLED'
 };
 
+exports.NewsletterSubscriberStatus = exports.$Enums.NewsletterSubscriberStatus = {
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  UNSUBSCRIBED: 'UNSUBSCRIBED'
+};
+
+exports.NewsletterConsentEventType = exports.$Enums.NewsletterConsentEventType = {
+  CONSENT_GIVEN: 'CONSENT_GIVEN',
+  EMAIL_VERIFIED: 'EMAIL_VERIFIED',
+  UNSUBSCRIBED: 'UNSUBSCRIBED',
+  RESUBSCRIPTION_REQUESTED: 'RESUBSCRIPTION_REQUESTED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Address: 'Address',
@@ -798,7 +844,10 @@ exports.Prisma.ModelName = {
   StoreSettings: 'StoreSettings',
   Cart: 'Cart',
   CartItem: 'CartItem',
-  BackInStockAlert: 'BackInStockAlert'
+  BackInStockAlert: 'BackInStockAlert',
+  NewsletterSubscriber: 'NewsletterSubscriber',
+  NewsletterVerificationToken: 'NewsletterVerificationToken',
+  NewsletterConsentEvent: 'NewsletterConsentEvent'
 };
 
 /**

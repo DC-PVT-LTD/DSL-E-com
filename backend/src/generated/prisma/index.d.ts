@@ -188,6 +188,21 @@ export type CartItem = $Result.DefaultSelection<Prisma.$CartItemPayload>
  * 
  */
 export type BackInStockAlert = $Result.DefaultSelection<Prisma.$BackInStockAlertPayload>
+/**
+ * Model NewsletterSubscriber
+ * 
+ */
+export type NewsletterSubscriber = $Result.DefaultSelection<Prisma.$NewsletterSubscriberPayload>
+/**
+ * Model NewsletterVerificationToken
+ * 
+ */
+export type NewsletterVerificationToken = $Result.DefaultSelection<Prisma.$NewsletterVerificationTokenPayload>
+/**
+ * Model NewsletterConsentEvent
+ * 
+ */
+export type NewsletterConsentEvent = $Result.DefaultSelection<Prisma.$NewsletterConsentEventPayload>
 
 /**
  * Enums
@@ -352,6 +367,25 @@ export const ReturnItemStatus: {
 
 export type ReturnItemStatus = (typeof ReturnItemStatus)[keyof typeof ReturnItemStatus]
 
+
+export const NewsletterSubscriberStatus: {
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  UNSUBSCRIBED: 'UNSUBSCRIBED'
+};
+
+export type NewsletterSubscriberStatus = (typeof NewsletterSubscriberStatus)[keyof typeof NewsletterSubscriberStatus]
+
+
+export const NewsletterConsentEventType: {
+  CONSENT_GIVEN: 'CONSENT_GIVEN',
+  EMAIL_VERIFIED: 'EMAIL_VERIFIED',
+  UNSUBSCRIBED: 'UNSUBSCRIBED',
+  RESUBSCRIPTION_REQUESTED: 'RESUBSCRIPTION_REQUESTED'
+};
+
+export type NewsletterConsentEventType = (typeof NewsletterConsentEventType)[keyof typeof NewsletterConsentEventType]
+
 }
 
 export type UserRole = $Enums.UserRole
@@ -413,6 +447,14 @@ export const ReturnStatus: typeof $Enums.ReturnStatus
 export type ReturnItemStatus = $Enums.ReturnItemStatus
 
 export const ReturnItemStatus: typeof $Enums.ReturnItemStatus
+
+export type NewsletterSubscriberStatus = $Enums.NewsletterSubscriberStatus
+
+export const NewsletterSubscriberStatus: typeof $Enums.NewsletterSubscriberStatus
+
+export type NewsletterConsentEventType = $Enums.NewsletterConsentEventType
+
+export const NewsletterConsentEventType: typeof $Enums.NewsletterConsentEventType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -884,6 +926,36 @@ export class PrismaClient<
     * ```
     */
   get backInStockAlert(): Prisma.BackInStockAlertDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.newsletterSubscriber`: Exposes CRUD operations for the **NewsletterSubscriber** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more NewsletterSubscribers
+    * const newsletterSubscribers = await prisma.newsletterSubscriber.findMany()
+    * ```
+    */
+  get newsletterSubscriber(): Prisma.NewsletterSubscriberDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.newsletterVerificationToken`: Exposes CRUD operations for the **NewsletterVerificationToken** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more NewsletterVerificationTokens
+    * const newsletterVerificationTokens = await prisma.newsletterVerificationToken.findMany()
+    * ```
+    */
+  get newsletterVerificationToken(): Prisma.NewsletterVerificationTokenDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.newsletterConsentEvent`: Exposes CRUD operations for the **NewsletterConsentEvent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more NewsletterConsentEvents
+    * const newsletterConsentEvents = await prisma.newsletterConsentEvent.findMany()
+    * ```
+    */
+  get newsletterConsentEvent(): Prisma.NewsletterConsentEventDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1365,7 +1437,10 @@ export namespace Prisma {
     StoreSettings: 'StoreSettings',
     Cart: 'Cart',
     CartItem: 'CartItem',
-    BackInStockAlert: 'BackInStockAlert'
+    BackInStockAlert: 'BackInStockAlert',
+    NewsletterSubscriber: 'NewsletterSubscriber',
+    NewsletterVerificationToken: 'NewsletterVerificationToken',
+    NewsletterConsentEvent: 'NewsletterConsentEvent'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1381,7 +1456,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "address" | "refreshToken" | "category" | "brand" | "product" | "productVariant" | "inventoryMovement" | "schoolPack" | "schoolPackItem" | "order" | "orderAddressSnapshot" | "orderItem" | "orderAuditLog" | "orderNote" | "orderReturnRequest" | "orderReturnItem" | "refundRecord" | "stockReservation" | "stockReservationItem" | "paymentAttempt" | "promotion" | "uploadedDocument" | "extractedStationeryItem" | "wishlistItem" | "savedStationeryList" | "savedList" | "savedListItem" | "storeBanner" | "homepageBanner" | "auditLog" | "storeSettings" | "cart" | "cartItem" | "backInStockAlert"
+      modelProps: "user" | "address" | "refreshToken" | "category" | "brand" | "product" | "productVariant" | "inventoryMovement" | "schoolPack" | "schoolPackItem" | "order" | "orderAddressSnapshot" | "orderItem" | "orderAuditLog" | "orderNote" | "orderReturnRequest" | "orderReturnItem" | "refundRecord" | "stockReservation" | "stockReservationItem" | "paymentAttempt" | "promotion" | "uploadedDocument" | "extractedStationeryItem" | "wishlistItem" | "savedStationeryList" | "savedList" | "savedListItem" | "storeBanner" | "homepageBanner" | "auditLog" | "storeSettings" | "cart" | "cartItem" | "backInStockAlert" | "newsletterSubscriber" | "newsletterVerificationToken" | "newsletterConsentEvent"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3975,6 +4050,228 @@ export namespace Prisma {
           }
         }
       }
+      NewsletterSubscriber: {
+        payload: Prisma.$NewsletterSubscriberPayload<ExtArgs>
+        fields: Prisma.NewsletterSubscriberFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NewsletterSubscriberFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterSubscriberPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NewsletterSubscriberFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterSubscriberPayload>
+          }
+          findFirst: {
+            args: Prisma.NewsletterSubscriberFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterSubscriberPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NewsletterSubscriberFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterSubscriberPayload>
+          }
+          findMany: {
+            args: Prisma.NewsletterSubscriberFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterSubscriberPayload>[]
+          }
+          create: {
+            args: Prisma.NewsletterSubscriberCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterSubscriberPayload>
+          }
+          createMany: {
+            args: Prisma.NewsletterSubscriberCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.NewsletterSubscriberCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterSubscriberPayload>[]
+          }
+          delete: {
+            args: Prisma.NewsletterSubscriberDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterSubscriberPayload>
+          }
+          update: {
+            args: Prisma.NewsletterSubscriberUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterSubscriberPayload>
+          }
+          deleteMany: {
+            args: Prisma.NewsletterSubscriberDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NewsletterSubscriberUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.NewsletterSubscriberUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterSubscriberPayload>[]
+          }
+          upsert: {
+            args: Prisma.NewsletterSubscriberUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterSubscriberPayload>
+          }
+          aggregate: {
+            args: Prisma.NewsletterSubscriberAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNewsletterSubscriber>
+          }
+          groupBy: {
+            args: Prisma.NewsletterSubscriberGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NewsletterSubscriberGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.NewsletterSubscriberCountArgs<ExtArgs>
+            result: $Utils.Optional<NewsletterSubscriberCountAggregateOutputType> | number
+          }
+        }
+      }
+      NewsletterVerificationToken: {
+        payload: Prisma.$NewsletterVerificationTokenPayload<ExtArgs>
+        fields: Prisma.NewsletterVerificationTokenFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NewsletterVerificationTokenFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterVerificationTokenPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NewsletterVerificationTokenFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterVerificationTokenPayload>
+          }
+          findFirst: {
+            args: Prisma.NewsletterVerificationTokenFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterVerificationTokenPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NewsletterVerificationTokenFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterVerificationTokenPayload>
+          }
+          findMany: {
+            args: Prisma.NewsletterVerificationTokenFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterVerificationTokenPayload>[]
+          }
+          create: {
+            args: Prisma.NewsletterVerificationTokenCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterVerificationTokenPayload>
+          }
+          createMany: {
+            args: Prisma.NewsletterVerificationTokenCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.NewsletterVerificationTokenCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterVerificationTokenPayload>[]
+          }
+          delete: {
+            args: Prisma.NewsletterVerificationTokenDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterVerificationTokenPayload>
+          }
+          update: {
+            args: Prisma.NewsletterVerificationTokenUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterVerificationTokenPayload>
+          }
+          deleteMany: {
+            args: Prisma.NewsletterVerificationTokenDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NewsletterVerificationTokenUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.NewsletterVerificationTokenUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterVerificationTokenPayload>[]
+          }
+          upsert: {
+            args: Prisma.NewsletterVerificationTokenUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterVerificationTokenPayload>
+          }
+          aggregate: {
+            args: Prisma.NewsletterVerificationTokenAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNewsletterVerificationToken>
+          }
+          groupBy: {
+            args: Prisma.NewsletterVerificationTokenGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NewsletterVerificationTokenGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.NewsletterVerificationTokenCountArgs<ExtArgs>
+            result: $Utils.Optional<NewsletterVerificationTokenCountAggregateOutputType> | number
+          }
+        }
+      }
+      NewsletterConsentEvent: {
+        payload: Prisma.$NewsletterConsentEventPayload<ExtArgs>
+        fields: Prisma.NewsletterConsentEventFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NewsletterConsentEventFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterConsentEventPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NewsletterConsentEventFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterConsentEventPayload>
+          }
+          findFirst: {
+            args: Prisma.NewsletterConsentEventFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterConsentEventPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NewsletterConsentEventFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterConsentEventPayload>
+          }
+          findMany: {
+            args: Prisma.NewsletterConsentEventFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterConsentEventPayload>[]
+          }
+          create: {
+            args: Prisma.NewsletterConsentEventCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterConsentEventPayload>
+          }
+          createMany: {
+            args: Prisma.NewsletterConsentEventCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.NewsletterConsentEventCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterConsentEventPayload>[]
+          }
+          delete: {
+            args: Prisma.NewsletterConsentEventDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterConsentEventPayload>
+          }
+          update: {
+            args: Prisma.NewsletterConsentEventUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterConsentEventPayload>
+          }
+          deleteMany: {
+            args: Prisma.NewsletterConsentEventDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NewsletterConsentEventUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.NewsletterConsentEventUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterConsentEventPayload>[]
+          }
+          upsert: {
+            args: Prisma.NewsletterConsentEventUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NewsletterConsentEventPayload>
+          }
+          aggregate: {
+            args: Prisma.NewsletterConsentEventAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNewsletterConsentEvent>
+          }
+          groupBy: {
+            args: Prisma.NewsletterConsentEventGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NewsletterConsentEventGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.NewsletterConsentEventCountArgs<ExtArgs>
+            result: $Utils.Optional<NewsletterConsentEventCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4133,6 +4430,9 @@ export namespace Prisma {
     cart?: CartOmit
     cartItem?: CartItemOmit
     backInStockAlert?: BackInStockAlertOmit
+    newsletterSubscriber?: NewsletterSubscriberOmit
+    newsletterVerificationToken?: NewsletterVerificationTokenOmit
+    newsletterConsentEvent?: NewsletterConsentEventOmit
   }
 
   /* Types for Logging */
@@ -4900,6 +5200,46 @@ export namespace Prisma {
    */
   export type CartCountOutputTypeCountItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CartItemWhereInput
+  }
+
+
+  /**
+   * Count Type NewsletterSubscriberCountOutputType
+   */
+
+  export type NewsletterSubscriberCountOutputType = {
+    verificationTokens: number
+    consentEvents: number
+  }
+
+  export type NewsletterSubscriberCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    verificationTokens?: boolean | NewsletterSubscriberCountOutputTypeCountVerificationTokensArgs
+    consentEvents?: boolean | NewsletterSubscriberCountOutputTypeCountConsentEventsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * NewsletterSubscriberCountOutputType without action
+   */
+  export type NewsletterSubscriberCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriberCountOutputType
+     */
+    select?: NewsletterSubscriberCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * NewsletterSubscriberCountOutputType without action
+   */
+  export type NewsletterSubscriberCountOutputTypeCountVerificationTokensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NewsletterVerificationTokenWhereInput
+  }
+
+  /**
+   * NewsletterSubscriberCountOutputType without action
+   */
+  export type NewsletterSubscriberCountOutputTypeCountConsentEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NewsletterConsentEventWhereInput
   }
 
 
@@ -47352,6 +47692,3348 @@ export namespace Prisma {
 
 
   /**
+   * Model NewsletterSubscriber
+   */
+
+  export type AggregateNewsletterSubscriber = {
+    _count: NewsletterSubscriberCountAggregateOutputType | null
+    _min: NewsletterSubscriberMinAggregateOutputType | null
+    _max: NewsletterSubscriberMaxAggregateOutputType | null
+  }
+
+  export type NewsletterSubscriberMinAggregateOutputType = {
+    id: string | null
+    email: string | null
+    status: $Enums.NewsletterSubscriberStatus | null
+    consentGivenAt: Date | null
+    consentSource: string | null
+    consentTextVersion: string | null
+    unsubscribeToken: string | null
+    verifiedAt: Date | null
+    unsubscribedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type NewsletterSubscriberMaxAggregateOutputType = {
+    id: string | null
+    email: string | null
+    status: $Enums.NewsletterSubscriberStatus | null
+    consentGivenAt: Date | null
+    consentSource: string | null
+    consentTextVersion: string | null
+    unsubscribeToken: string | null
+    verifiedAt: Date | null
+    unsubscribedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type NewsletterSubscriberCountAggregateOutputType = {
+    id: number
+    email: number
+    status: number
+    consentGivenAt: number
+    consentSource: number
+    consentTextVersion: number
+    unsubscribeToken: number
+    verifiedAt: number
+    unsubscribedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type NewsletterSubscriberMinAggregateInputType = {
+    id?: true
+    email?: true
+    status?: true
+    consentGivenAt?: true
+    consentSource?: true
+    consentTextVersion?: true
+    unsubscribeToken?: true
+    verifiedAt?: true
+    unsubscribedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type NewsletterSubscriberMaxAggregateInputType = {
+    id?: true
+    email?: true
+    status?: true
+    consentGivenAt?: true
+    consentSource?: true
+    consentTextVersion?: true
+    unsubscribeToken?: true
+    verifiedAt?: true
+    unsubscribedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type NewsletterSubscriberCountAggregateInputType = {
+    id?: true
+    email?: true
+    status?: true
+    consentGivenAt?: true
+    consentSource?: true
+    consentTextVersion?: true
+    unsubscribeToken?: true
+    verifiedAt?: true
+    unsubscribedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type NewsletterSubscriberAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NewsletterSubscriber to aggregate.
+     */
+    where?: NewsletterSubscriberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterSubscribers to fetch.
+     */
+    orderBy?: NewsletterSubscriberOrderByWithRelationInput | NewsletterSubscriberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: NewsletterSubscriberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterSubscribers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterSubscribers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned NewsletterSubscribers
+    **/
+    _count?: true | NewsletterSubscriberCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: NewsletterSubscriberMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: NewsletterSubscriberMaxAggregateInputType
+  }
+
+  export type GetNewsletterSubscriberAggregateType<T extends NewsletterSubscriberAggregateArgs> = {
+        [P in keyof T & keyof AggregateNewsletterSubscriber]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNewsletterSubscriber[P]>
+      : GetScalarType<T[P], AggregateNewsletterSubscriber[P]>
+  }
+
+
+
+
+  export type NewsletterSubscriberGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NewsletterSubscriberWhereInput
+    orderBy?: NewsletterSubscriberOrderByWithAggregationInput | NewsletterSubscriberOrderByWithAggregationInput[]
+    by: NewsletterSubscriberScalarFieldEnum[] | NewsletterSubscriberScalarFieldEnum
+    having?: NewsletterSubscriberScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NewsletterSubscriberCountAggregateInputType | true
+    _min?: NewsletterSubscriberMinAggregateInputType
+    _max?: NewsletterSubscriberMaxAggregateInputType
+  }
+
+  export type NewsletterSubscriberGroupByOutputType = {
+    id: string
+    email: string
+    status: $Enums.NewsletterSubscriberStatus
+    consentGivenAt: Date
+    consentSource: string
+    consentTextVersion: string
+    unsubscribeToken: string
+    verifiedAt: Date | null
+    unsubscribedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: NewsletterSubscriberCountAggregateOutputType | null
+    _min: NewsletterSubscriberMinAggregateOutputType | null
+    _max: NewsletterSubscriberMaxAggregateOutputType | null
+  }
+
+  type GetNewsletterSubscriberGroupByPayload<T extends NewsletterSubscriberGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NewsletterSubscriberGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NewsletterSubscriberGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NewsletterSubscriberGroupByOutputType[P]>
+            : GetScalarType<T[P], NewsletterSubscriberGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NewsletterSubscriberSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    email?: boolean
+    status?: boolean
+    consentGivenAt?: boolean
+    consentSource?: boolean
+    consentTextVersion?: boolean
+    unsubscribeToken?: boolean
+    verifiedAt?: boolean
+    unsubscribedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    verificationTokens?: boolean | NewsletterSubscriber$verificationTokensArgs<ExtArgs>
+    consentEvents?: boolean | NewsletterSubscriber$consentEventsArgs<ExtArgs>
+    _count?: boolean | NewsletterSubscriberCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["newsletterSubscriber"]>
+
+  export type NewsletterSubscriberSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    email?: boolean
+    status?: boolean
+    consentGivenAt?: boolean
+    consentSource?: boolean
+    consentTextVersion?: boolean
+    unsubscribeToken?: boolean
+    verifiedAt?: boolean
+    unsubscribedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["newsletterSubscriber"]>
+
+  export type NewsletterSubscriberSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    email?: boolean
+    status?: boolean
+    consentGivenAt?: boolean
+    consentSource?: boolean
+    consentTextVersion?: boolean
+    unsubscribeToken?: boolean
+    verifiedAt?: boolean
+    unsubscribedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["newsletterSubscriber"]>
+
+  export type NewsletterSubscriberSelectScalar = {
+    id?: boolean
+    email?: boolean
+    status?: boolean
+    consentGivenAt?: boolean
+    consentSource?: boolean
+    consentTextVersion?: boolean
+    unsubscribeToken?: boolean
+    verifiedAt?: boolean
+    unsubscribedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type NewsletterSubscriberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "status" | "consentGivenAt" | "consentSource" | "consentTextVersion" | "unsubscribeToken" | "verifiedAt" | "unsubscribedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["newsletterSubscriber"]>
+  export type NewsletterSubscriberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    verificationTokens?: boolean | NewsletterSubscriber$verificationTokensArgs<ExtArgs>
+    consentEvents?: boolean | NewsletterSubscriber$consentEventsArgs<ExtArgs>
+    _count?: boolean | NewsletterSubscriberCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type NewsletterSubscriberIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type NewsletterSubscriberIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $NewsletterSubscriberPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "NewsletterSubscriber"
+    objects: {
+      verificationTokens: Prisma.$NewsletterVerificationTokenPayload<ExtArgs>[]
+      consentEvents: Prisma.$NewsletterConsentEventPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      email: string
+      status: $Enums.NewsletterSubscriberStatus
+      consentGivenAt: Date
+      consentSource: string
+      consentTextVersion: string
+      unsubscribeToken: string
+      verifiedAt: Date | null
+      unsubscribedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["newsletterSubscriber"]>
+    composites: {}
+  }
+
+  type NewsletterSubscriberGetPayload<S extends boolean | null | undefined | NewsletterSubscriberDefaultArgs> = $Result.GetResult<Prisma.$NewsletterSubscriberPayload, S>
+
+  type NewsletterSubscriberCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<NewsletterSubscriberFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: NewsletterSubscriberCountAggregateInputType | true
+    }
+
+  export interface NewsletterSubscriberDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['NewsletterSubscriber'], meta: { name: 'NewsletterSubscriber' } }
+    /**
+     * Find zero or one NewsletterSubscriber that matches the filter.
+     * @param {NewsletterSubscriberFindUniqueArgs} args - Arguments to find a NewsletterSubscriber
+     * @example
+     * // Get one NewsletterSubscriber
+     * const newsletterSubscriber = await prisma.newsletterSubscriber.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NewsletterSubscriberFindUniqueArgs>(args: SelectSubset<T, NewsletterSubscriberFindUniqueArgs<ExtArgs>>): Prisma__NewsletterSubscriberClient<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one NewsletterSubscriber that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {NewsletterSubscriberFindUniqueOrThrowArgs} args - Arguments to find a NewsletterSubscriber
+     * @example
+     * // Get one NewsletterSubscriber
+     * const newsletterSubscriber = await prisma.newsletterSubscriber.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NewsletterSubscriberFindUniqueOrThrowArgs>(args: SelectSubset<T, NewsletterSubscriberFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NewsletterSubscriberClient<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NewsletterSubscriber that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterSubscriberFindFirstArgs} args - Arguments to find a NewsletterSubscriber
+     * @example
+     * // Get one NewsletterSubscriber
+     * const newsletterSubscriber = await prisma.newsletterSubscriber.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NewsletterSubscriberFindFirstArgs>(args?: SelectSubset<T, NewsletterSubscriberFindFirstArgs<ExtArgs>>): Prisma__NewsletterSubscriberClient<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NewsletterSubscriber that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterSubscriberFindFirstOrThrowArgs} args - Arguments to find a NewsletterSubscriber
+     * @example
+     * // Get one NewsletterSubscriber
+     * const newsletterSubscriber = await prisma.newsletterSubscriber.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NewsletterSubscriberFindFirstOrThrowArgs>(args?: SelectSubset<T, NewsletterSubscriberFindFirstOrThrowArgs<ExtArgs>>): Prisma__NewsletterSubscriberClient<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more NewsletterSubscribers that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterSubscriberFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all NewsletterSubscribers
+     * const newsletterSubscribers = await prisma.newsletterSubscriber.findMany()
+     * 
+     * // Get first 10 NewsletterSubscribers
+     * const newsletterSubscribers = await prisma.newsletterSubscriber.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const newsletterSubscriberWithIdOnly = await prisma.newsletterSubscriber.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends NewsletterSubscriberFindManyArgs>(args?: SelectSubset<T, NewsletterSubscriberFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a NewsletterSubscriber.
+     * @param {NewsletterSubscriberCreateArgs} args - Arguments to create a NewsletterSubscriber.
+     * @example
+     * // Create one NewsletterSubscriber
+     * const NewsletterSubscriber = await prisma.newsletterSubscriber.create({
+     *   data: {
+     *     // ... data to create a NewsletterSubscriber
+     *   }
+     * })
+     * 
+     */
+    create<T extends NewsletterSubscriberCreateArgs>(args: SelectSubset<T, NewsletterSubscriberCreateArgs<ExtArgs>>): Prisma__NewsletterSubscriberClient<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many NewsletterSubscribers.
+     * @param {NewsletterSubscriberCreateManyArgs} args - Arguments to create many NewsletterSubscribers.
+     * @example
+     * // Create many NewsletterSubscribers
+     * const newsletterSubscriber = await prisma.newsletterSubscriber.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends NewsletterSubscriberCreateManyArgs>(args?: SelectSubset<T, NewsletterSubscriberCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many NewsletterSubscribers and returns the data saved in the database.
+     * @param {NewsletterSubscriberCreateManyAndReturnArgs} args - Arguments to create many NewsletterSubscribers.
+     * @example
+     * // Create many NewsletterSubscribers
+     * const newsletterSubscriber = await prisma.newsletterSubscriber.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many NewsletterSubscribers and only return the `id`
+     * const newsletterSubscriberWithIdOnly = await prisma.newsletterSubscriber.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends NewsletterSubscriberCreateManyAndReturnArgs>(args?: SelectSubset<T, NewsletterSubscriberCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a NewsletterSubscriber.
+     * @param {NewsletterSubscriberDeleteArgs} args - Arguments to delete one NewsletterSubscriber.
+     * @example
+     * // Delete one NewsletterSubscriber
+     * const NewsletterSubscriber = await prisma.newsletterSubscriber.delete({
+     *   where: {
+     *     // ... filter to delete one NewsletterSubscriber
+     *   }
+     * })
+     * 
+     */
+    delete<T extends NewsletterSubscriberDeleteArgs>(args: SelectSubset<T, NewsletterSubscriberDeleteArgs<ExtArgs>>): Prisma__NewsletterSubscriberClient<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one NewsletterSubscriber.
+     * @param {NewsletterSubscriberUpdateArgs} args - Arguments to update one NewsletterSubscriber.
+     * @example
+     * // Update one NewsletterSubscriber
+     * const newsletterSubscriber = await prisma.newsletterSubscriber.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends NewsletterSubscriberUpdateArgs>(args: SelectSubset<T, NewsletterSubscriberUpdateArgs<ExtArgs>>): Prisma__NewsletterSubscriberClient<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more NewsletterSubscribers.
+     * @param {NewsletterSubscriberDeleteManyArgs} args - Arguments to filter NewsletterSubscribers to delete.
+     * @example
+     * // Delete a few NewsletterSubscribers
+     * const { count } = await prisma.newsletterSubscriber.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends NewsletterSubscriberDeleteManyArgs>(args?: SelectSubset<T, NewsletterSubscriberDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NewsletterSubscribers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterSubscriberUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many NewsletterSubscribers
+     * const newsletterSubscriber = await prisma.newsletterSubscriber.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends NewsletterSubscriberUpdateManyArgs>(args: SelectSubset<T, NewsletterSubscriberUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NewsletterSubscribers and returns the data updated in the database.
+     * @param {NewsletterSubscriberUpdateManyAndReturnArgs} args - Arguments to update many NewsletterSubscribers.
+     * @example
+     * // Update many NewsletterSubscribers
+     * const newsletterSubscriber = await prisma.newsletterSubscriber.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more NewsletterSubscribers and only return the `id`
+     * const newsletterSubscriberWithIdOnly = await prisma.newsletterSubscriber.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends NewsletterSubscriberUpdateManyAndReturnArgs>(args: SelectSubset<T, NewsletterSubscriberUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one NewsletterSubscriber.
+     * @param {NewsletterSubscriberUpsertArgs} args - Arguments to update or create a NewsletterSubscriber.
+     * @example
+     * // Update or create a NewsletterSubscriber
+     * const newsletterSubscriber = await prisma.newsletterSubscriber.upsert({
+     *   create: {
+     *     // ... data to create a NewsletterSubscriber
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the NewsletterSubscriber we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NewsletterSubscriberUpsertArgs>(args: SelectSubset<T, NewsletterSubscriberUpsertArgs<ExtArgs>>): Prisma__NewsletterSubscriberClient<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of NewsletterSubscribers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterSubscriberCountArgs} args - Arguments to filter NewsletterSubscribers to count.
+     * @example
+     * // Count the number of NewsletterSubscribers
+     * const count = await prisma.newsletterSubscriber.count({
+     *   where: {
+     *     // ... the filter for the NewsletterSubscribers we want to count
+     *   }
+     * })
+    **/
+    count<T extends NewsletterSubscriberCountArgs>(
+      args?: Subset<T, NewsletterSubscriberCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NewsletterSubscriberCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a NewsletterSubscriber.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterSubscriberAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NewsletterSubscriberAggregateArgs>(args: Subset<T, NewsletterSubscriberAggregateArgs>): Prisma.PrismaPromise<GetNewsletterSubscriberAggregateType<T>>
+
+    /**
+     * Group by NewsletterSubscriber.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterSubscriberGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends NewsletterSubscriberGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NewsletterSubscriberGroupByArgs['orderBy'] }
+        : { orderBy?: NewsletterSubscriberGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NewsletterSubscriberGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNewsletterSubscriberGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the NewsletterSubscriber model
+   */
+  readonly fields: NewsletterSubscriberFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for NewsletterSubscriber.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NewsletterSubscriberClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    verificationTokens<T extends NewsletterSubscriber$verificationTokensArgs<ExtArgs> = {}>(args?: Subset<T, NewsletterSubscriber$verificationTokensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    consentEvents<T extends NewsletterSubscriber$consentEventsArgs<ExtArgs> = {}>(args?: Subset<T, NewsletterSubscriber$consentEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the NewsletterSubscriber model
+   */
+  interface NewsletterSubscriberFieldRefs {
+    readonly id: FieldRef<"NewsletterSubscriber", 'String'>
+    readonly email: FieldRef<"NewsletterSubscriber", 'String'>
+    readonly status: FieldRef<"NewsletterSubscriber", 'NewsletterSubscriberStatus'>
+    readonly consentGivenAt: FieldRef<"NewsletterSubscriber", 'DateTime'>
+    readonly consentSource: FieldRef<"NewsletterSubscriber", 'String'>
+    readonly consentTextVersion: FieldRef<"NewsletterSubscriber", 'String'>
+    readonly unsubscribeToken: FieldRef<"NewsletterSubscriber", 'String'>
+    readonly verifiedAt: FieldRef<"NewsletterSubscriber", 'DateTime'>
+    readonly unsubscribedAt: FieldRef<"NewsletterSubscriber", 'DateTime'>
+    readonly createdAt: FieldRef<"NewsletterSubscriber", 'DateTime'>
+    readonly updatedAt: FieldRef<"NewsletterSubscriber", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * NewsletterSubscriber findUnique
+   */
+  export type NewsletterSubscriberFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterSubscriberInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterSubscriber to fetch.
+     */
+    where: NewsletterSubscriberWhereUniqueInput
+  }
+
+  /**
+   * NewsletterSubscriber findUniqueOrThrow
+   */
+  export type NewsletterSubscriberFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterSubscriberInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterSubscriber to fetch.
+     */
+    where: NewsletterSubscriberWhereUniqueInput
+  }
+
+  /**
+   * NewsletterSubscriber findFirst
+   */
+  export type NewsletterSubscriberFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterSubscriberInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterSubscriber to fetch.
+     */
+    where?: NewsletterSubscriberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterSubscribers to fetch.
+     */
+    orderBy?: NewsletterSubscriberOrderByWithRelationInput | NewsletterSubscriberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NewsletterSubscribers.
+     */
+    cursor?: NewsletterSubscriberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterSubscribers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterSubscribers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NewsletterSubscribers.
+     */
+    distinct?: NewsletterSubscriberScalarFieldEnum | NewsletterSubscriberScalarFieldEnum[]
+  }
+
+  /**
+   * NewsletterSubscriber findFirstOrThrow
+   */
+  export type NewsletterSubscriberFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterSubscriberInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterSubscriber to fetch.
+     */
+    where?: NewsletterSubscriberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterSubscribers to fetch.
+     */
+    orderBy?: NewsletterSubscriberOrderByWithRelationInput | NewsletterSubscriberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NewsletterSubscribers.
+     */
+    cursor?: NewsletterSubscriberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterSubscribers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterSubscribers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NewsletterSubscribers.
+     */
+    distinct?: NewsletterSubscriberScalarFieldEnum | NewsletterSubscriberScalarFieldEnum[]
+  }
+
+  /**
+   * NewsletterSubscriber findMany
+   */
+  export type NewsletterSubscriberFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterSubscriberInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterSubscribers to fetch.
+     */
+    where?: NewsletterSubscriberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterSubscribers to fetch.
+     */
+    orderBy?: NewsletterSubscriberOrderByWithRelationInput | NewsletterSubscriberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing NewsletterSubscribers.
+     */
+    cursor?: NewsletterSubscriberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterSubscribers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterSubscribers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NewsletterSubscribers.
+     */
+    distinct?: NewsletterSubscriberScalarFieldEnum | NewsletterSubscriberScalarFieldEnum[]
+  }
+
+  /**
+   * NewsletterSubscriber create
+   */
+  export type NewsletterSubscriberCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterSubscriberInclude<ExtArgs> | null
+    /**
+     * The data needed to create a NewsletterSubscriber.
+     */
+    data: XOR<NewsletterSubscriberCreateInput, NewsletterSubscriberUncheckedCreateInput>
+  }
+
+  /**
+   * NewsletterSubscriber createMany
+   */
+  export type NewsletterSubscriberCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many NewsletterSubscribers.
+     */
+    data: NewsletterSubscriberCreateManyInput | NewsletterSubscriberCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * NewsletterSubscriber createManyAndReturn
+   */
+  export type NewsletterSubscriberCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * The data used to create many NewsletterSubscribers.
+     */
+    data: NewsletterSubscriberCreateManyInput | NewsletterSubscriberCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * NewsletterSubscriber update
+   */
+  export type NewsletterSubscriberUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterSubscriberInclude<ExtArgs> | null
+    /**
+     * The data needed to update a NewsletterSubscriber.
+     */
+    data: XOR<NewsletterSubscriberUpdateInput, NewsletterSubscriberUncheckedUpdateInput>
+    /**
+     * Choose, which NewsletterSubscriber to update.
+     */
+    where: NewsletterSubscriberWhereUniqueInput
+  }
+
+  /**
+   * NewsletterSubscriber updateMany
+   */
+  export type NewsletterSubscriberUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update NewsletterSubscribers.
+     */
+    data: XOR<NewsletterSubscriberUpdateManyMutationInput, NewsletterSubscriberUncheckedUpdateManyInput>
+    /**
+     * Filter which NewsletterSubscribers to update
+     */
+    where?: NewsletterSubscriberWhereInput
+    /**
+     * Limit how many NewsletterSubscribers to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * NewsletterSubscriber updateManyAndReturn
+   */
+  export type NewsletterSubscriberUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * The data used to update NewsletterSubscribers.
+     */
+    data: XOR<NewsletterSubscriberUpdateManyMutationInput, NewsletterSubscriberUncheckedUpdateManyInput>
+    /**
+     * Filter which NewsletterSubscribers to update
+     */
+    where?: NewsletterSubscriberWhereInput
+    /**
+     * Limit how many NewsletterSubscribers to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * NewsletterSubscriber upsert
+   */
+  export type NewsletterSubscriberUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterSubscriberInclude<ExtArgs> | null
+    /**
+     * The filter to search for the NewsletterSubscriber to update in case it exists.
+     */
+    where: NewsletterSubscriberWhereUniqueInput
+    /**
+     * In case the NewsletterSubscriber found by the `where` argument doesn't exist, create a new NewsletterSubscriber with this data.
+     */
+    create: XOR<NewsletterSubscriberCreateInput, NewsletterSubscriberUncheckedCreateInput>
+    /**
+     * In case the NewsletterSubscriber was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NewsletterSubscriberUpdateInput, NewsletterSubscriberUncheckedUpdateInput>
+  }
+
+  /**
+   * NewsletterSubscriber delete
+   */
+  export type NewsletterSubscriberDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterSubscriberInclude<ExtArgs> | null
+    /**
+     * Filter which NewsletterSubscriber to delete.
+     */
+    where: NewsletterSubscriberWhereUniqueInput
+  }
+
+  /**
+   * NewsletterSubscriber deleteMany
+   */
+  export type NewsletterSubscriberDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NewsletterSubscribers to delete
+     */
+    where?: NewsletterSubscriberWhereInput
+    /**
+     * Limit how many NewsletterSubscribers to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * NewsletterSubscriber.verificationTokens
+   */
+  export type NewsletterSubscriber$verificationTokensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenInclude<ExtArgs> | null
+    where?: NewsletterVerificationTokenWhereInput
+    orderBy?: NewsletterVerificationTokenOrderByWithRelationInput | NewsletterVerificationTokenOrderByWithRelationInput[]
+    cursor?: NewsletterVerificationTokenWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NewsletterVerificationTokenScalarFieldEnum | NewsletterVerificationTokenScalarFieldEnum[]
+  }
+
+  /**
+   * NewsletterSubscriber.consentEvents
+   */
+  export type NewsletterSubscriber$consentEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventInclude<ExtArgs> | null
+    where?: NewsletterConsentEventWhereInput
+    orderBy?: NewsletterConsentEventOrderByWithRelationInput | NewsletterConsentEventOrderByWithRelationInput[]
+    cursor?: NewsletterConsentEventWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NewsletterConsentEventScalarFieldEnum | NewsletterConsentEventScalarFieldEnum[]
+  }
+
+  /**
+   * NewsletterSubscriber without action
+   */
+  export type NewsletterSubscriberDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterSubscriber
+     */
+    select?: NewsletterSubscriberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterSubscriber
+     */
+    omit?: NewsletterSubscriberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterSubscriberInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model NewsletterVerificationToken
+   */
+
+  export type AggregateNewsletterVerificationToken = {
+    _count: NewsletterVerificationTokenCountAggregateOutputType | null
+    _min: NewsletterVerificationTokenMinAggregateOutputType | null
+    _max: NewsletterVerificationTokenMaxAggregateOutputType | null
+  }
+
+  export type NewsletterVerificationTokenMinAggregateOutputType = {
+    id: string | null
+    subscriberId: string | null
+    tokenHash: string | null
+    expiresAt: Date | null
+    usedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type NewsletterVerificationTokenMaxAggregateOutputType = {
+    id: string | null
+    subscriberId: string | null
+    tokenHash: string | null
+    expiresAt: Date | null
+    usedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type NewsletterVerificationTokenCountAggregateOutputType = {
+    id: number
+    subscriberId: number
+    tokenHash: number
+    expiresAt: number
+    usedAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type NewsletterVerificationTokenMinAggregateInputType = {
+    id?: true
+    subscriberId?: true
+    tokenHash?: true
+    expiresAt?: true
+    usedAt?: true
+    createdAt?: true
+  }
+
+  export type NewsletterVerificationTokenMaxAggregateInputType = {
+    id?: true
+    subscriberId?: true
+    tokenHash?: true
+    expiresAt?: true
+    usedAt?: true
+    createdAt?: true
+  }
+
+  export type NewsletterVerificationTokenCountAggregateInputType = {
+    id?: true
+    subscriberId?: true
+    tokenHash?: true
+    expiresAt?: true
+    usedAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type NewsletterVerificationTokenAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NewsletterVerificationToken to aggregate.
+     */
+    where?: NewsletterVerificationTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterVerificationTokens to fetch.
+     */
+    orderBy?: NewsletterVerificationTokenOrderByWithRelationInput | NewsletterVerificationTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: NewsletterVerificationTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterVerificationTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterVerificationTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned NewsletterVerificationTokens
+    **/
+    _count?: true | NewsletterVerificationTokenCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: NewsletterVerificationTokenMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: NewsletterVerificationTokenMaxAggregateInputType
+  }
+
+  export type GetNewsletterVerificationTokenAggregateType<T extends NewsletterVerificationTokenAggregateArgs> = {
+        [P in keyof T & keyof AggregateNewsletterVerificationToken]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNewsletterVerificationToken[P]>
+      : GetScalarType<T[P], AggregateNewsletterVerificationToken[P]>
+  }
+
+
+
+
+  export type NewsletterVerificationTokenGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NewsletterVerificationTokenWhereInput
+    orderBy?: NewsletterVerificationTokenOrderByWithAggregationInput | NewsletterVerificationTokenOrderByWithAggregationInput[]
+    by: NewsletterVerificationTokenScalarFieldEnum[] | NewsletterVerificationTokenScalarFieldEnum
+    having?: NewsletterVerificationTokenScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NewsletterVerificationTokenCountAggregateInputType | true
+    _min?: NewsletterVerificationTokenMinAggregateInputType
+    _max?: NewsletterVerificationTokenMaxAggregateInputType
+  }
+
+  export type NewsletterVerificationTokenGroupByOutputType = {
+    id: string
+    subscriberId: string
+    tokenHash: string
+    expiresAt: Date
+    usedAt: Date | null
+    createdAt: Date
+    _count: NewsletterVerificationTokenCountAggregateOutputType | null
+    _min: NewsletterVerificationTokenMinAggregateOutputType | null
+    _max: NewsletterVerificationTokenMaxAggregateOutputType | null
+  }
+
+  type GetNewsletterVerificationTokenGroupByPayload<T extends NewsletterVerificationTokenGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NewsletterVerificationTokenGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NewsletterVerificationTokenGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NewsletterVerificationTokenGroupByOutputType[P]>
+            : GetScalarType<T[P], NewsletterVerificationTokenGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NewsletterVerificationTokenSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    subscriberId?: boolean
+    tokenHash?: boolean
+    expiresAt?: boolean
+    usedAt?: boolean
+    createdAt?: boolean
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["newsletterVerificationToken"]>
+
+  export type NewsletterVerificationTokenSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    subscriberId?: boolean
+    tokenHash?: boolean
+    expiresAt?: boolean
+    usedAt?: boolean
+    createdAt?: boolean
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["newsletterVerificationToken"]>
+
+  export type NewsletterVerificationTokenSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    subscriberId?: boolean
+    tokenHash?: boolean
+    expiresAt?: boolean
+    usedAt?: boolean
+    createdAt?: boolean
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["newsletterVerificationToken"]>
+
+  export type NewsletterVerificationTokenSelectScalar = {
+    id?: boolean
+    subscriberId?: boolean
+    tokenHash?: boolean
+    expiresAt?: boolean
+    usedAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type NewsletterVerificationTokenOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "subscriberId" | "tokenHash" | "expiresAt" | "usedAt" | "createdAt", ExtArgs["result"]["newsletterVerificationToken"]>
+  export type NewsletterVerificationTokenInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }
+  export type NewsletterVerificationTokenIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }
+  export type NewsletterVerificationTokenIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }
+
+  export type $NewsletterVerificationTokenPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "NewsletterVerificationToken"
+    objects: {
+      subscriber: Prisma.$NewsletterSubscriberPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      subscriberId: string
+      tokenHash: string
+      expiresAt: Date
+      usedAt: Date | null
+      createdAt: Date
+    }, ExtArgs["result"]["newsletterVerificationToken"]>
+    composites: {}
+  }
+
+  type NewsletterVerificationTokenGetPayload<S extends boolean | null | undefined | NewsletterVerificationTokenDefaultArgs> = $Result.GetResult<Prisma.$NewsletterVerificationTokenPayload, S>
+
+  type NewsletterVerificationTokenCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<NewsletterVerificationTokenFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: NewsletterVerificationTokenCountAggregateInputType | true
+    }
+
+  export interface NewsletterVerificationTokenDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['NewsletterVerificationToken'], meta: { name: 'NewsletterVerificationToken' } }
+    /**
+     * Find zero or one NewsletterVerificationToken that matches the filter.
+     * @param {NewsletterVerificationTokenFindUniqueArgs} args - Arguments to find a NewsletterVerificationToken
+     * @example
+     * // Get one NewsletterVerificationToken
+     * const newsletterVerificationToken = await prisma.newsletterVerificationToken.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NewsletterVerificationTokenFindUniqueArgs>(args: SelectSubset<T, NewsletterVerificationTokenFindUniqueArgs<ExtArgs>>): Prisma__NewsletterVerificationTokenClient<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one NewsletterVerificationToken that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {NewsletterVerificationTokenFindUniqueOrThrowArgs} args - Arguments to find a NewsletterVerificationToken
+     * @example
+     * // Get one NewsletterVerificationToken
+     * const newsletterVerificationToken = await prisma.newsletterVerificationToken.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NewsletterVerificationTokenFindUniqueOrThrowArgs>(args: SelectSubset<T, NewsletterVerificationTokenFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NewsletterVerificationTokenClient<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NewsletterVerificationToken that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterVerificationTokenFindFirstArgs} args - Arguments to find a NewsletterVerificationToken
+     * @example
+     * // Get one NewsletterVerificationToken
+     * const newsletterVerificationToken = await prisma.newsletterVerificationToken.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NewsletterVerificationTokenFindFirstArgs>(args?: SelectSubset<T, NewsletterVerificationTokenFindFirstArgs<ExtArgs>>): Prisma__NewsletterVerificationTokenClient<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NewsletterVerificationToken that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterVerificationTokenFindFirstOrThrowArgs} args - Arguments to find a NewsletterVerificationToken
+     * @example
+     * // Get one NewsletterVerificationToken
+     * const newsletterVerificationToken = await prisma.newsletterVerificationToken.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NewsletterVerificationTokenFindFirstOrThrowArgs>(args?: SelectSubset<T, NewsletterVerificationTokenFindFirstOrThrowArgs<ExtArgs>>): Prisma__NewsletterVerificationTokenClient<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more NewsletterVerificationTokens that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterVerificationTokenFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all NewsletterVerificationTokens
+     * const newsletterVerificationTokens = await prisma.newsletterVerificationToken.findMany()
+     * 
+     * // Get first 10 NewsletterVerificationTokens
+     * const newsletterVerificationTokens = await prisma.newsletterVerificationToken.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const newsletterVerificationTokenWithIdOnly = await prisma.newsletterVerificationToken.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends NewsletterVerificationTokenFindManyArgs>(args?: SelectSubset<T, NewsletterVerificationTokenFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a NewsletterVerificationToken.
+     * @param {NewsletterVerificationTokenCreateArgs} args - Arguments to create a NewsletterVerificationToken.
+     * @example
+     * // Create one NewsletterVerificationToken
+     * const NewsletterVerificationToken = await prisma.newsletterVerificationToken.create({
+     *   data: {
+     *     // ... data to create a NewsletterVerificationToken
+     *   }
+     * })
+     * 
+     */
+    create<T extends NewsletterVerificationTokenCreateArgs>(args: SelectSubset<T, NewsletterVerificationTokenCreateArgs<ExtArgs>>): Prisma__NewsletterVerificationTokenClient<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many NewsletterVerificationTokens.
+     * @param {NewsletterVerificationTokenCreateManyArgs} args - Arguments to create many NewsletterVerificationTokens.
+     * @example
+     * // Create many NewsletterVerificationTokens
+     * const newsletterVerificationToken = await prisma.newsletterVerificationToken.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends NewsletterVerificationTokenCreateManyArgs>(args?: SelectSubset<T, NewsletterVerificationTokenCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many NewsletterVerificationTokens and returns the data saved in the database.
+     * @param {NewsletterVerificationTokenCreateManyAndReturnArgs} args - Arguments to create many NewsletterVerificationTokens.
+     * @example
+     * // Create many NewsletterVerificationTokens
+     * const newsletterVerificationToken = await prisma.newsletterVerificationToken.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many NewsletterVerificationTokens and only return the `id`
+     * const newsletterVerificationTokenWithIdOnly = await prisma.newsletterVerificationToken.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends NewsletterVerificationTokenCreateManyAndReturnArgs>(args?: SelectSubset<T, NewsletterVerificationTokenCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a NewsletterVerificationToken.
+     * @param {NewsletterVerificationTokenDeleteArgs} args - Arguments to delete one NewsletterVerificationToken.
+     * @example
+     * // Delete one NewsletterVerificationToken
+     * const NewsletterVerificationToken = await prisma.newsletterVerificationToken.delete({
+     *   where: {
+     *     // ... filter to delete one NewsletterVerificationToken
+     *   }
+     * })
+     * 
+     */
+    delete<T extends NewsletterVerificationTokenDeleteArgs>(args: SelectSubset<T, NewsletterVerificationTokenDeleteArgs<ExtArgs>>): Prisma__NewsletterVerificationTokenClient<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one NewsletterVerificationToken.
+     * @param {NewsletterVerificationTokenUpdateArgs} args - Arguments to update one NewsletterVerificationToken.
+     * @example
+     * // Update one NewsletterVerificationToken
+     * const newsletterVerificationToken = await prisma.newsletterVerificationToken.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends NewsletterVerificationTokenUpdateArgs>(args: SelectSubset<T, NewsletterVerificationTokenUpdateArgs<ExtArgs>>): Prisma__NewsletterVerificationTokenClient<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more NewsletterVerificationTokens.
+     * @param {NewsletterVerificationTokenDeleteManyArgs} args - Arguments to filter NewsletterVerificationTokens to delete.
+     * @example
+     * // Delete a few NewsletterVerificationTokens
+     * const { count } = await prisma.newsletterVerificationToken.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends NewsletterVerificationTokenDeleteManyArgs>(args?: SelectSubset<T, NewsletterVerificationTokenDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NewsletterVerificationTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterVerificationTokenUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many NewsletterVerificationTokens
+     * const newsletterVerificationToken = await prisma.newsletterVerificationToken.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends NewsletterVerificationTokenUpdateManyArgs>(args: SelectSubset<T, NewsletterVerificationTokenUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NewsletterVerificationTokens and returns the data updated in the database.
+     * @param {NewsletterVerificationTokenUpdateManyAndReturnArgs} args - Arguments to update many NewsletterVerificationTokens.
+     * @example
+     * // Update many NewsletterVerificationTokens
+     * const newsletterVerificationToken = await prisma.newsletterVerificationToken.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more NewsletterVerificationTokens and only return the `id`
+     * const newsletterVerificationTokenWithIdOnly = await prisma.newsletterVerificationToken.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends NewsletterVerificationTokenUpdateManyAndReturnArgs>(args: SelectSubset<T, NewsletterVerificationTokenUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one NewsletterVerificationToken.
+     * @param {NewsletterVerificationTokenUpsertArgs} args - Arguments to update or create a NewsletterVerificationToken.
+     * @example
+     * // Update or create a NewsletterVerificationToken
+     * const newsletterVerificationToken = await prisma.newsletterVerificationToken.upsert({
+     *   create: {
+     *     // ... data to create a NewsletterVerificationToken
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the NewsletterVerificationToken we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NewsletterVerificationTokenUpsertArgs>(args: SelectSubset<T, NewsletterVerificationTokenUpsertArgs<ExtArgs>>): Prisma__NewsletterVerificationTokenClient<$Result.GetResult<Prisma.$NewsletterVerificationTokenPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of NewsletterVerificationTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterVerificationTokenCountArgs} args - Arguments to filter NewsletterVerificationTokens to count.
+     * @example
+     * // Count the number of NewsletterVerificationTokens
+     * const count = await prisma.newsletterVerificationToken.count({
+     *   where: {
+     *     // ... the filter for the NewsletterVerificationTokens we want to count
+     *   }
+     * })
+    **/
+    count<T extends NewsletterVerificationTokenCountArgs>(
+      args?: Subset<T, NewsletterVerificationTokenCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NewsletterVerificationTokenCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a NewsletterVerificationToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterVerificationTokenAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NewsletterVerificationTokenAggregateArgs>(args: Subset<T, NewsletterVerificationTokenAggregateArgs>): Prisma.PrismaPromise<GetNewsletterVerificationTokenAggregateType<T>>
+
+    /**
+     * Group by NewsletterVerificationToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterVerificationTokenGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends NewsletterVerificationTokenGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NewsletterVerificationTokenGroupByArgs['orderBy'] }
+        : { orderBy?: NewsletterVerificationTokenGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NewsletterVerificationTokenGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNewsletterVerificationTokenGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the NewsletterVerificationToken model
+   */
+  readonly fields: NewsletterVerificationTokenFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for NewsletterVerificationToken.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NewsletterVerificationTokenClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    subscriber<T extends NewsletterSubscriberDefaultArgs<ExtArgs> = {}>(args?: Subset<T, NewsletterSubscriberDefaultArgs<ExtArgs>>): Prisma__NewsletterSubscriberClient<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the NewsletterVerificationToken model
+   */
+  interface NewsletterVerificationTokenFieldRefs {
+    readonly id: FieldRef<"NewsletterVerificationToken", 'String'>
+    readonly subscriberId: FieldRef<"NewsletterVerificationToken", 'String'>
+    readonly tokenHash: FieldRef<"NewsletterVerificationToken", 'String'>
+    readonly expiresAt: FieldRef<"NewsletterVerificationToken", 'DateTime'>
+    readonly usedAt: FieldRef<"NewsletterVerificationToken", 'DateTime'>
+    readonly createdAt: FieldRef<"NewsletterVerificationToken", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * NewsletterVerificationToken findUnique
+   */
+  export type NewsletterVerificationTokenFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterVerificationToken to fetch.
+     */
+    where: NewsletterVerificationTokenWhereUniqueInput
+  }
+
+  /**
+   * NewsletterVerificationToken findUniqueOrThrow
+   */
+  export type NewsletterVerificationTokenFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterVerificationToken to fetch.
+     */
+    where: NewsletterVerificationTokenWhereUniqueInput
+  }
+
+  /**
+   * NewsletterVerificationToken findFirst
+   */
+  export type NewsletterVerificationTokenFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterVerificationToken to fetch.
+     */
+    where?: NewsletterVerificationTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterVerificationTokens to fetch.
+     */
+    orderBy?: NewsletterVerificationTokenOrderByWithRelationInput | NewsletterVerificationTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NewsletterVerificationTokens.
+     */
+    cursor?: NewsletterVerificationTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterVerificationTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterVerificationTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NewsletterVerificationTokens.
+     */
+    distinct?: NewsletterVerificationTokenScalarFieldEnum | NewsletterVerificationTokenScalarFieldEnum[]
+  }
+
+  /**
+   * NewsletterVerificationToken findFirstOrThrow
+   */
+  export type NewsletterVerificationTokenFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterVerificationToken to fetch.
+     */
+    where?: NewsletterVerificationTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterVerificationTokens to fetch.
+     */
+    orderBy?: NewsletterVerificationTokenOrderByWithRelationInput | NewsletterVerificationTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NewsletterVerificationTokens.
+     */
+    cursor?: NewsletterVerificationTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterVerificationTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterVerificationTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NewsletterVerificationTokens.
+     */
+    distinct?: NewsletterVerificationTokenScalarFieldEnum | NewsletterVerificationTokenScalarFieldEnum[]
+  }
+
+  /**
+   * NewsletterVerificationToken findMany
+   */
+  export type NewsletterVerificationTokenFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterVerificationTokens to fetch.
+     */
+    where?: NewsletterVerificationTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterVerificationTokens to fetch.
+     */
+    orderBy?: NewsletterVerificationTokenOrderByWithRelationInput | NewsletterVerificationTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing NewsletterVerificationTokens.
+     */
+    cursor?: NewsletterVerificationTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterVerificationTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterVerificationTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NewsletterVerificationTokens.
+     */
+    distinct?: NewsletterVerificationTokenScalarFieldEnum | NewsletterVerificationTokenScalarFieldEnum[]
+  }
+
+  /**
+   * NewsletterVerificationToken create
+   */
+  export type NewsletterVerificationTokenCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenInclude<ExtArgs> | null
+    /**
+     * The data needed to create a NewsletterVerificationToken.
+     */
+    data: XOR<NewsletterVerificationTokenCreateInput, NewsletterVerificationTokenUncheckedCreateInput>
+  }
+
+  /**
+   * NewsletterVerificationToken createMany
+   */
+  export type NewsletterVerificationTokenCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many NewsletterVerificationTokens.
+     */
+    data: NewsletterVerificationTokenCreateManyInput | NewsletterVerificationTokenCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * NewsletterVerificationToken createManyAndReturn
+   */
+  export type NewsletterVerificationTokenCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * The data used to create many NewsletterVerificationTokens.
+     */
+    data: NewsletterVerificationTokenCreateManyInput | NewsletterVerificationTokenCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * NewsletterVerificationToken update
+   */
+  export type NewsletterVerificationTokenUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenInclude<ExtArgs> | null
+    /**
+     * The data needed to update a NewsletterVerificationToken.
+     */
+    data: XOR<NewsletterVerificationTokenUpdateInput, NewsletterVerificationTokenUncheckedUpdateInput>
+    /**
+     * Choose, which NewsletterVerificationToken to update.
+     */
+    where: NewsletterVerificationTokenWhereUniqueInput
+  }
+
+  /**
+   * NewsletterVerificationToken updateMany
+   */
+  export type NewsletterVerificationTokenUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update NewsletterVerificationTokens.
+     */
+    data: XOR<NewsletterVerificationTokenUpdateManyMutationInput, NewsletterVerificationTokenUncheckedUpdateManyInput>
+    /**
+     * Filter which NewsletterVerificationTokens to update
+     */
+    where?: NewsletterVerificationTokenWhereInput
+    /**
+     * Limit how many NewsletterVerificationTokens to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * NewsletterVerificationToken updateManyAndReturn
+   */
+  export type NewsletterVerificationTokenUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * The data used to update NewsletterVerificationTokens.
+     */
+    data: XOR<NewsletterVerificationTokenUpdateManyMutationInput, NewsletterVerificationTokenUncheckedUpdateManyInput>
+    /**
+     * Filter which NewsletterVerificationTokens to update
+     */
+    where?: NewsletterVerificationTokenWhereInput
+    /**
+     * Limit how many NewsletterVerificationTokens to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * NewsletterVerificationToken upsert
+   */
+  export type NewsletterVerificationTokenUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenInclude<ExtArgs> | null
+    /**
+     * The filter to search for the NewsletterVerificationToken to update in case it exists.
+     */
+    where: NewsletterVerificationTokenWhereUniqueInput
+    /**
+     * In case the NewsletterVerificationToken found by the `where` argument doesn't exist, create a new NewsletterVerificationToken with this data.
+     */
+    create: XOR<NewsletterVerificationTokenCreateInput, NewsletterVerificationTokenUncheckedCreateInput>
+    /**
+     * In case the NewsletterVerificationToken was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NewsletterVerificationTokenUpdateInput, NewsletterVerificationTokenUncheckedUpdateInput>
+  }
+
+  /**
+   * NewsletterVerificationToken delete
+   */
+  export type NewsletterVerificationTokenDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenInclude<ExtArgs> | null
+    /**
+     * Filter which NewsletterVerificationToken to delete.
+     */
+    where: NewsletterVerificationTokenWhereUniqueInput
+  }
+
+  /**
+   * NewsletterVerificationToken deleteMany
+   */
+  export type NewsletterVerificationTokenDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NewsletterVerificationTokens to delete
+     */
+    where?: NewsletterVerificationTokenWhereInput
+    /**
+     * Limit how many NewsletterVerificationTokens to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * NewsletterVerificationToken without action
+   */
+  export type NewsletterVerificationTokenDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterVerificationToken
+     */
+    select?: NewsletterVerificationTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterVerificationToken
+     */
+    omit?: NewsletterVerificationTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterVerificationTokenInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model NewsletterConsentEvent
+   */
+
+  export type AggregateNewsletterConsentEvent = {
+    _count: NewsletterConsentEventCountAggregateOutputType | null
+    _min: NewsletterConsentEventMinAggregateOutputType | null
+    _max: NewsletterConsentEventMaxAggregateOutputType | null
+  }
+
+  export type NewsletterConsentEventMinAggregateOutputType = {
+    id: string | null
+    subscriberId: string | null
+    eventType: $Enums.NewsletterConsentEventType | null
+    consentTextVersion: string | null
+    consentSource: string | null
+    createdAt: Date | null
+  }
+
+  export type NewsletterConsentEventMaxAggregateOutputType = {
+    id: string | null
+    subscriberId: string | null
+    eventType: $Enums.NewsletterConsentEventType | null
+    consentTextVersion: string | null
+    consentSource: string | null
+    createdAt: Date | null
+  }
+
+  export type NewsletterConsentEventCountAggregateOutputType = {
+    id: number
+    subscriberId: number
+    eventType: number
+    consentTextVersion: number
+    consentSource: number
+    metadata: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type NewsletterConsentEventMinAggregateInputType = {
+    id?: true
+    subscriberId?: true
+    eventType?: true
+    consentTextVersion?: true
+    consentSource?: true
+    createdAt?: true
+  }
+
+  export type NewsletterConsentEventMaxAggregateInputType = {
+    id?: true
+    subscriberId?: true
+    eventType?: true
+    consentTextVersion?: true
+    consentSource?: true
+    createdAt?: true
+  }
+
+  export type NewsletterConsentEventCountAggregateInputType = {
+    id?: true
+    subscriberId?: true
+    eventType?: true
+    consentTextVersion?: true
+    consentSource?: true
+    metadata?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type NewsletterConsentEventAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NewsletterConsentEvent to aggregate.
+     */
+    where?: NewsletterConsentEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterConsentEvents to fetch.
+     */
+    orderBy?: NewsletterConsentEventOrderByWithRelationInput | NewsletterConsentEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: NewsletterConsentEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterConsentEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterConsentEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned NewsletterConsentEvents
+    **/
+    _count?: true | NewsletterConsentEventCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: NewsletterConsentEventMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: NewsletterConsentEventMaxAggregateInputType
+  }
+
+  export type GetNewsletterConsentEventAggregateType<T extends NewsletterConsentEventAggregateArgs> = {
+        [P in keyof T & keyof AggregateNewsletterConsentEvent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNewsletterConsentEvent[P]>
+      : GetScalarType<T[P], AggregateNewsletterConsentEvent[P]>
+  }
+
+
+
+
+  export type NewsletterConsentEventGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NewsletterConsentEventWhereInput
+    orderBy?: NewsletterConsentEventOrderByWithAggregationInput | NewsletterConsentEventOrderByWithAggregationInput[]
+    by: NewsletterConsentEventScalarFieldEnum[] | NewsletterConsentEventScalarFieldEnum
+    having?: NewsletterConsentEventScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NewsletterConsentEventCountAggregateInputType | true
+    _min?: NewsletterConsentEventMinAggregateInputType
+    _max?: NewsletterConsentEventMaxAggregateInputType
+  }
+
+  export type NewsletterConsentEventGroupByOutputType = {
+    id: string
+    subscriberId: string
+    eventType: $Enums.NewsletterConsentEventType
+    consentTextVersion: string
+    consentSource: string
+    metadata: JsonValue | null
+    createdAt: Date
+    _count: NewsletterConsentEventCountAggregateOutputType | null
+    _min: NewsletterConsentEventMinAggregateOutputType | null
+    _max: NewsletterConsentEventMaxAggregateOutputType | null
+  }
+
+  type GetNewsletterConsentEventGroupByPayload<T extends NewsletterConsentEventGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NewsletterConsentEventGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NewsletterConsentEventGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NewsletterConsentEventGroupByOutputType[P]>
+            : GetScalarType<T[P], NewsletterConsentEventGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NewsletterConsentEventSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    subscriberId?: boolean
+    eventType?: boolean
+    consentTextVersion?: boolean
+    consentSource?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["newsletterConsentEvent"]>
+
+  export type NewsletterConsentEventSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    subscriberId?: boolean
+    eventType?: boolean
+    consentTextVersion?: boolean
+    consentSource?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["newsletterConsentEvent"]>
+
+  export type NewsletterConsentEventSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    subscriberId?: boolean
+    eventType?: boolean
+    consentTextVersion?: boolean
+    consentSource?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["newsletterConsentEvent"]>
+
+  export type NewsletterConsentEventSelectScalar = {
+    id?: boolean
+    subscriberId?: boolean
+    eventType?: boolean
+    consentTextVersion?: boolean
+    consentSource?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+  }
+
+  export type NewsletterConsentEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "subscriberId" | "eventType" | "consentTextVersion" | "consentSource" | "metadata" | "createdAt", ExtArgs["result"]["newsletterConsentEvent"]>
+  export type NewsletterConsentEventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }
+  export type NewsletterConsentEventIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }
+  export type NewsletterConsentEventIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    subscriber?: boolean | NewsletterSubscriberDefaultArgs<ExtArgs>
+  }
+
+  export type $NewsletterConsentEventPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "NewsletterConsentEvent"
+    objects: {
+      subscriber: Prisma.$NewsletterSubscriberPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      subscriberId: string
+      eventType: $Enums.NewsletterConsentEventType
+      consentTextVersion: string
+      consentSource: string
+      metadata: Prisma.JsonValue | null
+      createdAt: Date
+    }, ExtArgs["result"]["newsletterConsentEvent"]>
+    composites: {}
+  }
+
+  type NewsletterConsentEventGetPayload<S extends boolean | null | undefined | NewsletterConsentEventDefaultArgs> = $Result.GetResult<Prisma.$NewsletterConsentEventPayload, S>
+
+  type NewsletterConsentEventCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<NewsletterConsentEventFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: NewsletterConsentEventCountAggregateInputType | true
+    }
+
+  export interface NewsletterConsentEventDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['NewsletterConsentEvent'], meta: { name: 'NewsletterConsentEvent' } }
+    /**
+     * Find zero or one NewsletterConsentEvent that matches the filter.
+     * @param {NewsletterConsentEventFindUniqueArgs} args - Arguments to find a NewsletterConsentEvent
+     * @example
+     * // Get one NewsletterConsentEvent
+     * const newsletterConsentEvent = await prisma.newsletterConsentEvent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NewsletterConsentEventFindUniqueArgs>(args: SelectSubset<T, NewsletterConsentEventFindUniqueArgs<ExtArgs>>): Prisma__NewsletterConsentEventClient<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one NewsletterConsentEvent that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {NewsletterConsentEventFindUniqueOrThrowArgs} args - Arguments to find a NewsletterConsentEvent
+     * @example
+     * // Get one NewsletterConsentEvent
+     * const newsletterConsentEvent = await prisma.newsletterConsentEvent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NewsletterConsentEventFindUniqueOrThrowArgs>(args: SelectSubset<T, NewsletterConsentEventFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NewsletterConsentEventClient<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NewsletterConsentEvent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterConsentEventFindFirstArgs} args - Arguments to find a NewsletterConsentEvent
+     * @example
+     * // Get one NewsletterConsentEvent
+     * const newsletterConsentEvent = await prisma.newsletterConsentEvent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NewsletterConsentEventFindFirstArgs>(args?: SelectSubset<T, NewsletterConsentEventFindFirstArgs<ExtArgs>>): Prisma__NewsletterConsentEventClient<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NewsletterConsentEvent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterConsentEventFindFirstOrThrowArgs} args - Arguments to find a NewsletterConsentEvent
+     * @example
+     * // Get one NewsletterConsentEvent
+     * const newsletterConsentEvent = await prisma.newsletterConsentEvent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NewsletterConsentEventFindFirstOrThrowArgs>(args?: SelectSubset<T, NewsletterConsentEventFindFirstOrThrowArgs<ExtArgs>>): Prisma__NewsletterConsentEventClient<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more NewsletterConsentEvents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterConsentEventFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all NewsletterConsentEvents
+     * const newsletterConsentEvents = await prisma.newsletterConsentEvent.findMany()
+     * 
+     * // Get first 10 NewsletterConsentEvents
+     * const newsletterConsentEvents = await prisma.newsletterConsentEvent.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const newsletterConsentEventWithIdOnly = await prisma.newsletterConsentEvent.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends NewsletterConsentEventFindManyArgs>(args?: SelectSubset<T, NewsletterConsentEventFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a NewsletterConsentEvent.
+     * @param {NewsletterConsentEventCreateArgs} args - Arguments to create a NewsletterConsentEvent.
+     * @example
+     * // Create one NewsletterConsentEvent
+     * const NewsletterConsentEvent = await prisma.newsletterConsentEvent.create({
+     *   data: {
+     *     // ... data to create a NewsletterConsentEvent
+     *   }
+     * })
+     * 
+     */
+    create<T extends NewsletterConsentEventCreateArgs>(args: SelectSubset<T, NewsletterConsentEventCreateArgs<ExtArgs>>): Prisma__NewsletterConsentEventClient<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many NewsletterConsentEvents.
+     * @param {NewsletterConsentEventCreateManyArgs} args - Arguments to create many NewsletterConsentEvents.
+     * @example
+     * // Create many NewsletterConsentEvents
+     * const newsletterConsentEvent = await prisma.newsletterConsentEvent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends NewsletterConsentEventCreateManyArgs>(args?: SelectSubset<T, NewsletterConsentEventCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many NewsletterConsentEvents and returns the data saved in the database.
+     * @param {NewsletterConsentEventCreateManyAndReturnArgs} args - Arguments to create many NewsletterConsentEvents.
+     * @example
+     * // Create many NewsletterConsentEvents
+     * const newsletterConsentEvent = await prisma.newsletterConsentEvent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many NewsletterConsentEvents and only return the `id`
+     * const newsletterConsentEventWithIdOnly = await prisma.newsletterConsentEvent.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends NewsletterConsentEventCreateManyAndReturnArgs>(args?: SelectSubset<T, NewsletterConsentEventCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a NewsletterConsentEvent.
+     * @param {NewsletterConsentEventDeleteArgs} args - Arguments to delete one NewsletterConsentEvent.
+     * @example
+     * // Delete one NewsletterConsentEvent
+     * const NewsletterConsentEvent = await prisma.newsletterConsentEvent.delete({
+     *   where: {
+     *     // ... filter to delete one NewsletterConsentEvent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends NewsletterConsentEventDeleteArgs>(args: SelectSubset<T, NewsletterConsentEventDeleteArgs<ExtArgs>>): Prisma__NewsletterConsentEventClient<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one NewsletterConsentEvent.
+     * @param {NewsletterConsentEventUpdateArgs} args - Arguments to update one NewsletterConsentEvent.
+     * @example
+     * // Update one NewsletterConsentEvent
+     * const newsletterConsentEvent = await prisma.newsletterConsentEvent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends NewsletterConsentEventUpdateArgs>(args: SelectSubset<T, NewsletterConsentEventUpdateArgs<ExtArgs>>): Prisma__NewsletterConsentEventClient<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more NewsletterConsentEvents.
+     * @param {NewsletterConsentEventDeleteManyArgs} args - Arguments to filter NewsletterConsentEvents to delete.
+     * @example
+     * // Delete a few NewsletterConsentEvents
+     * const { count } = await prisma.newsletterConsentEvent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends NewsletterConsentEventDeleteManyArgs>(args?: SelectSubset<T, NewsletterConsentEventDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NewsletterConsentEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterConsentEventUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many NewsletterConsentEvents
+     * const newsletterConsentEvent = await prisma.newsletterConsentEvent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends NewsletterConsentEventUpdateManyArgs>(args: SelectSubset<T, NewsletterConsentEventUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NewsletterConsentEvents and returns the data updated in the database.
+     * @param {NewsletterConsentEventUpdateManyAndReturnArgs} args - Arguments to update many NewsletterConsentEvents.
+     * @example
+     * // Update many NewsletterConsentEvents
+     * const newsletterConsentEvent = await prisma.newsletterConsentEvent.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more NewsletterConsentEvents and only return the `id`
+     * const newsletterConsentEventWithIdOnly = await prisma.newsletterConsentEvent.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends NewsletterConsentEventUpdateManyAndReturnArgs>(args: SelectSubset<T, NewsletterConsentEventUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one NewsletterConsentEvent.
+     * @param {NewsletterConsentEventUpsertArgs} args - Arguments to update or create a NewsletterConsentEvent.
+     * @example
+     * // Update or create a NewsletterConsentEvent
+     * const newsletterConsentEvent = await prisma.newsletterConsentEvent.upsert({
+     *   create: {
+     *     // ... data to create a NewsletterConsentEvent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the NewsletterConsentEvent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NewsletterConsentEventUpsertArgs>(args: SelectSubset<T, NewsletterConsentEventUpsertArgs<ExtArgs>>): Prisma__NewsletterConsentEventClient<$Result.GetResult<Prisma.$NewsletterConsentEventPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of NewsletterConsentEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterConsentEventCountArgs} args - Arguments to filter NewsletterConsentEvents to count.
+     * @example
+     * // Count the number of NewsletterConsentEvents
+     * const count = await prisma.newsletterConsentEvent.count({
+     *   where: {
+     *     // ... the filter for the NewsletterConsentEvents we want to count
+     *   }
+     * })
+    **/
+    count<T extends NewsletterConsentEventCountArgs>(
+      args?: Subset<T, NewsletterConsentEventCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NewsletterConsentEventCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a NewsletterConsentEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterConsentEventAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NewsletterConsentEventAggregateArgs>(args: Subset<T, NewsletterConsentEventAggregateArgs>): Prisma.PrismaPromise<GetNewsletterConsentEventAggregateType<T>>
+
+    /**
+     * Group by NewsletterConsentEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NewsletterConsentEventGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends NewsletterConsentEventGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NewsletterConsentEventGroupByArgs['orderBy'] }
+        : { orderBy?: NewsletterConsentEventGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NewsletterConsentEventGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNewsletterConsentEventGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the NewsletterConsentEvent model
+   */
+  readonly fields: NewsletterConsentEventFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for NewsletterConsentEvent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NewsletterConsentEventClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    subscriber<T extends NewsletterSubscriberDefaultArgs<ExtArgs> = {}>(args?: Subset<T, NewsletterSubscriberDefaultArgs<ExtArgs>>): Prisma__NewsletterSubscriberClient<$Result.GetResult<Prisma.$NewsletterSubscriberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the NewsletterConsentEvent model
+   */
+  interface NewsletterConsentEventFieldRefs {
+    readonly id: FieldRef<"NewsletterConsentEvent", 'String'>
+    readonly subscriberId: FieldRef<"NewsletterConsentEvent", 'String'>
+    readonly eventType: FieldRef<"NewsletterConsentEvent", 'NewsletterConsentEventType'>
+    readonly consentTextVersion: FieldRef<"NewsletterConsentEvent", 'String'>
+    readonly consentSource: FieldRef<"NewsletterConsentEvent", 'String'>
+    readonly metadata: FieldRef<"NewsletterConsentEvent", 'Json'>
+    readonly createdAt: FieldRef<"NewsletterConsentEvent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * NewsletterConsentEvent findUnique
+   */
+  export type NewsletterConsentEventFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterConsentEvent to fetch.
+     */
+    where: NewsletterConsentEventWhereUniqueInput
+  }
+
+  /**
+   * NewsletterConsentEvent findUniqueOrThrow
+   */
+  export type NewsletterConsentEventFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterConsentEvent to fetch.
+     */
+    where: NewsletterConsentEventWhereUniqueInput
+  }
+
+  /**
+   * NewsletterConsentEvent findFirst
+   */
+  export type NewsletterConsentEventFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterConsentEvent to fetch.
+     */
+    where?: NewsletterConsentEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterConsentEvents to fetch.
+     */
+    orderBy?: NewsletterConsentEventOrderByWithRelationInput | NewsletterConsentEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NewsletterConsentEvents.
+     */
+    cursor?: NewsletterConsentEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterConsentEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterConsentEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NewsletterConsentEvents.
+     */
+    distinct?: NewsletterConsentEventScalarFieldEnum | NewsletterConsentEventScalarFieldEnum[]
+  }
+
+  /**
+   * NewsletterConsentEvent findFirstOrThrow
+   */
+  export type NewsletterConsentEventFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterConsentEvent to fetch.
+     */
+    where?: NewsletterConsentEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterConsentEvents to fetch.
+     */
+    orderBy?: NewsletterConsentEventOrderByWithRelationInput | NewsletterConsentEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NewsletterConsentEvents.
+     */
+    cursor?: NewsletterConsentEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterConsentEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterConsentEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NewsletterConsentEvents.
+     */
+    distinct?: NewsletterConsentEventScalarFieldEnum | NewsletterConsentEventScalarFieldEnum[]
+  }
+
+  /**
+   * NewsletterConsentEvent findMany
+   */
+  export type NewsletterConsentEventFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventInclude<ExtArgs> | null
+    /**
+     * Filter, which NewsletterConsentEvents to fetch.
+     */
+    where?: NewsletterConsentEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NewsletterConsentEvents to fetch.
+     */
+    orderBy?: NewsletterConsentEventOrderByWithRelationInput | NewsletterConsentEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing NewsletterConsentEvents.
+     */
+    cursor?: NewsletterConsentEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NewsletterConsentEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NewsletterConsentEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NewsletterConsentEvents.
+     */
+    distinct?: NewsletterConsentEventScalarFieldEnum | NewsletterConsentEventScalarFieldEnum[]
+  }
+
+  /**
+   * NewsletterConsentEvent create
+   */
+  export type NewsletterConsentEventCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventInclude<ExtArgs> | null
+    /**
+     * The data needed to create a NewsletterConsentEvent.
+     */
+    data: XOR<NewsletterConsentEventCreateInput, NewsletterConsentEventUncheckedCreateInput>
+  }
+
+  /**
+   * NewsletterConsentEvent createMany
+   */
+  export type NewsletterConsentEventCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many NewsletterConsentEvents.
+     */
+    data: NewsletterConsentEventCreateManyInput | NewsletterConsentEventCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * NewsletterConsentEvent createManyAndReturn
+   */
+  export type NewsletterConsentEventCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * The data used to create many NewsletterConsentEvents.
+     */
+    data: NewsletterConsentEventCreateManyInput | NewsletterConsentEventCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * NewsletterConsentEvent update
+   */
+  export type NewsletterConsentEventUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventInclude<ExtArgs> | null
+    /**
+     * The data needed to update a NewsletterConsentEvent.
+     */
+    data: XOR<NewsletterConsentEventUpdateInput, NewsletterConsentEventUncheckedUpdateInput>
+    /**
+     * Choose, which NewsletterConsentEvent to update.
+     */
+    where: NewsletterConsentEventWhereUniqueInput
+  }
+
+  /**
+   * NewsletterConsentEvent updateMany
+   */
+  export type NewsletterConsentEventUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update NewsletterConsentEvents.
+     */
+    data: XOR<NewsletterConsentEventUpdateManyMutationInput, NewsletterConsentEventUncheckedUpdateManyInput>
+    /**
+     * Filter which NewsletterConsentEvents to update
+     */
+    where?: NewsletterConsentEventWhereInput
+    /**
+     * Limit how many NewsletterConsentEvents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * NewsletterConsentEvent updateManyAndReturn
+   */
+  export type NewsletterConsentEventUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * The data used to update NewsletterConsentEvents.
+     */
+    data: XOR<NewsletterConsentEventUpdateManyMutationInput, NewsletterConsentEventUncheckedUpdateManyInput>
+    /**
+     * Filter which NewsletterConsentEvents to update
+     */
+    where?: NewsletterConsentEventWhereInput
+    /**
+     * Limit how many NewsletterConsentEvents to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * NewsletterConsentEvent upsert
+   */
+  export type NewsletterConsentEventUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventInclude<ExtArgs> | null
+    /**
+     * The filter to search for the NewsletterConsentEvent to update in case it exists.
+     */
+    where: NewsletterConsentEventWhereUniqueInput
+    /**
+     * In case the NewsletterConsentEvent found by the `where` argument doesn't exist, create a new NewsletterConsentEvent with this data.
+     */
+    create: XOR<NewsletterConsentEventCreateInput, NewsletterConsentEventUncheckedCreateInput>
+    /**
+     * In case the NewsletterConsentEvent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NewsletterConsentEventUpdateInput, NewsletterConsentEventUncheckedUpdateInput>
+  }
+
+  /**
+   * NewsletterConsentEvent delete
+   */
+  export type NewsletterConsentEventDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventInclude<ExtArgs> | null
+    /**
+     * Filter which NewsletterConsentEvent to delete.
+     */
+    where: NewsletterConsentEventWhereUniqueInput
+  }
+
+  /**
+   * NewsletterConsentEvent deleteMany
+   */
+  export type NewsletterConsentEventDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NewsletterConsentEvents to delete
+     */
+    where?: NewsletterConsentEventWhereInput
+    /**
+     * Limit how many NewsletterConsentEvents to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * NewsletterConsentEvent without action
+   */
+  export type NewsletterConsentEventDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NewsletterConsentEvent
+     */
+    select?: NewsletterConsentEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NewsletterConsentEvent
+     */
+    omit?: NewsletterConsentEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NewsletterConsentEventInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -47969,6 +51651,48 @@ export namespace Prisma {
   export type BackInStockAlertScalarFieldEnum = (typeof BackInStockAlertScalarFieldEnum)[keyof typeof BackInStockAlertScalarFieldEnum]
 
 
+  export const NewsletterSubscriberScalarFieldEnum: {
+    id: 'id',
+    email: 'email',
+    status: 'status',
+    consentGivenAt: 'consentGivenAt',
+    consentSource: 'consentSource',
+    consentTextVersion: 'consentTextVersion',
+    unsubscribeToken: 'unsubscribeToken',
+    verifiedAt: 'verifiedAt',
+    unsubscribedAt: 'unsubscribedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type NewsletterSubscriberScalarFieldEnum = (typeof NewsletterSubscriberScalarFieldEnum)[keyof typeof NewsletterSubscriberScalarFieldEnum]
+
+
+  export const NewsletterVerificationTokenScalarFieldEnum: {
+    id: 'id',
+    subscriberId: 'subscriberId',
+    tokenHash: 'tokenHash',
+    expiresAt: 'expiresAt',
+    usedAt: 'usedAt',
+    createdAt: 'createdAt'
+  };
+
+  export type NewsletterVerificationTokenScalarFieldEnum = (typeof NewsletterVerificationTokenScalarFieldEnum)[keyof typeof NewsletterVerificationTokenScalarFieldEnum]
+
+
+  export const NewsletterConsentEventScalarFieldEnum: {
+    id: 'id',
+    subscriberId: 'subscriberId',
+    eventType: 'eventType',
+    consentTextVersion: 'consentTextVersion',
+    consentSource: 'consentSource',
+    metadata: 'metadata',
+    createdAt: 'createdAt'
+  };
+
+  export type NewsletterConsentEventScalarFieldEnum = (typeof NewsletterConsentEventScalarFieldEnum)[keyof typeof NewsletterConsentEventScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -48306,6 +52030,34 @@ export namespace Prisma {
    * Reference to a field of type 'BackInStockAlertStatus[]'
    */
   export type ListEnumBackInStockAlertStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BackInStockAlertStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'NewsletterSubscriberStatus'
+   */
+  export type EnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NewsletterSubscriberStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'NewsletterSubscriberStatus[]'
+   */
+  export type ListEnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NewsletterSubscriberStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'NewsletterConsentEventType'
+   */
+  export type EnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NewsletterConsentEventType'>
+    
+
+
+  /**
+   * Reference to a field of type 'NewsletterConsentEventType[]'
+   */
+  export type ListEnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NewsletterConsentEventType[]'>
     
   /**
    * Deep Input Types
@@ -51549,6 +55301,219 @@ export namespace Prisma {
     uncertainDelivery?: BoolWithAggregatesFilter<"BackInStockAlert"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"BackInStockAlert"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"BackInStockAlert"> | Date | string
+  }
+
+  export type NewsletterSubscriberWhereInput = {
+    AND?: NewsletterSubscriberWhereInput | NewsletterSubscriberWhereInput[]
+    OR?: NewsletterSubscriberWhereInput[]
+    NOT?: NewsletterSubscriberWhereInput | NewsletterSubscriberWhereInput[]
+    id?: StringFilter<"NewsletterSubscriber"> | string
+    email?: StringFilter<"NewsletterSubscriber"> | string
+    status?: EnumNewsletterSubscriberStatusFilter<"NewsletterSubscriber"> | $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: DateTimeFilter<"NewsletterSubscriber"> | Date | string
+    consentSource?: StringFilter<"NewsletterSubscriber"> | string
+    consentTextVersion?: StringFilter<"NewsletterSubscriber"> | string
+    unsubscribeToken?: StringFilter<"NewsletterSubscriber"> | string
+    verifiedAt?: DateTimeNullableFilter<"NewsletterSubscriber"> | Date | string | null
+    unsubscribedAt?: DateTimeNullableFilter<"NewsletterSubscriber"> | Date | string | null
+    createdAt?: DateTimeFilter<"NewsletterSubscriber"> | Date | string
+    updatedAt?: DateTimeFilter<"NewsletterSubscriber"> | Date | string
+    verificationTokens?: NewsletterVerificationTokenListRelationFilter
+    consentEvents?: NewsletterConsentEventListRelationFilter
+  }
+
+  export type NewsletterSubscriberOrderByWithRelationInput = {
+    id?: SortOrder
+    email?: SortOrder
+    status?: SortOrder
+    consentGivenAt?: SortOrder
+    consentSource?: SortOrder
+    consentTextVersion?: SortOrder
+    unsubscribeToken?: SortOrder
+    verifiedAt?: SortOrderInput | SortOrder
+    unsubscribedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    verificationTokens?: NewsletterVerificationTokenOrderByRelationAggregateInput
+    consentEvents?: NewsletterConsentEventOrderByRelationAggregateInput
+  }
+
+  export type NewsletterSubscriberWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    email?: string
+    unsubscribeToken?: string
+    AND?: NewsletterSubscriberWhereInput | NewsletterSubscriberWhereInput[]
+    OR?: NewsletterSubscriberWhereInput[]
+    NOT?: NewsletterSubscriberWhereInput | NewsletterSubscriberWhereInput[]
+    status?: EnumNewsletterSubscriberStatusFilter<"NewsletterSubscriber"> | $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: DateTimeFilter<"NewsletterSubscriber"> | Date | string
+    consentSource?: StringFilter<"NewsletterSubscriber"> | string
+    consentTextVersion?: StringFilter<"NewsletterSubscriber"> | string
+    verifiedAt?: DateTimeNullableFilter<"NewsletterSubscriber"> | Date | string | null
+    unsubscribedAt?: DateTimeNullableFilter<"NewsletterSubscriber"> | Date | string | null
+    createdAt?: DateTimeFilter<"NewsletterSubscriber"> | Date | string
+    updatedAt?: DateTimeFilter<"NewsletterSubscriber"> | Date | string
+    verificationTokens?: NewsletterVerificationTokenListRelationFilter
+    consentEvents?: NewsletterConsentEventListRelationFilter
+  }, "id" | "email" | "unsubscribeToken">
+
+  export type NewsletterSubscriberOrderByWithAggregationInput = {
+    id?: SortOrder
+    email?: SortOrder
+    status?: SortOrder
+    consentGivenAt?: SortOrder
+    consentSource?: SortOrder
+    consentTextVersion?: SortOrder
+    unsubscribeToken?: SortOrder
+    verifiedAt?: SortOrderInput | SortOrder
+    unsubscribedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: NewsletterSubscriberCountOrderByAggregateInput
+    _max?: NewsletterSubscriberMaxOrderByAggregateInput
+    _min?: NewsletterSubscriberMinOrderByAggregateInput
+  }
+
+  export type NewsletterSubscriberScalarWhereWithAggregatesInput = {
+    AND?: NewsletterSubscriberScalarWhereWithAggregatesInput | NewsletterSubscriberScalarWhereWithAggregatesInput[]
+    OR?: NewsletterSubscriberScalarWhereWithAggregatesInput[]
+    NOT?: NewsletterSubscriberScalarWhereWithAggregatesInput | NewsletterSubscriberScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"NewsletterSubscriber"> | string
+    email?: StringWithAggregatesFilter<"NewsletterSubscriber"> | string
+    status?: EnumNewsletterSubscriberStatusWithAggregatesFilter<"NewsletterSubscriber"> | $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: DateTimeWithAggregatesFilter<"NewsletterSubscriber"> | Date | string
+    consentSource?: StringWithAggregatesFilter<"NewsletterSubscriber"> | string
+    consentTextVersion?: StringWithAggregatesFilter<"NewsletterSubscriber"> | string
+    unsubscribeToken?: StringWithAggregatesFilter<"NewsletterSubscriber"> | string
+    verifiedAt?: DateTimeNullableWithAggregatesFilter<"NewsletterSubscriber"> | Date | string | null
+    unsubscribedAt?: DateTimeNullableWithAggregatesFilter<"NewsletterSubscriber"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"NewsletterSubscriber"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"NewsletterSubscriber"> | Date | string
+  }
+
+  export type NewsletterVerificationTokenWhereInput = {
+    AND?: NewsletterVerificationTokenWhereInput | NewsletterVerificationTokenWhereInput[]
+    OR?: NewsletterVerificationTokenWhereInput[]
+    NOT?: NewsletterVerificationTokenWhereInput | NewsletterVerificationTokenWhereInput[]
+    id?: StringFilter<"NewsletterVerificationToken"> | string
+    subscriberId?: StringFilter<"NewsletterVerificationToken"> | string
+    tokenHash?: StringFilter<"NewsletterVerificationToken"> | string
+    expiresAt?: DateTimeFilter<"NewsletterVerificationToken"> | Date | string
+    usedAt?: DateTimeNullableFilter<"NewsletterVerificationToken"> | Date | string | null
+    createdAt?: DateTimeFilter<"NewsletterVerificationToken"> | Date | string
+    subscriber?: XOR<NewsletterSubscriberScalarRelationFilter, NewsletterSubscriberWhereInput>
+  }
+
+  export type NewsletterVerificationTokenOrderByWithRelationInput = {
+    id?: SortOrder
+    subscriberId?: SortOrder
+    tokenHash?: SortOrder
+    expiresAt?: SortOrder
+    usedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    subscriber?: NewsletterSubscriberOrderByWithRelationInput
+  }
+
+  export type NewsletterVerificationTokenWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    tokenHash?: string
+    AND?: NewsletterVerificationTokenWhereInput | NewsletterVerificationTokenWhereInput[]
+    OR?: NewsletterVerificationTokenWhereInput[]
+    NOT?: NewsletterVerificationTokenWhereInput | NewsletterVerificationTokenWhereInput[]
+    subscriberId?: StringFilter<"NewsletterVerificationToken"> | string
+    expiresAt?: DateTimeFilter<"NewsletterVerificationToken"> | Date | string
+    usedAt?: DateTimeNullableFilter<"NewsletterVerificationToken"> | Date | string | null
+    createdAt?: DateTimeFilter<"NewsletterVerificationToken"> | Date | string
+    subscriber?: XOR<NewsletterSubscriberScalarRelationFilter, NewsletterSubscriberWhereInput>
+  }, "id" | "tokenHash">
+
+  export type NewsletterVerificationTokenOrderByWithAggregationInput = {
+    id?: SortOrder
+    subscriberId?: SortOrder
+    tokenHash?: SortOrder
+    expiresAt?: SortOrder
+    usedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: NewsletterVerificationTokenCountOrderByAggregateInput
+    _max?: NewsletterVerificationTokenMaxOrderByAggregateInput
+    _min?: NewsletterVerificationTokenMinOrderByAggregateInput
+  }
+
+  export type NewsletterVerificationTokenScalarWhereWithAggregatesInput = {
+    AND?: NewsletterVerificationTokenScalarWhereWithAggregatesInput | NewsletterVerificationTokenScalarWhereWithAggregatesInput[]
+    OR?: NewsletterVerificationTokenScalarWhereWithAggregatesInput[]
+    NOT?: NewsletterVerificationTokenScalarWhereWithAggregatesInput | NewsletterVerificationTokenScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"NewsletterVerificationToken"> | string
+    subscriberId?: StringWithAggregatesFilter<"NewsletterVerificationToken"> | string
+    tokenHash?: StringWithAggregatesFilter<"NewsletterVerificationToken"> | string
+    expiresAt?: DateTimeWithAggregatesFilter<"NewsletterVerificationToken"> | Date | string
+    usedAt?: DateTimeNullableWithAggregatesFilter<"NewsletterVerificationToken"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"NewsletterVerificationToken"> | Date | string
+  }
+
+  export type NewsletterConsentEventWhereInput = {
+    AND?: NewsletterConsentEventWhereInput | NewsletterConsentEventWhereInput[]
+    OR?: NewsletterConsentEventWhereInput[]
+    NOT?: NewsletterConsentEventWhereInput | NewsletterConsentEventWhereInput[]
+    id?: StringFilter<"NewsletterConsentEvent"> | string
+    subscriberId?: StringFilter<"NewsletterConsentEvent"> | string
+    eventType?: EnumNewsletterConsentEventTypeFilter<"NewsletterConsentEvent"> | $Enums.NewsletterConsentEventType
+    consentTextVersion?: StringFilter<"NewsletterConsentEvent"> | string
+    consentSource?: StringFilter<"NewsletterConsentEvent"> | string
+    metadata?: JsonNullableFilter<"NewsletterConsentEvent">
+    createdAt?: DateTimeFilter<"NewsletterConsentEvent"> | Date | string
+    subscriber?: XOR<NewsletterSubscriberScalarRelationFilter, NewsletterSubscriberWhereInput>
+  }
+
+  export type NewsletterConsentEventOrderByWithRelationInput = {
+    id?: SortOrder
+    subscriberId?: SortOrder
+    eventType?: SortOrder
+    consentTextVersion?: SortOrder
+    consentSource?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    subscriber?: NewsletterSubscriberOrderByWithRelationInput
+  }
+
+  export type NewsletterConsentEventWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: NewsletterConsentEventWhereInput | NewsletterConsentEventWhereInput[]
+    OR?: NewsletterConsentEventWhereInput[]
+    NOT?: NewsletterConsentEventWhereInput | NewsletterConsentEventWhereInput[]
+    subscriberId?: StringFilter<"NewsletterConsentEvent"> | string
+    eventType?: EnumNewsletterConsentEventTypeFilter<"NewsletterConsentEvent"> | $Enums.NewsletterConsentEventType
+    consentTextVersion?: StringFilter<"NewsletterConsentEvent"> | string
+    consentSource?: StringFilter<"NewsletterConsentEvent"> | string
+    metadata?: JsonNullableFilter<"NewsletterConsentEvent">
+    createdAt?: DateTimeFilter<"NewsletterConsentEvent"> | Date | string
+    subscriber?: XOR<NewsletterSubscriberScalarRelationFilter, NewsletterSubscriberWhereInput>
+  }, "id">
+
+  export type NewsletterConsentEventOrderByWithAggregationInput = {
+    id?: SortOrder
+    subscriberId?: SortOrder
+    eventType?: SortOrder
+    consentTextVersion?: SortOrder
+    consentSource?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: NewsletterConsentEventCountOrderByAggregateInput
+    _max?: NewsletterConsentEventMaxOrderByAggregateInput
+    _min?: NewsletterConsentEventMinOrderByAggregateInput
+  }
+
+  export type NewsletterConsentEventScalarWhereWithAggregatesInput = {
+    AND?: NewsletterConsentEventScalarWhereWithAggregatesInput | NewsletterConsentEventScalarWhereWithAggregatesInput[]
+    OR?: NewsletterConsentEventScalarWhereWithAggregatesInput[]
+    NOT?: NewsletterConsentEventScalarWhereWithAggregatesInput | NewsletterConsentEventScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"NewsletterConsentEvent"> | string
+    subscriberId?: StringWithAggregatesFilter<"NewsletterConsentEvent"> | string
+    eventType?: EnumNewsletterConsentEventTypeWithAggregatesFilter<"NewsletterConsentEvent"> | $Enums.NewsletterConsentEventType
+    consentTextVersion?: StringWithAggregatesFilter<"NewsletterConsentEvent"> | string
+    consentSource?: StringWithAggregatesFilter<"NewsletterConsentEvent"> | string
+    metadata?: JsonNullableWithAggregatesFilter<"NewsletterConsentEvent">
+    createdAt?: DateTimeWithAggregatesFilter<"NewsletterConsentEvent"> | Date | string
   }
 
   export type UserCreateInput = {
@@ -55182,6 +59147,243 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type NewsletterSubscriberCreateInput = {
+    id?: string
+    email: string
+    status?: $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: Date | string
+    consentSource?: string
+    consentTextVersion?: string
+    unsubscribeToken?: string
+    verifiedAt?: Date | string | null
+    unsubscribedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    verificationTokens?: NewsletterVerificationTokenCreateNestedManyWithoutSubscriberInput
+    consentEvents?: NewsletterConsentEventCreateNestedManyWithoutSubscriberInput
+  }
+
+  export type NewsletterSubscriberUncheckedCreateInput = {
+    id?: string
+    email: string
+    status?: $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: Date | string
+    consentSource?: string
+    consentTextVersion?: string
+    unsubscribeToken?: string
+    verifiedAt?: Date | string | null
+    unsubscribedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    verificationTokens?: NewsletterVerificationTokenUncheckedCreateNestedManyWithoutSubscriberInput
+    consentEvents?: NewsletterConsentEventUncheckedCreateNestedManyWithoutSubscriberInput
+  }
+
+  export type NewsletterSubscriberUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumNewsletterSubscriberStatusFieldUpdateOperationsInput | $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    unsubscribeToken?: StringFieldUpdateOperationsInput | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    unsubscribedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verificationTokens?: NewsletterVerificationTokenUpdateManyWithoutSubscriberNestedInput
+    consentEvents?: NewsletterConsentEventUpdateManyWithoutSubscriberNestedInput
+  }
+
+  export type NewsletterSubscriberUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumNewsletterSubscriberStatusFieldUpdateOperationsInput | $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    unsubscribeToken?: StringFieldUpdateOperationsInput | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    unsubscribedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verificationTokens?: NewsletterVerificationTokenUncheckedUpdateManyWithoutSubscriberNestedInput
+    consentEvents?: NewsletterConsentEventUncheckedUpdateManyWithoutSubscriberNestedInput
+  }
+
+  export type NewsletterSubscriberCreateManyInput = {
+    id?: string
+    email: string
+    status?: $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: Date | string
+    consentSource?: string
+    consentTextVersion?: string
+    unsubscribeToken?: string
+    verifiedAt?: Date | string | null
+    unsubscribedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NewsletterSubscriberUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumNewsletterSubscriberStatusFieldUpdateOperationsInput | $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    unsubscribeToken?: StringFieldUpdateOperationsInput | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    unsubscribedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterSubscriberUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumNewsletterSubscriberStatusFieldUpdateOperationsInput | $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    unsubscribeToken?: StringFieldUpdateOperationsInput | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    unsubscribedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterVerificationTokenCreateInput = {
+    id?: string
+    tokenHash: string
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+    subscriber: NewsletterSubscriberCreateNestedOneWithoutVerificationTokensInput
+  }
+
+  export type NewsletterVerificationTokenUncheckedCreateInput = {
+    id?: string
+    subscriberId: string
+    tokenHash: string
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type NewsletterVerificationTokenUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriber?: NewsletterSubscriberUpdateOneRequiredWithoutVerificationTokensNestedInput
+  }
+
+  export type NewsletterVerificationTokenUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subscriberId?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterVerificationTokenCreateManyInput = {
+    id?: string
+    subscriberId: string
+    tokenHash: string
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type NewsletterVerificationTokenUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterVerificationTokenUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subscriberId?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterConsentEventCreateInput = {
+    id?: string
+    eventType: $Enums.NewsletterConsentEventType
+    consentTextVersion?: string
+    consentSource?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    subscriber: NewsletterSubscriberCreateNestedOneWithoutConsentEventsInput
+  }
+
+  export type NewsletterConsentEventUncheckedCreateInput = {
+    id?: string
+    subscriberId: string
+    eventType: $Enums.NewsletterConsentEventType
+    consentTextVersion?: string
+    consentSource?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type NewsletterConsentEventUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: EnumNewsletterConsentEventTypeFieldUpdateOperationsInput | $Enums.NewsletterConsentEventType
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subscriber?: NewsletterSubscriberUpdateOneRequiredWithoutConsentEventsNestedInput
+  }
+
+  export type NewsletterConsentEventUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subscriberId?: StringFieldUpdateOperationsInput | string
+    eventType?: EnumNewsletterConsentEventTypeFieldUpdateOperationsInput | $Enums.NewsletterConsentEventType
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterConsentEventCreateManyInput = {
+    id?: string
+    subscriberId: string
+    eventType: $Enums.NewsletterConsentEventType
+    consentTextVersion?: string
+    consentSource?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type NewsletterConsentEventUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: EnumNewsletterConsentEventTypeFieldUpdateOperationsInput | $Enums.NewsletterConsentEventType
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterConsentEventUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subscriberId?: StringFieldUpdateOperationsInput | string
+    eventType?: EnumNewsletterConsentEventTypeFieldUpdateOperationsInput | $Enums.NewsletterConsentEventType
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -57882,6 +62084,162 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumBackInStockAlertStatusFilter<$PrismaModel>
     _max?: NestedEnumBackInStockAlertStatusFilter<$PrismaModel>
+  }
+
+  export type EnumNewsletterSubscriberStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.NewsletterSubscriberStatus | EnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.NewsletterSubscriberStatus[] | ListEnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NewsletterSubscriberStatus[] | ListEnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumNewsletterSubscriberStatusFilter<$PrismaModel> | $Enums.NewsletterSubscriberStatus
+  }
+
+  export type NewsletterVerificationTokenListRelationFilter = {
+    every?: NewsletterVerificationTokenWhereInput
+    some?: NewsletterVerificationTokenWhereInput
+    none?: NewsletterVerificationTokenWhereInput
+  }
+
+  export type NewsletterConsentEventListRelationFilter = {
+    every?: NewsletterConsentEventWhereInput
+    some?: NewsletterConsentEventWhereInput
+    none?: NewsletterConsentEventWhereInput
+  }
+
+  export type NewsletterVerificationTokenOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type NewsletterConsentEventOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type NewsletterSubscriberCountOrderByAggregateInput = {
+    id?: SortOrder
+    email?: SortOrder
+    status?: SortOrder
+    consentGivenAt?: SortOrder
+    consentSource?: SortOrder
+    consentTextVersion?: SortOrder
+    unsubscribeToken?: SortOrder
+    verifiedAt?: SortOrder
+    unsubscribedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type NewsletterSubscriberMaxOrderByAggregateInput = {
+    id?: SortOrder
+    email?: SortOrder
+    status?: SortOrder
+    consentGivenAt?: SortOrder
+    consentSource?: SortOrder
+    consentTextVersion?: SortOrder
+    unsubscribeToken?: SortOrder
+    verifiedAt?: SortOrder
+    unsubscribedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type NewsletterSubscriberMinOrderByAggregateInput = {
+    id?: SortOrder
+    email?: SortOrder
+    status?: SortOrder
+    consentGivenAt?: SortOrder
+    consentSource?: SortOrder
+    consentTextVersion?: SortOrder
+    unsubscribeToken?: SortOrder
+    verifiedAt?: SortOrder
+    unsubscribedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumNewsletterSubscriberStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.NewsletterSubscriberStatus | EnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.NewsletterSubscriberStatus[] | ListEnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NewsletterSubscriberStatus[] | ListEnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumNewsletterSubscriberStatusWithAggregatesFilter<$PrismaModel> | $Enums.NewsletterSubscriberStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumNewsletterSubscriberStatusFilter<$PrismaModel>
+    _max?: NestedEnumNewsletterSubscriberStatusFilter<$PrismaModel>
+  }
+
+  export type NewsletterSubscriberScalarRelationFilter = {
+    is?: NewsletterSubscriberWhereInput
+    isNot?: NewsletterSubscriberWhereInput
+  }
+
+  export type NewsletterVerificationTokenCountOrderByAggregateInput = {
+    id?: SortOrder
+    subscriberId?: SortOrder
+    tokenHash?: SortOrder
+    expiresAt?: SortOrder
+    usedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type NewsletterVerificationTokenMaxOrderByAggregateInput = {
+    id?: SortOrder
+    subscriberId?: SortOrder
+    tokenHash?: SortOrder
+    expiresAt?: SortOrder
+    usedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type NewsletterVerificationTokenMinOrderByAggregateInput = {
+    id?: SortOrder
+    subscriberId?: SortOrder
+    tokenHash?: SortOrder
+    expiresAt?: SortOrder
+    usedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type EnumNewsletterConsentEventTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.NewsletterConsentEventType | EnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.NewsletterConsentEventType[] | ListEnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NewsletterConsentEventType[] | ListEnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumNewsletterConsentEventTypeFilter<$PrismaModel> | $Enums.NewsletterConsentEventType
+  }
+
+  export type NewsletterConsentEventCountOrderByAggregateInput = {
+    id?: SortOrder
+    subscriberId?: SortOrder
+    eventType?: SortOrder
+    consentTextVersion?: SortOrder
+    consentSource?: SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type NewsletterConsentEventMaxOrderByAggregateInput = {
+    id?: SortOrder
+    subscriberId?: SortOrder
+    eventType?: SortOrder
+    consentTextVersion?: SortOrder
+    consentSource?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type NewsletterConsentEventMinOrderByAggregateInput = {
+    id?: SortOrder
+    subscriberId?: SortOrder
+    eventType?: SortOrder
+    consentTextVersion?: SortOrder
+    consentSource?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type EnumNewsletterConsentEventTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.NewsletterConsentEventType | EnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.NewsletterConsentEventType[] | ListEnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NewsletterConsentEventType[] | ListEnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumNewsletterConsentEventTypeWithAggregatesFilter<$PrismaModel> | $Enums.NewsletterConsentEventType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumNewsletterConsentEventTypeFilter<$PrismaModel>
+    _max?: NestedEnumNewsletterConsentEventTypeFilter<$PrismaModel>
   }
 
   export type AddressCreateNestedManyWithoutUserInput = {
@@ -60617,6 +64975,126 @@ export namespace Prisma {
     update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutBackInStockAlertsInput, ProductUpdateWithoutBackInStockAlertsInput>, ProductUncheckedUpdateWithoutBackInStockAlertsInput>
   }
 
+  export type NewsletterVerificationTokenCreateNestedManyWithoutSubscriberInput = {
+    create?: XOR<NewsletterVerificationTokenCreateWithoutSubscriberInput, NewsletterVerificationTokenUncheckedCreateWithoutSubscriberInput> | NewsletterVerificationTokenCreateWithoutSubscriberInput[] | NewsletterVerificationTokenUncheckedCreateWithoutSubscriberInput[]
+    connectOrCreate?: NewsletterVerificationTokenCreateOrConnectWithoutSubscriberInput | NewsletterVerificationTokenCreateOrConnectWithoutSubscriberInput[]
+    createMany?: NewsletterVerificationTokenCreateManySubscriberInputEnvelope
+    connect?: NewsletterVerificationTokenWhereUniqueInput | NewsletterVerificationTokenWhereUniqueInput[]
+  }
+
+  export type NewsletterConsentEventCreateNestedManyWithoutSubscriberInput = {
+    create?: XOR<NewsletterConsentEventCreateWithoutSubscriberInput, NewsletterConsentEventUncheckedCreateWithoutSubscriberInput> | NewsletterConsentEventCreateWithoutSubscriberInput[] | NewsletterConsentEventUncheckedCreateWithoutSubscriberInput[]
+    connectOrCreate?: NewsletterConsentEventCreateOrConnectWithoutSubscriberInput | NewsletterConsentEventCreateOrConnectWithoutSubscriberInput[]
+    createMany?: NewsletterConsentEventCreateManySubscriberInputEnvelope
+    connect?: NewsletterConsentEventWhereUniqueInput | NewsletterConsentEventWhereUniqueInput[]
+  }
+
+  export type NewsletterVerificationTokenUncheckedCreateNestedManyWithoutSubscriberInput = {
+    create?: XOR<NewsletterVerificationTokenCreateWithoutSubscriberInput, NewsletterVerificationTokenUncheckedCreateWithoutSubscriberInput> | NewsletterVerificationTokenCreateWithoutSubscriberInput[] | NewsletterVerificationTokenUncheckedCreateWithoutSubscriberInput[]
+    connectOrCreate?: NewsletterVerificationTokenCreateOrConnectWithoutSubscriberInput | NewsletterVerificationTokenCreateOrConnectWithoutSubscriberInput[]
+    createMany?: NewsletterVerificationTokenCreateManySubscriberInputEnvelope
+    connect?: NewsletterVerificationTokenWhereUniqueInput | NewsletterVerificationTokenWhereUniqueInput[]
+  }
+
+  export type NewsletterConsentEventUncheckedCreateNestedManyWithoutSubscriberInput = {
+    create?: XOR<NewsletterConsentEventCreateWithoutSubscriberInput, NewsletterConsentEventUncheckedCreateWithoutSubscriberInput> | NewsletterConsentEventCreateWithoutSubscriberInput[] | NewsletterConsentEventUncheckedCreateWithoutSubscriberInput[]
+    connectOrCreate?: NewsletterConsentEventCreateOrConnectWithoutSubscriberInput | NewsletterConsentEventCreateOrConnectWithoutSubscriberInput[]
+    createMany?: NewsletterConsentEventCreateManySubscriberInputEnvelope
+    connect?: NewsletterConsentEventWhereUniqueInput | NewsletterConsentEventWhereUniqueInput[]
+  }
+
+  export type EnumNewsletterSubscriberStatusFieldUpdateOperationsInput = {
+    set?: $Enums.NewsletterSubscriberStatus
+  }
+
+  export type NewsletterVerificationTokenUpdateManyWithoutSubscriberNestedInput = {
+    create?: XOR<NewsletterVerificationTokenCreateWithoutSubscriberInput, NewsletterVerificationTokenUncheckedCreateWithoutSubscriberInput> | NewsletterVerificationTokenCreateWithoutSubscriberInput[] | NewsletterVerificationTokenUncheckedCreateWithoutSubscriberInput[]
+    connectOrCreate?: NewsletterVerificationTokenCreateOrConnectWithoutSubscriberInput | NewsletterVerificationTokenCreateOrConnectWithoutSubscriberInput[]
+    upsert?: NewsletterVerificationTokenUpsertWithWhereUniqueWithoutSubscriberInput | NewsletterVerificationTokenUpsertWithWhereUniqueWithoutSubscriberInput[]
+    createMany?: NewsletterVerificationTokenCreateManySubscriberInputEnvelope
+    set?: NewsletterVerificationTokenWhereUniqueInput | NewsletterVerificationTokenWhereUniqueInput[]
+    disconnect?: NewsletterVerificationTokenWhereUniqueInput | NewsletterVerificationTokenWhereUniqueInput[]
+    delete?: NewsletterVerificationTokenWhereUniqueInput | NewsletterVerificationTokenWhereUniqueInput[]
+    connect?: NewsletterVerificationTokenWhereUniqueInput | NewsletterVerificationTokenWhereUniqueInput[]
+    update?: NewsletterVerificationTokenUpdateWithWhereUniqueWithoutSubscriberInput | NewsletterVerificationTokenUpdateWithWhereUniqueWithoutSubscriberInput[]
+    updateMany?: NewsletterVerificationTokenUpdateManyWithWhereWithoutSubscriberInput | NewsletterVerificationTokenUpdateManyWithWhereWithoutSubscriberInput[]
+    deleteMany?: NewsletterVerificationTokenScalarWhereInput | NewsletterVerificationTokenScalarWhereInput[]
+  }
+
+  export type NewsletterConsentEventUpdateManyWithoutSubscriberNestedInput = {
+    create?: XOR<NewsletterConsentEventCreateWithoutSubscriberInput, NewsletterConsentEventUncheckedCreateWithoutSubscriberInput> | NewsletterConsentEventCreateWithoutSubscriberInput[] | NewsletterConsentEventUncheckedCreateWithoutSubscriberInput[]
+    connectOrCreate?: NewsletterConsentEventCreateOrConnectWithoutSubscriberInput | NewsletterConsentEventCreateOrConnectWithoutSubscriberInput[]
+    upsert?: NewsletterConsentEventUpsertWithWhereUniqueWithoutSubscriberInput | NewsletterConsentEventUpsertWithWhereUniqueWithoutSubscriberInput[]
+    createMany?: NewsletterConsentEventCreateManySubscriberInputEnvelope
+    set?: NewsletterConsentEventWhereUniqueInput | NewsletterConsentEventWhereUniqueInput[]
+    disconnect?: NewsletterConsentEventWhereUniqueInput | NewsletterConsentEventWhereUniqueInput[]
+    delete?: NewsletterConsentEventWhereUniqueInput | NewsletterConsentEventWhereUniqueInput[]
+    connect?: NewsletterConsentEventWhereUniqueInput | NewsletterConsentEventWhereUniqueInput[]
+    update?: NewsletterConsentEventUpdateWithWhereUniqueWithoutSubscriberInput | NewsletterConsentEventUpdateWithWhereUniqueWithoutSubscriberInput[]
+    updateMany?: NewsletterConsentEventUpdateManyWithWhereWithoutSubscriberInput | NewsletterConsentEventUpdateManyWithWhereWithoutSubscriberInput[]
+    deleteMany?: NewsletterConsentEventScalarWhereInput | NewsletterConsentEventScalarWhereInput[]
+  }
+
+  export type NewsletterVerificationTokenUncheckedUpdateManyWithoutSubscriberNestedInput = {
+    create?: XOR<NewsletterVerificationTokenCreateWithoutSubscriberInput, NewsletterVerificationTokenUncheckedCreateWithoutSubscriberInput> | NewsletterVerificationTokenCreateWithoutSubscriberInput[] | NewsletterVerificationTokenUncheckedCreateWithoutSubscriberInput[]
+    connectOrCreate?: NewsletterVerificationTokenCreateOrConnectWithoutSubscriberInput | NewsletterVerificationTokenCreateOrConnectWithoutSubscriberInput[]
+    upsert?: NewsletterVerificationTokenUpsertWithWhereUniqueWithoutSubscriberInput | NewsletterVerificationTokenUpsertWithWhereUniqueWithoutSubscriberInput[]
+    createMany?: NewsletterVerificationTokenCreateManySubscriberInputEnvelope
+    set?: NewsletterVerificationTokenWhereUniqueInput | NewsletterVerificationTokenWhereUniqueInput[]
+    disconnect?: NewsletterVerificationTokenWhereUniqueInput | NewsletterVerificationTokenWhereUniqueInput[]
+    delete?: NewsletterVerificationTokenWhereUniqueInput | NewsletterVerificationTokenWhereUniqueInput[]
+    connect?: NewsletterVerificationTokenWhereUniqueInput | NewsletterVerificationTokenWhereUniqueInput[]
+    update?: NewsletterVerificationTokenUpdateWithWhereUniqueWithoutSubscriberInput | NewsletterVerificationTokenUpdateWithWhereUniqueWithoutSubscriberInput[]
+    updateMany?: NewsletterVerificationTokenUpdateManyWithWhereWithoutSubscriberInput | NewsletterVerificationTokenUpdateManyWithWhereWithoutSubscriberInput[]
+    deleteMany?: NewsletterVerificationTokenScalarWhereInput | NewsletterVerificationTokenScalarWhereInput[]
+  }
+
+  export type NewsletterConsentEventUncheckedUpdateManyWithoutSubscriberNestedInput = {
+    create?: XOR<NewsletterConsentEventCreateWithoutSubscriberInput, NewsletterConsentEventUncheckedCreateWithoutSubscriberInput> | NewsletterConsentEventCreateWithoutSubscriberInput[] | NewsletterConsentEventUncheckedCreateWithoutSubscriberInput[]
+    connectOrCreate?: NewsletterConsentEventCreateOrConnectWithoutSubscriberInput | NewsletterConsentEventCreateOrConnectWithoutSubscriberInput[]
+    upsert?: NewsletterConsentEventUpsertWithWhereUniqueWithoutSubscriberInput | NewsletterConsentEventUpsertWithWhereUniqueWithoutSubscriberInput[]
+    createMany?: NewsletterConsentEventCreateManySubscriberInputEnvelope
+    set?: NewsletterConsentEventWhereUniqueInput | NewsletterConsentEventWhereUniqueInput[]
+    disconnect?: NewsletterConsentEventWhereUniqueInput | NewsletterConsentEventWhereUniqueInput[]
+    delete?: NewsletterConsentEventWhereUniqueInput | NewsletterConsentEventWhereUniqueInput[]
+    connect?: NewsletterConsentEventWhereUniqueInput | NewsletterConsentEventWhereUniqueInput[]
+    update?: NewsletterConsentEventUpdateWithWhereUniqueWithoutSubscriberInput | NewsletterConsentEventUpdateWithWhereUniqueWithoutSubscriberInput[]
+    updateMany?: NewsletterConsentEventUpdateManyWithWhereWithoutSubscriberInput | NewsletterConsentEventUpdateManyWithWhereWithoutSubscriberInput[]
+    deleteMany?: NewsletterConsentEventScalarWhereInput | NewsletterConsentEventScalarWhereInput[]
+  }
+
+  export type NewsletterSubscriberCreateNestedOneWithoutVerificationTokensInput = {
+    create?: XOR<NewsletterSubscriberCreateWithoutVerificationTokensInput, NewsletterSubscriberUncheckedCreateWithoutVerificationTokensInput>
+    connectOrCreate?: NewsletterSubscriberCreateOrConnectWithoutVerificationTokensInput
+    connect?: NewsletterSubscriberWhereUniqueInput
+  }
+
+  export type NewsletterSubscriberUpdateOneRequiredWithoutVerificationTokensNestedInput = {
+    create?: XOR<NewsletterSubscriberCreateWithoutVerificationTokensInput, NewsletterSubscriberUncheckedCreateWithoutVerificationTokensInput>
+    connectOrCreate?: NewsletterSubscriberCreateOrConnectWithoutVerificationTokensInput
+    upsert?: NewsletterSubscriberUpsertWithoutVerificationTokensInput
+    connect?: NewsletterSubscriberWhereUniqueInput
+    update?: XOR<XOR<NewsletterSubscriberUpdateToOneWithWhereWithoutVerificationTokensInput, NewsletterSubscriberUpdateWithoutVerificationTokensInput>, NewsletterSubscriberUncheckedUpdateWithoutVerificationTokensInput>
+  }
+
+  export type NewsletterSubscriberCreateNestedOneWithoutConsentEventsInput = {
+    create?: XOR<NewsletterSubscriberCreateWithoutConsentEventsInput, NewsletterSubscriberUncheckedCreateWithoutConsentEventsInput>
+    connectOrCreate?: NewsletterSubscriberCreateOrConnectWithoutConsentEventsInput
+    connect?: NewsletterSubscriberWhereUniqueInput
+  }
+
+  export type EnumNewsletterConsentEventTypeFieldUpdateOperationsInput = {
+    set?: $Enums.NewsletterConsentEventType
+  }
+
+  export type NewsletterSubscriberUpdateOneRequiredWithoutConsentEventsNestedInput = {
+    create?: XOR<NewsletterSubscriberCreateWithoutConsentEventsInput, NewsletterSubscriberUncheckedCreateWithoutConsentEventsInput>
+    connectOrCreate?: NewsletterSubscriberCreateOrConnectWithoutConsentEventsInput
+    upsert?: NewsletterSubscriberUpsertWithoutConsentEventsInput
+    connect?: NewsletterSubscriberWhereUniqueInput
+    update?: XOR<XOR<NewsletterSubscriberUpdateToOneWithWhereWithoutConsentEventsInput, NewsletterSubscriberUpdateWithoutConsentEventsInput>, NewsletterSubscriberUncheckedUpdateWithoutConsentEventsInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -61149,6 +65627,40 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumBackInStockAlertStatusFilter<$PrismaModel>
     _max?: NestedEnumBackInStockAlertStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumNewsletterSubscriberStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.NewsletterSubscriberStatus | EnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.NewsletterSubscriberStatus[] | ListEnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NewsletterSubscriberStatus[] | ListEnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumNewsletterSubscriberStatusFilter<$PrismaModel> | $Enums.NewsletterSubscriberStatus
+  }
+
+  export type NestedEnumNewsletterSubscriberStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.NewsletterSubscriberStatus | EnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.NewsletterSubscriberStatus[] | ListEnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NewsletterSubscriberStatus[] | ListEnumNewsletterSubscriberStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumNewsletterSubscriberStatusWithAggregatesFilter<$PrismaModel> | $Enums.NewsletterSubscriberStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumNewsletterSubscriberStatusFilter<$PrismaModel>
+    _max?: NestedEnumNewsletterSubscriberStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumNewsletterConsentEventTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.NewsletterConsentEventType | EnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.NewsletterConsentEventType[] | ListEnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NewsletterConsentEventType[] | ListEnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumNewsletterConsentEventTypeFilter<$PrismaModel> | $Enums.NewsletterConsentEventType
+  }
+
+  export type NestedEnumNewsletterConsentEventTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.NewsletterConsentEventType | EnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.NewsletterConsentEventType[] | ListEnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NewsletterConsentEventType[] | ListEnumNewsletterConsentEventTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumNewsletterConsentEventTypeWithAggregatesFilter<$PrismaModel> | $Enums.NewsletterConsentEventType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumNewsletterConsentEventTypeFilter<$PrismaModel>
+    _max?: NestedEnumNewsletterConsentEventTypeFilter<$PrismaModel>
   }
 
   export type AddressCreateWithoutUserInput = {
@@ -70004,6 +74516,269 @@ export namespace Prisma {
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
   }
 
+  export type NewsletterVerificationTokenCreateWithoutSubscriberInput = {
+    id?: string
+    tokenHash: string
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type NewsletterVerificationTokenUncheckedCreateWithoutSubscriberInput = {
+    id?: string
+    tokenHash: string
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type NewsletterVerificationTokenCreateOrConnectWithoutSubscriberInput = {
+    where: NewsletterVerificationTokenWhereUniqueInput
+    create: XOR<NewsletterVerificationTokenCreateWithoutSubscriberInput, NewsletterVerificationTokenUncheckedCreateWithoutSubscriberInput>
+  }
+
+  export type NewsletterVerificationTokenCreateManySubscriberInputEnvelope = {
+    data: NewsletterVerificationTokenCreateManySubscriberInput | NewsletterVerificationTokenCreateManySubscriberInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type NewsletterConsentEventCreateWithoutSubscriberInput = {
+    id?: string
+    eventType: $Enums.NewsletterConsentEventType
+    consentTextVersion?: string
+    consentSource?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type NewsletterConsentEventUncheckedCreateWithoutSubscriberInput = {
+    id?: string
+    eventType: $Enums.NewsletterConsentEventType
+    consentTextVersion?: string
+    consentSource?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type NewsletterConsentEventCreateOrConnectWithoutSubscriberInput = {
+    where: NewsletterConsentEventWhereUniqueInput
+    create: XOR<NewsletterConsentEventCreateWithoutSubscriberInput, NewsletterConsentEventUncheckedCreateWithoutSubscriberInput>
+  }
+
+  export type NewsletterConsentEventCreateManySubscriberInputEnvelope = {
+    data: NewsletterConsentEventCreateManySubscriberInput | NewsletterConsentEventCreateManySubscriberInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type NewsletterVerificationTokenUpsertWithWhereUniqueWithoutSubscriberInput = {
+    where: NewsletterVerificationTokenWhereUniqueInput
+    update: XOR<NewsletterVerificationTokenUpdateWithoutSubscriberInput, NewsletterVerificationTokenUncheckedUpdateWithoutSubscriberInput>
+    create: XOR<NewsletterVerificationTokenCreateWithoutSubscriberInput, NewsletterVerificationTokenUncheckedCreateWithoutSubscriberInput>
+  }
+
+  export type NewsletterVerificationTokenUpdateWithWhereUniqueWithoutSubscriberInput = {
+    where: NewsletterVerificationTokenWhereUniqueInput
+    data: XOR<NewsletterVerificationTokenUpdateWithoutSubscriberInput, NewsletterVerificationTokenUncheckedUpdateWithoutSubscriberInput>
+  }
+
+  export type NewsletterVerificationTokenUpdateManyWithWhereWithoutSubscriberInput = {
+    where: NewsletterVerificationTokenScalarWhereInput
+    data: XOR<NewsletterVerificationTokenUpdateManyMutationInput, NewsletterVerificationTokenUncheckedUpdateManyWithoutSubscriberInput>
+  }
+
+  export type NewsletterVerificationTokenScalarWhereInput = {
+    AND?: NewsletterVerificationTokenScalarWhereInput | NewsletterVerificationTokenScalarWhereInput[]
+    OR?: NewsletterVerificationTokenScalarWhereInput[]
+    NOT?: NewsletterVerificationTokenScalarWhereInput | NewsletterVerificationTokenScalarWhereInput[]
+    id?: StringFilter<"NewsletterVerificationToken"> | string
+    subscriberId?: StringFilter<"NewsletterVerificationToken"> | string
+    tokenHash?: StringFilter<"NewsletterVerificationToken"> | string
+    expiresAt?: DateTimeFilter<"NewsletterVerificationToken"> | Date | string
+    usedAt?: DateTimeNullableFilter<"NewsletterVerificationToken"> | Date | string | null
+    createdAt?: DateTimeFilter<"NewsletterVerificationToken"> | Date | string
+  }
+
+  export type NewsletterConsentEventUpsertWithWhereUniqueWithoutSubscriberInput = {
+    where: NewsletterConsentEventWhereUniqueInput
+    update: XOR<NewsletterConsentEventUpdateWithoutSubscriberInput, NewsletterConsentEventUncheckedUpdateWithoutSubscriberInput>
+    create: XOR<NewsletterConsentEventCreateWithoutSubscriberInput, NewsletterConsentEventUncheckedCreateWithoutSubscriberInput>
+  }
+
+  export type NewsletterConsentEventUpdateWithWhereUniqueWithoutSubscriberInput = {
+    where: NewsletterConsentEventWhereUniqueInput
+    data: XOR<NewsletterConsentEventUpdateWithoutSubscriberInput, NewsletterConsentEventUncheckedUpdateWithoutSubscriberInput>
+  }
+
+  export type NewsletterConsentEventUpdateManyWithWhereWithoutSubscriberInput = {
+    where: NewsletterConsentEventScalarWhereInput
+    data: XOR<NewsletterConsentEventUpdateManyMutationInput, NewsletterConsentEventUncheckedUpdateManyWithoutSubscriberInput>
+  }
+
+  export type NewsletterConsentEventScalarWhereInput = {
+    AND?: NewsletterConsentEventScalarWhereInput | NewsletterConsentEventScalarWhereInput[]
+    OR?: NewsletterConsentEventScalarWhereInput[]
+    NOT?: NewsletterConsentEventScalarWhereInput | NewsletterConsentEventScalarWhereInput[]
+    id?: StringFilter<"NewsletterConsentEvent"> | string
+    subscriberId?: StringFilter<"NewsletterConsentEvent"> | string
+    eventType?: EnumNewsletterConsentEventTypeFilter<"NewsletterConsentEvent"> | $Enums.NewsletterConsentEventType
+    consentTextVersion?: StringFilter<"NewsletterConsentEvent"> | string
+    consentSource?: StringFilter<"NewsletterConsentEvent"> | string
+    metadata?: JsonNullableFilter<"NewsletterConsentEvent">
+    createdAt?: DateTimeFilter<"NewsletterConsentEvent"> | Date | string
+  }
+
+  export type NewsletterSubscriberCreateWithoutVerificationTokensInput = {
+    id?: string
+    email: string
+    status?: $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: Date | string
+    consentSource?: string
+    consentTextVersion?: string
+    unsubscribeToken?: string
+    verifiedAt?: Date | string | null
+    unsubscribedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    consentEvents?: NewsletterConsentEventCreateNestedManyWithoutSubscriberInput
+  }
+
+  export type NewsletterSubscriberUncheckedCreateWithoutVerificationTokensInput = {
+    id?: string
+    email: string
+    status?: $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: Date | string
+    consentSource?: string
+    consentTextVersion?: string
+    unsubscribeToken?: string
+    verifiedAt?: Date | string | null
+    unsubscribedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    consentEvents?: NewsletterConsentEventUncheckedCreateNestedManyWithoutSubscriberInput
+  }
+
+  export type NewsletterSubscriberCreateOrConnectWithoutVerificationTokensInput = {
+    where: NewsletterSubscriberWhereUniqueInput
+    create: XOR<NewsletterSubscriberCreateWithoutVerificationTokensInput, NewsletterSubscriberUncheckedCreateWithoutVerificationTokensInput>
+  }
+
+  export type NewsletterSubscriberUpsertWithoutVerificationTokensInput = {
+    update: XOR<NewsletterSubscriberUpdateWithoutVerificationTokensInput, NewsletterSubscriberUncheckedUpdateWithoutVerificationTokensInput>
+    create: XOR<NewsletterSubscriberCreateWithoutVerificationTokensInput, NewsletterSubscriberUncheckedCreateWithoutVerificationTokensInput>
+    where?: NewsletterSubscriberWhereInput
+  }
+
+  export type NewsletterSubscriberUpdateToOneWithWhereWithoutVerificationTokensInput = {
+    where?: NewsletterSubscriberWhereInput
+    data: XOR<NewsletterSubscriberUpdateWithoutVerificationTokensInput, NewsletterSubscriberUncheckedUpdateWithoutVerificationTokensInput>
+  }
+
+  export type NewsletterSubscriberUpdateWithoutVerificationTokensInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumNewsletterSubscriberStatusFieldUpdateOperationsInput | $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    unsubscribeToken?: StringFieldUpdateOperationsInput | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    unsubscribedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consentEvents?: NewsletterConsentEventUpdateManyWithoutSubscriberNestedInput
+  }
+
+  export type NewsletterSubscriberUncheckedUpdateWithoutVerificationTokensInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumNewsletterSubscriberStatusFieldUpdateOperationsInput | $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    unsubscribeToken?: StringFieldUpdateOperationsInput | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    unsubscribedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consentEvents?: NewsletterConsentEventUncheckedUpdateManyWithoutSubscriberNestedInput
+  }
+
+  export type NewsletterSubscriberCreateWithoutConsentEventsInput = {
+    id?: string
+    email: string
+    status?: $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: Date | string
+    consentSource?: string
+    consentTextVersion?: string
+    unsubscribeToken?: string
+    verifiedAt?: Date | string | null
+    unsubscribedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    verificationTokens?: NewsletterVerificationTokenCreateNestedManyWithoutSubscriberInput
+  }
+
+  export type NewsletterSubscriberUncheckedCreateWithoutConsentEventsInput = {
+    id?: string
+    email: string
+    status?: $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: Date | string
+    consentSource?: string
+    consentTextVersion?: string
+    unsubscribeToken?: string
+    verifiedAt?: Date | string | null
+    unsubscribedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    verificationTokens?: NewsletterVerificationTokenUncheckedCreateNestedManyWithoutSubscriberInput
+  }
+
+  export type NewsletterSubscriberCreateOrConnectWithoutConsentEventsInput = {
+    where: NewsletterSubscriberWhereUniqueInput
+    create: XOR<NewsletterSubscriberCreateWithoutConsentEventsInput, NewsletterSubscriberUncheckedCreateWithoutConsentEventsInput>
+  }
+
+  export type NewsletterSubscriberUpsertWithoutConsentEventsInput = {
+    update: XOR<NewsletterSubscriberUpdateWithoutConsentEventsInput, NewsletterSubscriberUncheckedUpdateWithoutConsentEventsInput>
+    create: XOR<NewsletterSubscriberCreateWithoutConsentEventsInput, NewsletterSubscriberUncheckedCreateWithoutConsentEventsInput>
+    where?: NewsletterSubscriberWhereInput
+  }
+
+  export type NewsletterSubscriberUpdateToOneWithWhereWithoutConsentEventsInput = {
+    where?: NewsletterSubscriberWhereInput
+    data: XOR<NewsletterSubscriberUpdateWithoutConsentEventsInput, NewsletterSubscriberUncheckedUpdateWithoutConsentEventsInput>
+  }
+
+  export type NewsletterSubscriberUpdateWithoutConsentEventsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumNewsletterSubscriberStatusFieldUpdateOperationsInput | $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    unsubscribeToken?: StringFieldUpdateOperationsInput | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    unsubscribedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verificationTokens?: NewsletterVerificationTokenUpdateManyWithoutSubscriberNestedInput
+  }
+
+  export type NewsletterSubscriberUncheckedUpdateWithoutConsentEventsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumNewsletterSubscriberStatusFieldUpdateOperationsInput | $Enums.NewsletterSubscriberStatus
+    consentGivenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    unsubscribeToken?: StringFieldUpdateOperationsInput | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    unsubscribedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verificationTokens?: NewsletterVerificationTokenUncheckedUpdateManyWithoutSubscriberNestedInput
+  }
+
   export type AddressCreateManyUserInput = {
     id?: string
     fullName: string
@@ -72382,6 +77157,74 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterVerificationTokenCreateManySubscriberInput = {
+    id?: string
+    tokenHash: string
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type NewsletterConsentEventCreateManySubscriberInput = {
+    id?: string
+    eventType: $Enums.NewsletterConsentEventType
+    consentTextVersion?: string
+    consentSource?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type NewsletterVerificationTokenUpdateWithoutSubscriberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterVerificationTokenUncheckedUpdateWithoutSubscriberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterVerificationTokenUncheckedUpdateManyWithoutSubscriberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tokenHash?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterConsentEventUpdateWithoutSubscriberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: EnumNewsletterConsentEventTypeFieldUpdateOperationsInput | $Enums.NewsletterConsentEventType
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterConsentEventUncheckedUpdateWithoutSubscriberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: EnumNewsletterConsentEventTypeFieldUpdateOperationsInput | $Enums.NewsletterConsentEventType
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NewsletterConsentEventUncheckedUpdateManyWithoutSubscriberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: EnumNewsletterConsentEventTypeFieldUpdateOperationsInput | $Enums.NewsletterConsentEventType
+    consentTextVersion?: StringFieldUpdateOperationsInput | string
+    consentSource?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

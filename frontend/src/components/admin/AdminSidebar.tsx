@@ -16,6 +16,7 @@ import {
   Upload,
   Tag,
   Image,
+  Mail,
   BarChart3,
   Settings,
   History,
@@ -61,6 +62,7 @@ export const AdminSidebar: React.FC = () => {
       items: [
         { href: '/admin/promotions', label: 'Promotions & Vouchers', icon: Tag },
         { href: '/admin/banners', label: 'Store Banners', icon: Image },
+        { href: '/admin/newsletter', label: 'Newsletter & Consent', icon: Mail },
         { href: '/admin/reports', label: 'Sales Reports', icon: BarChart3 },
         { href: '/admin/audit-logs', label: 'Audit Logs', icon: History },
         { href: '/admin/settings', label: 'Store Settings', icon: Settings },
