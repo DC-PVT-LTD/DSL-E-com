@@ -229,46 +229,6 @@ body {
   }
 }
 
-/* Cute Pastel Framed Background for store pages (except welcome, home, about) */
-.cute-store-bg {
-  background-color: #FFFDF0;
-  background-image: 
-    url('/backgrounds/cute_border_left.png'),
-    url('/backgrounds/cute_border_right.png'),
-    url('/backgrounds/cute_border_top.png'),
-    url('/backgrounds/cute_border_bottom.png');
-  background-position: 
-    left top,
-    right top,
-    left top,
-    left bottom;
-  background-repeat: 
-    repeat-y,
-    repeat-y,
-    repeat-x,
-    repeat-x;
-  background-size: 
-    72px auto,
-    72px auto,
-    512px 60px,
-    512px 68px;
-  background-attachment: 
-    fixed,
-    fixed,
-    fixed,
-    fixed;
-}
-
-@media (max-width: 640px) {
-  .cute-store-bg {
-    background-size: 
-      36px auto,
-      36px auto,
-      256px 30px,
-      256px 34px;
-  }
-}
-
 /* Pastel Wizard Slider */
 .pastel-slider {
   -webkit-appearance: none;
