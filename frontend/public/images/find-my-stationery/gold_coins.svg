@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+  <defs>
+    <linearGradient id="coinGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A"/>
+      <stop offset="40%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <linearGradient id="coinSide" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+    <filter id="coinShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#92400E" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Bottom Coin -->
+  <g filter="url(#coinShadow)">
+    <path d="M12 44 L12 49 C12 55 24 57 36 57 C48 57 56 55 56 49 L56 44 Z" fill="url(#coinSide)" stroke="#92400E" stroke-width="1.8"/>
+    <ellipse cx="34" cy="44" rx="22" ry="8" fill="url(#coinGold)" stroke="#92400E" stroke-width="1.8"/>
+    <ellipse cx="34" cy="44" rx="18" ry="6" fill="none" stroke="#FEF08A" stroke-width="1.2" stroke-dasharray="3,2"/>
+  </g>
+
+  <!-- Middle Coin -->
+  <g filter="url(#coinShadow)">
+    <path d="M10 32 L10 37 C10 43 22 45 34 45 C46 45 54 43 54 37 L54 32 Z" fill="url(#coinSide)" stroke="#92400E" stroke-width="1.8"/>
+    <ellipse cx="32" cy="32" rx="22" ry="8" fill="url(#coinGold)" stroke="#92400E" stroke-width="1.8"/>
+    <ellipse cx="32" cy="32" rx="18" ry="6" fill="none" stroke="#FEF08A" stroke-width="1.2" stroke-dasharray="3,2"/>
+  </g>
+
+  <!-- Top Coin -->
+  <g filter="url(#coinShadow)">
+    <path d="M14 20 L14 25 C14 31 26 33 38 33 C50 33 58 31 58 25 L58 20 Z" fill="url(#coinSide)" stroke="#92400E" stroke-width="1.8"/>
+    <ellipse cx="36" cy="20" rx="22" ry="8" fill="url(#coinGold)" stroke="#92400E" stroke-width="1.8"/>
+    <ellipse cx="36" cy="20" rx="18" ry="6" fill="none" stroke="#FEF08A" stroke-width="1.2" stroke-dasharray="3,2"/>
+    <text x="36" y="23" font-family="Fredoka, Nunito, sans-serif" font-size="11" font-weight="900" fill="#92400E" text-anchor="middle">LKR</text>
+  </g>
+
+  <!-- Sparkle Glint -->
+  <path d="M48 8 L50 14 L56 16 L50 18 L48 24 L46 18 L40 16 L46 14 Z" fill="#FFFFFF" opacity="0.9"/>
+</svg>

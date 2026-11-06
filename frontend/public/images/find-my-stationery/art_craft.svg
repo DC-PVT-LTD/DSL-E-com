@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100" width="120" height="100">
+  <defs>
+    <filter id="shadow2" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#9A3412" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow2)">
+    <!-- Wooden Artist Palette -->
+    <path d="M60 14 C90 14 108 30 106 58 C104 80 84 88 70 86 C60 84 56 74 48 76 C40 78 38 88 28 84 C14 78 12 56 18 36 C24 16 44 14 60 14 Z" 
+          fill="#FED7AA" stroke="#9A3412" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Palette Thumb Hole -->
+    <ellipse cx="86" cy="66" rx="6" ry="8" fill="#FFFDF0" stroke="#9A3412" stroke-width="2"/>
+
+    <!-- Colorful Paint Blobs with Kawaii Glint -->
+    <!-- Red Paint -->
+    <circle cx="34" cy="32" r="7" fill="#F43F5E"/>
+    <circle cx="32" cy="30" r="2" fill="#FFFFFF" opacity="0.8"/>
+    <!-- Yellow Paint -->
+    <circle cx="52" cy="24" r="7" fill="#FBBF24"/>
+    <circle cx="50" cy="22" r="2" fill="#FFFFFF" opacity="0.8"/>
+    <!-- Blue Paint -->
+    <circle cx="72" cy="26" r="7" fill="#38BDF8"/>
+    <circle cx="70" cy="24" r="2" fill="#FFFFFF" opacity="0.8"/>
+    <!-- Green Paint -->
+    <circle cx="90" cy="38" r="7" fill="#34D399"/>
+    <circle cx="88" cy="36" r="2" fill="#FFFFFF" opacity="0.8"/>
+    <!-- Purple Paint -->
+    <circle cx="38" cy="54" r="6.5" fill="#A855F7"/>
+    <circle cx="36" cy="52" r="2" fill="#FFFFFF" opacity="0.8"/>
+
+    <!-- Paintbrush Crossing Palette -->
+    <g transform="rotate(35 60 50)">
+      <!-- Brush Handle -->
+      <path d="M58 8 L62 8 L64 74 L56 74 Z" fill="#EA580C" stroke="#7C2D12" stroke-width="2"/>
+      <!-- Silver Ferrule -->
+      <rect x="55" y="74" width="10" height="10" fill="#E2E8F0" stroke="#475569" stroke-width="1.8"/>
+      <!-- Bristles Tip with Paint -->
+      <path d="M55 84 Q60 98 65 84 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="1.8"/>
+    </g>
+  </g>
+</svg>

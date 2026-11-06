@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100" width="120" height="100">
+  <defs>
+    <filter id="shadow1" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#78350F" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow1)">
+    <!-- Main School Building Walls -->
+    <rect x="22" y="44" width="76" height="46" rx="4" fill="#FEF3C7" stroke="#92400E" stroke-width="2.5"/>
+    <!-- Stone Base Trim -->
+    <rect x="20" y="84" width="80" height="8" rx="2" fill="#FDE68A" stroke="#92400E" stroke-width="2"/>
+    
+    <!-- Central Portico / Tower -->
+    <rect x="46" y="24" width="28" height="66" rx="2" fill="#FDE68A" stroke="#92400E" stroke-width="2.5"/>
+    <!-- Belfry / Clock Tower Roof -->
+    <polygon points="60,6 40,24 80,24" fill="#EF4444" stroke="#991B1B" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Flagpole & Flag -->
+    <line x1="60" y1="6" x2="60" y2="0" stroke="#78350F" stroke-width="2"/>
+    <polygon points="60,0 72,3 60,7" fill="#3B82F6"/>
+    <!-- Clock -->
+    <circle cx="60" cy="33" r="6" fill="#FFFFFF" stroke="#92400E" stroke-width="1.8"/>
+    <line x1="60" y1="33" x2="60" y2="30" stroke="#92400E" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="60" y1="33" x2="63" y2="33" stroke="#92400E" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Main Roof Side Left -->
+    <polygon points="16,44 48,24 48,44" fill="#F87171" stroke="#991B1B" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Main Roof Side Right -->
+    <polygon points="104,44 72,24 72,44" fill="#F87171" stroke="#991B1B" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <!-- Double Arched Door -->
+    <path d="M52 90 L52 70 A8 8 0 0 1 68 70 L68 90 Z" fill="#B45309" stroke="#78350F" stroke-width="2"/>
+    <line x1="60" y1="68" x2="60" y2="90" stroke="#78350F" stroke-width="1.5"/>
+    <circle cx="57" cy="80" r="1.2" fill="#FDE68A"/>
+    <circle cx="63" cy="80" r="1.2" fill="#FDE68A"/>
+
+    <!-- Left Windows -->
+    <rect x="28" y="52" width="12" height="15" rx="3" fill="#BFDBFE" stroke="#1E40AF" stroke-width="1.8"/>
+    <line x1="34" y1="52" x2="34" y2="67" stroke="#1E40AF" stroke-width="1.2"/>
+    <line x1="28" y1="60" x2="40" y2="60" stroke="#1E40AF" stroke-width="1.2"/>
+
+    <!-- Right Windows -->
+    <rect x="80" y="52" width="12" height="15" rx="3" fill="#BFDBFE" stroke="#1E40AF" stroke-width="1.8"/>
+    <line x1="86" y1="52" x2="86" y2="67" stroke="#1E40AF" stroke-width="1.2"/>
+    <line x1="80" y1="60" x2="92" y2="60" stroke="#1E40AF" stroke-width="1.2"/>
+  </g>
+</svg>

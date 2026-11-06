@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight, Tag, Truck, Check } from 'lucide-react';
 import { useCartStore } from '@/services/cartStore';
 import { formatLKR, FREE_DELIVERY_THRESHOLD_CENTS } from '@/lib/currency';
+import { WhatsAppOrderButton } from '@/components/cart/WhatsAppOrderButton';
 
 export const CartDrawer: React.FC = () => {
   const router = useRouter();
@@ -18,6 +19,8 @@ export const CartDrawer: React.FC = () => {
   const items = useCartStore((state) => state.items);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
+  const toggleItemSelection = useCartStore((state) => state.toggleItemSelection);
+  const selectAllItems = useCartStore((state) => state.selectAllItems);
   const applyPromoCode = useCartStore((state) => state.applyPromoCode);
   const removePromoCode = useCartStore((state) => state.removePromoCode);
   const getSummary = useCartStore((state) => state.getSummary);
@@ -25,6 +28,12 @@ export const CartDrawer: React.FC = () => {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (isDrawerOpen) {
+      useCartStore.getState().fetchCart();
+    }
+  }, [isDrawerOpen]);
 
   if (!mounted) return null;
   if (!isDrawerOpen) return null;
@@ -115,61 +124,102 @@ export const CartDrawer: React.FC = () => {
                 </Link>
               </div>
             ) : (
-              summary.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex gap-3 p-3.5 bg-white rounded-2xl border border-[#C6E7FF]/60 shadow-xs"
-                >
-                  <div className="w-16 h-16 rounded-xl bg-[#FAF7EE] border border-[#C6E7FF]/40 flex items-center justify-center text-[#0066CC] font-bold text-sm shrink-0">
-                    <span className="font-heylowitch text-2xl">{item.product.name.charAt(0)}</span>
-                  </div>
+              <>
+                {/* Select All Toggle Bar */}
+                <div className="flex items-center justify-between pb-1 px-1">
+                  <label className="flex items-center gap-2 text-xs font-bold text-[#292525] cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={summary.items.length > 0 && summary.items.every((i) => i.selected !== false)}
+                      onChange={(e) => selectAllItems(e.target.checked)}
+                      className="w-3.5 h-3.5 rounded text-[#0066CC] focus:ring-[#0066CC] accent-[#0066CC] cursor-pointer"
+                    />
+                    <span>Select All ({summary.selectedItemCount}/{summary.itemCount})</span>
+                  </label>
+                  {summary.selectedItemCount < summary.itemCount && (
+                    <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                      Partial checkout
+                    </span>
+                  )}
+                </div>
 
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-bold text-[#292525] truncate">
-                      {item.product.name}
-                    </h4>
-                    {item.variant && (
-                      <p className="text-[10px] text-[#292525]/50 mt-0.5">
-                        {item.variant.name}
-                      </p>
-                    )}
-                    <div className="text-xs font-black text-[#292525] mt-1">
-                      {formatLKR(item.unitPriceCents)}
-                    </div>
-
-                    {/* Quantity controls */}
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center border border-[#C6E7FF] rounded-full overflow-hidden bg-white">
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="p-1 hover:bg-[#FFFDF0] text-[#292525] transition-colors"
-                          title="Decrease quantity"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="px-2.5 py-0.5 text-xs font-bold text-[#292525]">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="p-1 hover:bg-[#FFFDF0] text-[#292525] transition-colors"
-                          title="Increase quantity"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
+                {summary.items.map((item) => {
+                  const isSelected = item.selected !== false;
+                  return (
+                    <div
+                      key={item.id}
+                      className={`flex gap-2.5 p-3.5 bg-white rounded-2xl border transition-all shadow-xs ${
+                        !isSelected ? 'border-[#C6E7FF]/30 opacity-60' : 'border-[#C6E7FF]/60'
+                      }`}
+                    >
+                      {/* Checkbox */}
+                      <div className="pt-4 shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleItemSelection(item.id)}
+                          aria-label={`Select ${item.product.name}`}
+                          className="w-4 h-4 rounded text-[#0066CC] focus:ring-[#0066CC] accent-[#0066CC] cursor-pointer"
+                        />
                       </div>
 
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="text-[#292525]/40 hover:text-rose-500 p-1 transition-colors"
-                        title="Remove item"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="w-16 h-16 rounded-xl bg-[#FAF7EE] border border-[#C6E7FF]/40 flex items-center justify-center text-[#0066CC] font-bold text-sm shrink-0">
+                        <span className="font-heylowitch text-2xl">{item.product.name.charAt(0)}</span>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-bold text-[#292525] truncate">
+                          {item.product.name}
+                        </h4>
+                        {item.variant && (
+                          <p className="text-[10px] text-[#292525]/50 mt-0.5">
+                            {item.variant.name}
+                          </p>
+                        )}
+                        {item.bundleInfo && (
+                          <span className="inline-flex items-center gap-1 text-[9px] font-bold text-[#0066CC] bg-[#C6E7FF]/30 border border-[#C6E7FF] px-1.5 py-0.5 rounded-full mt-1">
+                            🎒 {item.bundleInfo.packName}
+                          </span>
+                        )}
+                        <div className="text-xs font-black text-[#292525] mt-1">
+                          {formatLKR(item.unitPriceCents)}
+                        </div>
+
+                        {/* Quantity controls */}
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center border border-[#C6E7FF] rounded-full overflow-hidden bg-white">
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              className="p-1 hover:bg-[#FFFDF0] text-[#292525] transition-colors"
+                              title="Decrease quantity"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="px-2.5 py-0.5 text-xs font-bold text-[#292525]">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              className="p-1 hover:bg-[#FFFDF0] text-[#292525] transition-colors"
+                              title="Increase quantity"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+
+                          <button
+                            onClick={() => removeItem(item.id)}
+                            className="text-[#292525]/40 hover:text-rose-500 p-1 transition-colors"
+                            title="Remove item"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))
+                  );
+                })}
+              </>
             )}
           </div>
 
@@ -225,7 +275,7 @@ export const CartDrawer: React.FC = () => {
                 </div>
                 {summary.discountCents > 0 && (
                   <div className="flex justify-between text-[#0066CC] font-semibold">
-                    <span>Discount</span>
+                    <span>Bundle & Promo Savings</span>
                     <span>-{formatLKR(summary.discountCents)}</span>
                   </div>
                 )}
@@ -246,18 +296,31 @@ export const CartDrawer: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-2 pt-1">
+              <div className="space-y-2.5 pt-1">
                 <button
                   onClick={handleCheckoutClick}
-                  className="w-full flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white py-3 rounded-full font-bold text-xs sm:text-sm shadow-md transition-all group"
+                  disabled={summary.selectedItemCount === 0}
+                  className="w-full flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] disabled:opacity-40 disabled:cursor-not-allowed text-white py-3 rounded-full font-bold text-xs sm:text-sm shadow-md transition-all group"
                 >
-                  <span>Proceed to Checkout</span>
+                  <span>
+                    {summary.selectedItemCount === 0
+                      ? 'Select Items to Checkout'
+                      : `Proceed to Checkout (${summary.selectedItemCount})`}
+                  </span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
+
+                {/* Phase 16: WhatsApp-Assisted Ordering */}
+                <WhatsAppOrderButton
+                  summary={summary}
+                  variant="compact"
+                  onEnquiryOpened={() => setDrawerOpen(false)}
+                />
+
                 <Link
                   href="/cart"
                   onClick={() => setDrawerOpen(false)}
-                  className="w-full block text-center py-1.5 text-xs font-semibold text-[#292525]/70 hover:text-[#292525] transition-colors"
+                  className="w-full block text-center py-1 text-xs font-semibold text-[#292525]/70 hover:text-[#292525] transition-colors"
                 >
                   View Full Cart Details
                 </Link>

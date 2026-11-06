@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+  <defs>
+    <filter id="basketShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="2.5" stdDeviation="1.8" flood-color="#881337" flood-opacity="0.2"/>
+    </filter>
+    <linearGradient id="pinkBasket" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#DB2777"/>
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#basketShadow)">
+    <!-- Basket Handle -->
+    <path d="M 20 26 C 20 12 44 12 44 26" stroke="#BE185D" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M 20 26 C 20 12 44 12 44 26" stroke="#FBCFE8" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+
+    <!-- Basket Body -->
+    <path d="M 10 26 L 54 26 L 48 54 L 16 54 Z" fill="url(#pinkBasket)" stroke="#9D174D" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <!-- Basket Top Rim -->
+    <rect x="8" y="24" width="48" height="5" rx="2.5" fill="#F472B6" stroke="#9D174D" stroke-width="2"/>
+
+    <!-- Basket Grid Weave Pattern -->
+    <line x1="22" y1="29" x2="20" y2="54" stroke="#FFF1F2" stroke-width="1.8" opacity="0.7"/>
+    <line x1="32" y1="29" x2="32" y2="54" stroke="#FFF1F2" stroke-width="1.8" opacity="0.7"/>
+    <line x1="42" y1="29" x2="44" y2="54" stroke="#FFF1F2" stroke-width="1.8" opacity="0.7"/>
+    <line x1="13" y1="38" x2="51" y2="38" stroke="#FFF1F2" stroke-width="1.8" opacity="0.7"/>
+    <line x1="15" y1="46" x2="49" y2="46" stroke="#FFF1F2" stroke-width="1.8" opacity="0.7"/>
+  </g>
+</svg>

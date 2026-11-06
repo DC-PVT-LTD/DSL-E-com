@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+  <defs>
+    <filter id="pencilShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#9A3412" flood-opacity="0.22"/>
+    </filter>
+    <linearGradient id="penOrange" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FED7AA"/>
+      <stop offset="40%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+    <linearGradient id="penCoral" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FECDD3"/>
+      <stop offset="40%" stop-color="#FB7185"/>
+      <stop offset="100%" stop-color="#E11D48"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left Pencil (Orange) -->
+  <g transform="rotate(-18 24 34)" filter="url(#pencilShadow)">
+    <path d="M 20 18 L 24 8 L 28 18 Z" fill="#FDE68A" stroke="#9A3412" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M 23 11 L 24 8 L 25 11 Z" fill="#431407"/>
+    <rect x="20" y="18" width="8" height="32" rx="1.5" fill="url(#penOrange)" stroke="#9A3412" stroke-width="1.8"/>
+    <line x1="24" y1="18" x2="24" y2="50" stroke="#C2410C" stroke-width="1" opacity="0.6"/>
+    <rect x="20" y="46" width="8" height="4" fill="#E2E8F0" stroke="#9A3412" stroke-width="1.2"/>
+    <path d="M 20 50 C 20 54 28 54 28 50 Z" fill="#F43F5E" stroke="#9A3412" stroke-width="1.4"/>
+  </g>
+
+  <!-- Right Pencil (Coral / Pink) -->
+  <g transform="rotate(18 40 34)" filter="url(#pencilShadow)">
+    <path d="M 36 16 L 40 6 L 44 16 Z" fill="#FDE68A" stroke="#881337" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M 39 9 L 40 6 L 41 9 Z" fill="#4C0519"/>
+    <rect x="36" y="16" width="8" height="34" rx="1.5" fill="url(#penCoral)" stroke="#881337" stroke-width="1.8"/>
+    <line x1="40" y1="16" x2="40" y2="50" stroke="#BE123C" stroke-width="1" opacity="0.6"/>
+    <rect x="36" y="46" width="8" height="4" fill="#FEF08A" stroke="#881337" stroke-width="1.2"/>
+    <path d="M 36 50 C 36 54 44 54 44 50 Z" fill="#A855F7" stroke="#881337" stroke-width="1.4"/>
+  </g>
+</svg>

@@ -13,12 +13,23 @@ export default function StoreLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  // Only standalone landing cover (/welcome) hides common store chrome
-  const isCoverPage = pathname === '/welcome';
+  // Standalone landing cover (/ and /welcome) hides common store chrome
+  const isCoverPage = pathname === '/' || pathname === '/welcome';
+  // Home page uses the native hero banner with integrated white-wave header
+  const isHomePage = pathname === '/home';
+  // About page uses its dedicated editorial layout
+  const isAboutPage = pathname === '/about';
+
+  // Apply cute pastel background to all store pages EXCEPT welcome, home, and about
+  const isCuteBgPage = !isCoverPage && !isHomePage && !isAboutPage;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FFF8ED] text-[#10285D]">
-      {!isCoverPage && <DemoBanner />}
+    <div
+      className={`min-h-screen flex flex-col text-[#10285D] ${
+        isCuteBgPage ? 'cute-store-bg' : 'bg-[#FFF8ED]'
+      }`}
+    >
+      {!isCoverPage && !isHomePage && <DemoBanner />}
       {!isCoverPage && <Navbar />}
       <CartDrawer />
       <main className="flex-1">

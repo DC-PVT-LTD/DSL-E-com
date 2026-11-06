@@ -167,8 +167,11 @@ class ProductService {
    * Fetch single product by slug from the backend API.
    */
   public async fetchProductBySlug(slug: string): Promise<Product | null> {
+    const cleanSlug = slug.trim();
+    const normalizedSlug = cleanSlug.toLowerCase().replace(/_/g, '-');
+
     try {
-      const res = await apiClient.get<BackendApiResponse<Product>>(`products/slug/${encodeURIComponent(slug)}`);
+      const res = await apiClient.get<BackendApiResponse<Product>>(`products/slug/${encodeURIComponent(cleanSlug)}`);
       if (res.success && res.data) {
         const existingIdx = this.products.findIndex((p) => p.id === res.data.id);
         if (existingIdx !== -1) {
@@ -183,7 +186,7 @@ class ProductService {
       console.warn(`Could not fetch product by slug "${slug}" from backend API:`, err);
     }
 
-    return this.getBySlug(slug) || null;
+    return this.getBySlug(cleanSlug) || this.getBySlug(normalizedSlug) || null;
   }
 
   /**
@@ -227,7 +230,19 @@ class ProductService {
   }
 
   public getBySlug(slug: string): Product | undefined {
-    return this.products.find((p) => p.slug === slug);
+    const cleanSlug = slug.trim();
+    const normalized = cleanSlug.toLowerCase().replace(/_/g, '-');
+    return this.products.find(
+      (p) =>
+        p.slug === cleanSlug ||
+        p.slug === normalized ||
+        p.slug.toLowerCase() === normalized ||
+        p.id === cleanSlug ||
+        p.id === `prod-dsl-${cleanSlug}` ||
+        p.sku.toLowerCase() === cleanSlug.toLowerCase() ||
+        p.specifications?.['Original Product ID'] === cleanSlug ||
+        p.name.toLowerCase() === cleanSlug.replace(/[-_]/g, ' ').toLowerCase()
+    );
   }
 
   public getBySku(sku: string): Product | undefined {

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ShoppingBag, Plus, Minus, Trash2, ArrowRight, Tag, Truck, ShieldCheck, Check } from 'lucide-react';
 import { useCartStore } from '@/services/cartStore';
 import { formatLKR, FREE_DELIVERY_THRESHOLD_CENTS } from '@/lib/currency';
+import { WhatsAppOrderButton } from '@/components/cart/WhatsAppOrderButton';
 
 export default function CartPage() {
   const router = useRouter();
@@ -17,12 +18,15 @@ export default function CartPage() {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const clearCart = useCartStore((state) => state.clearCart);
+  const toggleItemSelection = useCartStore((state) => state.toggleItemSelection);
+  const selectAllItems = useCartStore((state) => state.selectAllItems);
   const applyPromoCode = useCartStore((state) => state.applyPromoCode);
   const removePromoCode = useCartStore((state) => state.removePromoCode);
   const getSummary = useCartStore((state) => state.getSummary);
 
   useEffect(() => {
     setMounted(true);
+    useCartStore.getState().fetchCart();
   }, []);
 
   if (!mounted) {
@@ -50,7 +54,7 @@ export default function CartPage() {
           </div>
           <h1 className="text-xl font-bold text-[#292525]">Your Shopping Bag is Empty</h1>
           <p className="text-xs text-[#292525]/70 mt-2 leading-relaxed">
-            You haven&apos;t added any stationery items yet. Explore our selection of school packs, 
+            You haven&apos;t added any stationery items yet. Explore our selection of school packs,
             CR notebooks, pen packs, and art supplies.
           </p>
           <div className="mt-6 flex flex-col gap-2.5">
@@ -73,7 +77,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="bg-[#FFFDF0] min-h-screen py-10 sm:py-16">
+    <div className="min-h-screen py-10 sm:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="flex items-center justify-between pb-4 border-b border-[#C6E7FF]/60">
           <div>
@@ -109,16 +113,61 @@ export default function CartPage() {
           </div>
         </div>
 
+        {/* Server Stock / Price Change Warnings */}
+        {summary.warnings && summary.warnings.length > 0 && (
+          <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-800 text-xs space-y-1">
+            <p className="font-bold">Notice regarding items in your bag:</p>
+            <ul className="list-disc pl-4 space-y-0.5">
+              {summary.warnings.map((w, idx) => (
+                <li key={idx}>{w}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Cart Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Items Table */}
           <div className="lg:col-span-8 bg-white rounded-3xl border border-[#C6E7FF]/70 overflow-hidden shadow-xs">
+            {/* Phase A: Select All Bar */}
+            <div className="p-4 sm:p-5 border-b border-[#C6E7FF]/40 bg-[#FFFDF0]/50 flex flex-wrap items-center justify-between gap-3">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={summary.items.length > 0 && summary.items.every((i) => i.selected !== false)}
+                  onChange={(e) => selectAllItems(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#0066CC] focus:ring-[#0066CC] accent-[#0066CC] cursor-pointer"
+                />
+                <span className="text-xs font-bold text-[#292525]">
+                  Select All Items ({summary.selectedItemCount} of {summary.itemCount} selected)
+                </span>
+              </label>
+              {summary.selectedItemCount < summary.itemCount && (
+                <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                  Only selected items proceed to checkout
+                </span>
+              )}
+            </div>
+
             <div className="p-6 divide-y divide-[#C6E7FF]/30 space-y-4">
               {summary.items.map((item) => {
                 const maxStock = item.variant ? item.variant.stockQuantity : item.product.stockQuantity;
+                const isSelected = item.selected !== false;
                 return (
-                  <div key={item.id} className="pt-4 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
+                  <div
+                    key={item.id}
+                    className={`pt-4 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-opacity ${!isSelected ? 'opacity-60' : ''
+                      }`}
+                  >
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      {/* Item Checkbox */}
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleItemSelection(item.id)}
+                        aria-label={`Select ${item.product.name}`}
+                        className="w-4 h-4 rounded text-[#0066CC] focus:ring-[#0066CC] accent-[#0066CC] cursor-pointer shrink-0"
+                      />
                       <div className="w-16 h-16 rounded-2xl bg-[#FAF7EE] border border-[#C6E7FF] flex items-center justify-center text-[#0066CC] font-black text-xl shrink-0">
                         <span className="font-heylowitch">{item.product.name.charAt(0)}</span>
                       </div>
@@ -131,6 +180,13 @@ export default function CartPage() {
                         </Link>
                         {item.variant && (
                           <p className="text-xs text-[#292525]/60 mt-0.5">{item.variant.name}</p>
+                        )}
+                        {item.bundleInfo && (
+                          <div className="mt-1">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0066CC] bg-[#C6E7FF]/30 border border-[#C6E7FF] px-2 py-0.5 rounded-full">
+                              🎒 {item.bundleInfo.packName} ({item.bundleInfo.savingsPercentage}% off)
+                            </span>
+                          </div>
                         )}
                         <p className="text-xs font-semibold text-[#292525]/50 mt-0.5">
                           Unit: {formatLKR(item.unitPriceCents)}
@@ -239,7 +295,7 @@ export default function CartPage() {
 
               {summary.discountCents > 0 && (
                 <div className="flex justify-between text-[#0066CC] font-semibold">
-                  <span>Promotional Discount</span>
+                  <span>Bundle & Promotional Savings</span>
                   <span>-{formatLKR(summary.discountCents)}</span>
                 </div>
               )}
@@ -261,14 +317,30 @@ export default function CartPage() {
               </div>
             </div>
 
-            {/* Checkout CTA */}
-            <button
-              onClick={() => router.push('/checkout')}
-              className="w-full flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white py-3.5 rounded-full font-bold text-sm shadow-md transition-all group"
-            >
-              <span>Proceed to Checkout</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
+            {/* Checkout & WhatsApp CTAs */}
+            <div className="space-y-3 pt-2">
+              <button
+                onClick={() => router.push('/checkout')}
+                disabled={summary.selectedItemCount === 0}
+                className="w-full flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] disabled:opacity-40 disabled:cursor-not-allowed text-white py-3.5 rounded-full font-bold text-sm shadow-md transition-all group"
+              >
+                <span>
+                  {summary.selectedItemCount === 0
+                    ? 'Select Items to Checkout'
+                    : `Proceed to Checkout (${summary.selectedItemCount} ${summary.selectedItemCount === 1 ? 'item' : 'items'})`}
+                </span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-[#C6E7FF]/60"></div>
+                <span className="flex-shrink mx-3 text-[11px] font-bold text-[#292525]/40 uppercase tracking-wider">or</span>
+                <div className="flex-grow border-t border-[#C6E7FF]/60"></div>
+              </div>
+
+              {/* Phase 16: WhatsApp-Assisted Ordering */}
+              <WhatsAppOrderButton summary={summary} />
+            </div>
 
             <div className="pt-2 text-[11px] text-[#292525]/50 text-center flex items-center justify-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-[#0066CC]" />

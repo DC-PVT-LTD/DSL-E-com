@@ -16,6 +16,7 @@ export const registerSchema = z.object({
     .trim()
     .regex(/^(?:\+94|0)[0-9]{9}$/, 'Phone number must be a valid Sri Lankan phone number (e.g., +94771234567 or 0771234567)')
     .optional(),
+  orderId: z.string().optional().nullable(),
 });
 
 export const loginSchema = z.object({
@@ -61,6 +62,37 @@ export const createAddressSchema = z.object({
 
 export const updateAddressSchema = createAddressSchema.partial();
 
+export const verifyEmailSchema = z.object({
+  email: z.string().trim().toLowerCase().email('Invalid email address'),
+  otp: z.string().trim().regex(/^\d{6}$/, 'Verification code must be a 6-digit number'),
+});
+
+export const resendVerificationOtpSchema = z.object({
+  email: z.string().trim().toLowerCase().email('Invalid email address'),
+});
+
+export class VerifyEmailDto {
+  @ApiProperty({
+    description: 'Customer email address',
+    example: 'nimesha.p@example.lk',
+  })
+  email: string;
+
+  @ApiProperty({
+    description: '6-digit verification OTP',
+    example: '123456',
+  })
+  otp: string;
+}
+
+export class ResendVerificationOtpDto {
+  @ApiProperty({
+    description: 'Customer email address',
+    example: 'nimesha.p@example.lk',
+  })
+  email: string;
+}
+
 export class RegisterDto {
   @ApiProperty({
     description: 'Full customer name (min 2, max 100 characters)',
@@ -90,6 +122,12 @@ export class RegisterDto {
     example: '+94771234567',
   })
   phone?: string;
+
+  @ApiPropertyOptional({
+    description: 'Existing guest order ID to link upon registration',
+    example: 'cmw01abc10000pous00010001',
+  })
+  orderId?: string | null;
 }
 
 export class LoginDto {

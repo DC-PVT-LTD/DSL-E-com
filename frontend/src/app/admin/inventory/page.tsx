@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { inventoryService } from '@/services/inventoryService';
 import { productService } from '@/services/productService';
+import { inventorySocketService } from '@/services/inventorySocketService';
+import { apiClient } from '@/lib/api/apiClient';
 import { Product, ProductVariant } from '@/types/product';
 import { InventoryMovement, InventoryChangeReason } from '@/types/admin';
 import { formatLKR } from '@/lib/currency';
@@ -50,17 +52,39 @@ export default function AdminInventoryPage() {
     setIsLoadingProducts(true);
     setPageError(null);
     try {
+      let rawItems: Product[] = [];
       if (isLowStockOnly) {
         const res = await inventoryService.fetchLowStock({ page: 1, limit: 100 });
-        setProducts(res.items);
+        rawItems = res.items;
       } else {
         const res = await productService.fetchProducts({}, 'newest', 1, 100);
-        setProducts(res.items);
+        rawItems = res.items;
       }
+
+      // Fetch live reserved & available stock breakdown
+      try {
+        const ids = rawItems.map((p) => p.id).join(',');
+        const batchRes = await apiClient.get<any>(`/public/inventory/batch-status?ids=${ids}`);
+        if (batchRes?.data) {
+          const enriched = rawItems.map((p) => {
+            const live = batchRes.data[p.id];
+            return {
+              ...p,
+              stockQuantity: live ? live.physicalStock : p.stockQuantity,
+              reservedStock: live ? live.reservedStock : 0,
+              availableStock: live ? live.availableStock : p.stockQuantity,
+            };
+          });
+          setProducts(enriched);
+          return;
+        }
+      } catch {
+        // Fallback to raw items
+      }
+      setProducts(rawItems);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to load products from server';
       setPageError(msg);
-      // Fall back to current cached items if available
       setProducts(productService.getAll(true));
     } finally {
       setIsLoadingProducts(false);
@@ -102,7 +126,7 @@ export default function AdminInventoryPage() {
     loadMovements(movementPage, reasonFilter);
   }, [loadMovements, movementPage, reasonFilter]);
 
-  // Subscribe to external store updates
+  // Subscribe to external store & real-time WebSocket inventory updates (Phase 12)
   useEffect(() => {
     const unsubInv = inventoryService.subscribe(() => {
       setMovements(inventoryService.getMovements());
@@ -112,11 +136,32 @@ export default function AdminInventoryPage() {
         setProducts(productService.getAll(true));
       }
     });
+    const unsubSocket = inventorySocketService.subscribeAdmin((update) => {
+      setProducts((prev) =>
+        prev.map((p) => {
+          if (p.id === update.productId) {
+            return {
+              ...p,
+              stockQuantity: update.physicalStock,
+              reservedStock: update.reservedStock,
+              availableStock: update.availableStock,
+            };
+          }
+          return p;
+        })
+      );
+    });
+    const unsubReconnect = inventorySocketService.onReconnect(() => {
+      loadProducts(filterLowStock);
+    });
+
     return () => {
       unsubInv();
       unsubProd();
+      unsubSocket();
+      unsubReconnect();
     };
-  }, [filterLowStock]);
+  }, [filterLowStock, loadProducts]);
 
   const handleToggleLowStock = () => {
     const nextState = !filterLowStock;
@@ -160,6 +205,16 @@ export default function AdminInventoryPage() {
     if (!adjustingProduct || isSubmitting) return;
 
     setModalError(null);
+
+    // Client-side validation: Physical Stock cannot be reduced below active customer reservations (Phase 13)
+    const currentReserved = adjustingProduct.reservedStock || 0;
+    if (newQuantity < currentReserved) {
+      setModalError(
+        `Cannot reduce physical stock to ${newQuantity}: ${currentReserved} units are currently reserved by customer checkout sessions. Physical stock cannot fall below active reservations.`
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -276,8 +331,10 @@ export default function AdminInventoryPage() {
               <tr className="bg-slate-50 text-slate-500 border-b border-slate-200">
                 <th className="py-3 px-4 font-bold">Product</th>
                 <th className="py-3 px-4 font-bold">SKU</th>
-                <th className="py-3 px-4 font-bold">Selling Price</th>
-                <th className="py-3 px-4 font-bold">Current Stock</th>
+                <th className="py-3 px-4 font-bold">Price</th>
+                <th className="py-3 px-4 font-bold text-center">Physical Stock</th>
+                <th className="py-3 px-4 font-bold text-center">Reserved Stock</th>
+                <th className="py-3 px-4 font-bold text-center">Available Stock</th>
                 <th className="py-3 px-4 font-bold">Alert Level</th>
                 <th className="py-3 px-4 font-bold">Status</th>
                 <th className="py-3 px-4 font-bold text-right">Action</th>
@@ -286,14 +343,14 @@ export default function AdminInventoryPage() {
             <tbody className="divide-y divide-slate-100">
               {isLoadingProducts ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto text-[#08275E] mb-2" />
                     <span>Fetching live warehouse inventory...</span>
                   </td>
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
                     {filterLowStock ? (
                       <div className="space-y-1">
                         <Check className="w-6 h-6 text-emerald-500 mx-auto mb-1" />
@@ -310,6 +367,8 @@ export default function AdminInventoryPage() {
                   const isLow = p.stockQuantity <= p.lowStockThreshold;
                   const isOut = p.stockQuantity <= 0;
                   const hasVariants = Boolean(p.variants && p.variants.length > 0);
+                  const reserved = p.reservedStock || 0;
+                  const available = p.availableStock !== undefined ? p.availableStock : Math.max(0, p.stockQuantity - reserved);
 
                   return (
                     <tr key={p.id} className="hover:bg-slate-50 transition-colors">
@@ -327,7 +386,7 @@ export default function AdminInventoryPage() {
                       <td className="py-3.5 px-4 font-black text-[#08275E]">
                         {formatLKR(p.priceCents)}
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 text-center">
                         <span className="text-sm font-black text-slate-900">
                           {p.stockQuantity}
                         </span>
@@ -336,6 +395,21 @@ export default function AdminInventoryPage() {
                             (aggregate)
                           </span>
                         )}
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <span className={`text-sm font-bold ${reserved > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
+                          {reserved}
+                        </span>
+                        {reserved > 0 && (
+                          <span className="text-[9px] text-amber-600/80 font-medium block">
+                            in checkout hold
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <span className={`text-sm font-black ${available > 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+                          {available}
+                        </span>
                       </td>
                       <td className="py-3.5 px-4 text-slate-500 font-medium">
                         {p.lowStockThreshold} units
@@ -542,6 +616,24 @@ export default function AdminInventoryPage() {
               <span className="font-mono text-[11px] text-slate-500">
                 Base SKU: {adjustingProduct.sku}
               </span>
+              <div className="grid grid-cols-3 gap-2 pt-2 mt-2 border-t border-slate-200/80 text-[11px]">
+                <div>
+                  <span className="text-slate-400 block text-[9px] uppercase font-bold">Physical</span>
+                  <strong className="text-slate-800">{adjustingProduct.stockQuantity}</strong>
+                </div>
+                <div>
+                  <span className="text-amber-600 block text-[9px] uppercase font-bold">Reserved</span>
+                  <strong className="text-amber-700">{adjustingProduct.reservedStock || 0}</strong>
+                </div>
+                <div>
+                  <span className="text-emerald-700 block text-[9px] uppercase font-bold">Available</span>
+                  <strong className="text-emerald-800">
+                    {adjustingProduct.availableStock !== undefined
+                      ? adjustingProduct.availableStock
+                      : Math.max(0, adjustingProduct.stockQuantity - (adjustingProduct.reservedStock || 0))}
+                  </strong>
+                </div>
+              </div>
             </div>
 
             {/* In-Modal Error Banner */}

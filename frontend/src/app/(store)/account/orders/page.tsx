@@ -3,19 +3,28 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Package, ArrowRight, Loader2 } from 'lucide-react';
+import { Package, ArrowRight, Loader2, Repeat, ShoppingBag } from 'lucide-react';
 import { AccountNav } from '@/components/common/AccountNav';
 import { orderService } from '@/services/orderService';
 import { useUserStore } from '@/services/userStore';
-import { Order } from '@/types/order';
+import { useCartStore } from '@/services/cartStore';
+import { Order, BuyAgainResponse } from '@/types/order';
 import { formatLKR } from '@/lib/currency';
+import { BuyAgainModal } from '@/components/orders/BuyAgainModal';
 
 export default function AccountOrdersPage() {
   const router = useRouter();
   const currentUser = useUserStore((state) => state.currentUser);
   const fetchCurrentUser = useUserStore((state) => state.fetchCurrentUser);
+  const addBuyAgainBatch = useCartStore((state) => state.addBuyAgainBatch);
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [isChecking, setIsChecking] = useState(true);
+
+  // Buy Again State
+  const [reorderingOrderId, setReorderingOrderId] = useState<string | null>(null);
+  const [buyAgainResult, setBuyAgainResult] = useState<BuyAgainResponse | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -40,12 +49,58 @@ export default function AccountOrdersPage() {
   }, [isChecking, currentUser, router]);
 
   useEffect(() => {
-    setOrders(orderService.getAll());
+    let mounted = true;
+    const loadOrders = async () => {
+      try {
+        const res = await orderService.fetchOrders();
+        const liveList = res?.orders || [];
+        if (mounted && liveList.length > 0) {
+          setOrders(liveList);
+          return;
+        }
+      } catch {
+        // fallback to cached/mock orders
+      }
+      if (mounted) setOrders(orderService.getAll());
+    };
+
+    loadOrders();
     const unsub = orderService.subscribe(() => {
-      setOrders(orderService.getAll());
+      loadOrders();
     });
-    return () => unsub();
+    return () => {
+      mounted = false;
+      unsub();
+    };
   }, []);
+
+  const handleBuyAgain = async (orderId: string) => {
+    setReorderingOrderId(orderId);
+    try {
+      const res = await orderService.buyAgain(orderId);
+
+      // Add eligible in-stock items to existing cart
+      const availableItems = res.items
+        .filter((it) => it.availableQuantity > 0 && it.product)
+        .map((it) => ({
+          product: it.product,
+          variant: it.variant,
+          quantity: it.availableQuantity,
+          bundleInfo: it.bundleInfo,
+        }));
+
+      if (availableItems.length > 0) {
+        await addBuyAgainBatch(availableItems);
+      }
+
+      setBuyAgainResult(res);
+      setIsModalOpen(true);
+    } catch (err: any) {
+      alert(err?.message || 'Unable to reorder products from this order. Please try again.');
+    } finally {
+      setReorderingOrderId(null);
+    }
+  };
 
   if (isChecking || !currentUser) {
     return (
@@ -84,13 +139,35 @@ export default function AccountOrdersPage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#FFFDF0] text-[#292525] border border-[#C6E7FF]/60">
                       {order.orderStatus}
                     </span>
+
+                    {/* Phase 15.3: Buy Again Action */}
+                    <button
+                      type="button"
+                      onClick={() => handleBuyAgain(order.id)}
+                      disabled={reorderingOrderId === order.id}
+                      className="bg-white hover:bg-[#FFFDF0] text-[#0066CC] border border-[#0066CC]/50 text-xs font-bold px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                      title="Quickly reorder available products from this order"
+                    >
+                      {reorderingOrderId === order.id ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Checking...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Repeat className="w-3.5 h-3.5" />
+                          <span>Buy Again</span>
+                        </>
+                      )}
+                    </button>
+
                     <Link
                       href={`/orders/${order.id}`}
-                      className="bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-1.5 shadow-xs"
+                      className="bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-xs"
                     >
                       <span>Track Details</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -99,9 +176,9 @@ export default function AccountOrdersPage() {
                 </div>
 
                 <div className="space-y-1.5 text-xs text-[#292525]/80">
-                  {order.items.map((item) => (
+                  {order.items.map((item: any) => (
                     <div key={item.id} className="flex justify-between">
-                      <span>{item.quantity}x {item.product.name}</span>
+                      <span>{item.quantity}x {item.product?.name || item.productName || 'Stationery Item'}</span>
                       <span className="font-bold text-[#292525]">{formatLKR(item.totalPriceCents)}</span>
                     </div>
                   ))}
@@ -116,6 +193,13 @@ export default function AccountOrdersPage() {
           )}
         </div>
       </div>
+
+      {/* Buy Again Summary Modal */}
+      <BuyAgainModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        result={buyAgainResult}
+      />
     </div>
   );
 }

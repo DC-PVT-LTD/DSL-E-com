@@ -2,46 +2,65 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Heart, ShoppingBag, Check, Star, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Heart, ShoppingBag, Check, Star, Sparkles, Bookmark } from 'lucide-react';
 import { Product } from '@/types/product';
 import { formatLKR, calculateSavingsPercent } from '@/lib/currency';
 import { useCartStore } from '@/services/cartStore';
-import { useUserStore } from '@/services/userStore';
+import { useWishlistStore } from '@/services/wishlistStore';
+import { inventorySocketService } from '@/services/inventorySocketService';
+import { SaveToListModal } from './SaveToListModal';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const router = useRouter();
   const [added, setAdded] = useState(false);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [liveStock, setLiveStock] = useState<number>(
+    product.availableStock !== undefined ? product.availableStock : product.stockQuantity
+  );
+
+  React.useEffect(() => {
+    const unsub = inventorySocketService.subscribeProduct(product.id, (update) => {
+      setLiveStock(update.availableStock);
+    });
+    return () => unsub();
+  }, [product.id]);
+
   const addItem = useCartStore((state) => state.addItem);
-  const isInWishlist = useUserStore((state) => state.isInWishlist);
-  const toggleWishlist = useUserStore((state) => state.toggleWishlist);
+  const isInWishlist = useWishlistStore((state) => state.isInWishlist);
+  const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
 
   const inWishlist = isInWishlist(product.id);
-  const isOutOfStock = product.stockQuantity <= 0;
+  const isOutOfStock = liveStock <= 0;
   const hasVariants = Boolean(product.variants && product.variants.length > 1);
 
   const savingsPercent = product.compareAtPriceCents
     ? calculateSavingsPercent(product.compareAtPriceCents, product.priceCents)
     : 0;
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (isOutOfStock) return;
 
-    const success = addItem(product, 1);
+    const success = await addItem(product, 1);
     if (success) {
       setAdded(true);
       setTimeout(() => setAdded(false), 1200);
     }
   };
 
-  const handleToggleWishlist = (e: React.MouseEvent) => {
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleWishlist(product.id);
+    const result = await toggleWishlist(product);
+    if (result.requiresAuth) {
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+    }
   };
 
   // Pastel accent color generator for category tag
@@ -73,28 +92,43 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
       </div>
 
-      {/* Wishlist Button (Heart in top-right as in reference) */}
-      <button
-        onClick={handleToggleWishlist}
-        className={`absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-          inWishlist
-            ? 'bg-rose-50 text-[#0066CC] shadow-xs'
-            : 'bg-white/80 backdrop-blur-xs text-[#292525]/40 hover:text-[#0066CC] hover:bg-white shadow-xs'
-        }`}
-        aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-        title={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-      >
-        <Heart className={`w-4 h-4 ${inWishlist ? 'fill-[#0066CC]' : ''}`} />
-      </button>
+      {/* Action Buttons (Top-Right: Wishlist Heart & Save to List Bookmark) */}
+      <div className="absolute top-2.5 right-2.5 z-10 flex flex-col gap-1.5 items-center">
+        <button
+          onClick={handleToggleWishlist}
+          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+            inWishlist
+              ? 'bg-rose-50 text-[#0066CC] shadow-xs'
+              : 'bg-white/80 backdrop-blur-xs text-[#292525]/40 hover:text-[#0066CC] hover:bg-white shadow-xs'
+          }`}
+          aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+          title={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+        >
+          <Heart className={`w-4 h-4 ${inWishlist ? 'fill-[#0066CC]' : ''}`} />
+        </button>
+
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsSaveModalOpen(true);
+          }}
+          className="w-8 h-8 rounded-full flex items-center justify-center bg-white/80 backdrop-blur-xs text-[#292525]/50 hover:text-[#0066CC] hover:bg-white shadow-xs transition-all"
+          aria-label="Save to Stationery List"
+          title="Save to Stationery List"
+        >
+          <Bookmark className="w-3.5 h-3.5" />
+        </button>
+      </div>
 
       {/* Visual Product Display (Square Aspect Ratio) */}
       <Link href={`/products/${product.slug}`} className="block relative bg-[#FAF7EE] aspect-square overflow-hidden">
         <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center group-hover:scale-105 transition-transform duration-300">
-          {product.images && product.images.length > 0 && typeof product.images[0] === 'string' && !product.images[0].includes('.png') ? (
+          {product.images && product.images.length > 0 && typeof product.images[0] === 'string' && (product.images[0].startsWith('http') || !product.images[0].includes('.png')) ? (
             <img
               src={product.images[0]}
               alt={product.name}
-              className="w-full h-full object-cover object-center rounded-xl"
+              className="w-full h-full object-contain object-center p-2 rounded-xl"
             />
           ) : (
             <div className="w-20 h-20 rounded-2xl bg-white shadow-xs border border-[#C6E7FF]/50 flex flex-col items-center justify-center text-[#0066CC] p-2">
@@ -159,43 +193,47 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             )}
           </div>
 
-          {/* Pill Action Button matching reference screenshot */}
-          {hasVariants ? (
+          {/* Action Row with View More and Add to Cart */}
+          <div className="flex items-center gap-2">
             <Link
               href={`/products/${product.slug}`}
-              className="w-full py-2 px-3 rounded-full border border-[#292525] hover:bg-[#292525] hover:text-white text-[#292525] font-semibold text-xs text-center transition-all shadow-xs"
+              className="flex-1 py-2 px-3 rounded-full border border-[#10285D]/30 hover:border-[#0066CC] hover:bg-[#0066CC] hover:text-white text-[#10285D] font-bold text-xs text-center transition-all shadow-xs"
             >
-              Choose options
+              View More
             </Link>
-          ) : (
-            <button
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              className={`w-full py-2 px-3 rounded-full font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs ${
-                isOutOfStock
-                  ? 'border border-[#292525]/20 text-[#292525]/30 cursor-not-allowed bg-slate-50'
-                  : added
-                  ? 'bg-emerald-600 text-white border border-emerald-600'
-                  : 'border border-[#292525] hover:bg-[#0066CC] hover:border-[#0066CC] hover:text-white text-[#292525] bg-white'
-              }`}
-            >
-              {added ? (
-                <>
+            {!hasVariants && !isOutOfStock && (
+              <button
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className={`py-2 px-3 rounded-full font-semibold text-xs flex items-center justify-center gap-1 transition-all shadow-xs ${
+                  added
+                    ? 'bg-emerald-600 text-white border border-emerald-600'
+                    : 'bg-[#FFDA55] text-[#10285D] hover:bg-[#ffcf24] border border-[#FFDA55]'
+                }`}
+                aria-label="Add to cart"
+                title="Add to cart"
+              >
+                {added ? (
                   <Check className="w-3.5 h-3.5" />
-                  <span>Added!</span>
-                </>
-              ) : isOutOfStock ? (
-                <span>Out of stock</span>
-              ) : (
-                <>
+                ) : (
                   <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>Add to cart</span>
-                </>
-              )}
-            </button>
-          )}
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      <SaveToListModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        product={{
+          id: product.id,
+          name: product.name,
+          images: product.images,
+          priceCents: product.priceCents,
+        }}
+      />
     </div>
   );
 };

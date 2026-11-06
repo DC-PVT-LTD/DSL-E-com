@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { User, Package, MapPin, Heart, Bookmark, LogOut } from 'lucide-react';
+import { User, Package, MapPin, Heart, Bookmark, Bell, LogOut } from 'lucide-react';
 import { useUserStore } from '@/services/userStore';
 
 export const AccountNav: React.FC = () => {
@@ -17,6 +17,7 @@ export const AccountNav: React.FC = () => {
     { href: '/account/addresses', label: 'Saved Addresses', icon: MapPin },
     { href: '/account/wishlist', label: 'Wishlist', icon: Heart },
     { href: '/account/saved-lists', label: 'Saved Stationery Lists', icon: Bookmark },
+    { href: '/account/back-in-stock-alerts', label: 'Back-in-Stock Alerts', icon: Bell },
   ];
 
   const handleLogout = async () => {

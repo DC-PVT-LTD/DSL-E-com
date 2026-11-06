@@ -1,0 +1,588 @@
+[
+  {
+    "id": "rule-school-primary-colours",
+    "purpose": "school",
+    "name": "Primary Colour Pencils Set",
+    "description": "Essential 12-colour pencils set for young learners art and colouring tasks",
+    "gradeLevels": [
+      "Grade 1-2",
+      "Grade 3-5"
+    ],
+    "subjects": [
+      "Art",
+      "General Writing"
+    ],
+    "productId": "prod-doms-colour-12",
+    "categoryId": "cat-pencils",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 3,
+    "priority": 1,
+    "reason": "Essential 12-colour pencils for young primary students colouring & creative work",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-lido-clay-6"
+    ]
+  },
+  {
+    "id": "rule-school-primary-erasers",
+    "purpose": "school",
+    "name": "Primary Dust-Free Erasers",
+    "description": "Clean non-smudge erasers for neat handwriting corrections",
+    "gradeLevels": [
+      "Grade 1-2",
+      "Grade 3-5"
+    ],
+    "subjects": [
+      "General Writing",
+      "Mathematics"
+    ],
+    "productId": "prod-dsl-96",
+    "categoryId": "cat-erasers",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 2,
+    "priority": 2,
+    "reason": "Dust-free clean erasers for neat schoolwork without tearing workbook pages",
+    "isActive": true
+  },
+  {
+    "id": "rule-school-primary-clay",
+    "purpose": "school",
+    "name": "Primary Modelling Clay Kit",
+    "description": "Non-toxic modeling clay for early-stage motor skills and creative craft",
+    "gradeLevels": [
+      "Grade 1-2"
+    ],
+    "subjects": [
+      "Art",
+      "Handicraft"
+    ],
+    "productId": "prod-lido-clay-6",
+    "categoryId": "cat-clay",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 2,
+    "priority": 3,
+    "reason": "Non-toxic safe modeling clay for primary school craft activities",
+    "isActive": true
+  },
+  {
+    "id": "rule-school-secondary-blue-pens",
+    "purpose": "school",
+    "name": "Daily Smooth Ballpoint Pens (Blue)",
+    "description": "Reliable smooth-flow blue pens for note taking, classwork and term tests",
+    "gradeLevels": [
+      "Grade 6-9",
+      "O/L (Grade 10-11)",
+      "A/L Science",
+      "A/L Commerce",
+      "A/L Arts"
+    ],
+    "subjects": [
+      "General Writing",
+      "Mathematics",
+      "Science"
+    ],
+    "productId": "prod-speed-rim-blue",
+    "categoryId": "cat-pens",
+    "defaultQuantity": 5,
+    "minQuantity": 1,
+    "maxQuantity": 20,
+    "priority": 1,
+    "reason": "Smooth-flowing blue ballpoint pens recommended for daily school notes & exams",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-2",
+      "prod-dsl-4",
+      "prod-dsl-55"
+    ]
+  },
+  {
+    "id": "rule-school-secondary-black-pens",
+    "purpose": "school",
+    "name": "Sub-heading Ballpoint Pens (Black)",
+    "description": "Contrast ballpoint pens for headings and margin work",
+    "gradeLevels": [
+      "Grade 6-9",
+      "O/L (Grade 10-11)",
+      "A/L Science",
+      "A/L Commerce",
+      "A/L Arts"
+    ],
+    "subjects": [
+      "General Writing"
+    ],
+    "productId": "prod-speed-rim-black",
+    "categoryId": "cat-pens",
+    "defaultQuantity": 2,
+    "minQuantity": 1,
+    "maxQuantity": 10,
+    "priority": 2,
+    "reason": "Black ballpoint pens for distinct lesson headings and diagrams",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-1"
+    ]
+  },
+  {
+    "id": "rule-school-secondary-pencil",
+    "purpose": "school",
+    "name": "Geometry & Technical Drawing Pencil 2B",
+    "description": "Medium-dark graphite pencil for accurate geometry graphs and biological diagrams",
+    "gradeLevels": [
+      "Grade 6-9",
+      "O/L (Grade 10-11)",
+      "A/L Science"
+    ],
+    "subjects": [
+      "Mathematics",
+      "Science"
+    ],
+    "productId": "prod-dsl-31",
+    "categoryId": "cat-pencils",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 3,
+    "priority": 3,
+    "reason": "Precision 2B pencil for geometry diagrams, mathematical graphs, and science sketches",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-33",
+      "prod-doms-colour-12"
+    ]
+  },
+  {
+    "id": "rule-school-scientific-calc",
+    "purpose": "school",
+    "name": "O/L & A/L Science Calculator",
+    "description": "Multi-function scientific calculator for O/L and A/L Science calculations",
+    "gradeLevels": [
+      "O/L (Grade 10-11)",
+      "A/L Science"
+    ],
+    "subjects": [
+      "Mathematics",
+      "Science"
+    ],
+    "productId": "prod-amigo-fx82ms",
+    "categoryId": "cat-calculators",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 1,
+    "priority": 4,
+    "reason": "Curriculum-approved scientific calculator essential for advanced mathematics and physics",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-amigo-mi-201n",
+      "prod-dsl-106"
+    ]
+  },
+  {
+    "id": "rule-school-commerce-calc",
+    "purpose": "school",
+    "name": "A/L Commerce Desk Calculator",
+    "description": "Reliable fast calculation tool for accounting and business statistics",
+    "gradeLevels": [
+      "A/L Commerce"
+    ],
+    "subjects": [
+      "Commerce",
+      "Accounting"
+    ],
+    "productId": "prod-amigo-mi-201n",
+    "categoryId": "cat-calculators",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 1,
+    "priority": 4,
+    "reason": "Compact fast desktop calculator for accounting, business studies and economics",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-100",
+      "prod-dsl-107"
+    ]
+  },
+  {
+    "id": "rule-uni-lecture-pens",
+    "purpose": "university",
+    "name": "Fast-Dry Lecture Note Pens (Blue)",
+    "description": "Comfort grip smooth writing pens for extended campus lecture note taking",
+    "studyAreas": [
+      "Engineering & STEM",
+      "Medical & Life Sciences",
+      "Business & Management",
+      "Law & Humanities",
+      "General Studies"
+    ],
+    "productId": "prod-dsl-4",
+    "categoryId": "cat-pens",
+    "defaultQuantity": 4,
+    "minQuantity": 1,
+    "maxQuantity": 12,
+    "priority": 1,
+    "reason": "Ergonomic fast-glide pens designed for rapid lecture note-taking without hand fatigue",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-speed-rim-blue",
+      "prod-dsl-2"
+    ]
+  },
+  {
+    "id": "rule-uni-calc-stem",
+    "purpose": "university",
+    "name": "Engineering & STEM Scientific Calculator",
+    "description": "Comprehensive 240-function scientific calculator for higher education",
+    "studyAreas": [
+      "Engineering & STEM",
+      "Medical & Life Sciences"
+    ],
+    "productId": "prod-amigo-fx82ms",
+    "categoryId": "cat-calculators",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 1,
+    "priority": 2,
+    "reason": "Essential scientific calculator with 240 functions for university engineering & mathematics",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-98"
+    ]
+  },
+  {
+    "id": "rule-uni-calc-business",
+    "purpose": "university",
+    "name": "Commercial Accounting Calculator",
+    "description": "12-digit desktop calculator for finance and statistics coursework",
+    "studyAreas": [
+      "Business & Management",
+      "Law & Humanities"
+    ],
+    "productId": "prod-dsl-100",
+    "categoryId": "cat-calculators",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 1,
+    "priority": 2,
+    "reason": "Clear 12-digit commercial calculator for business economics and statistics analysis",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-amigo-mi-201n",
+      "prod-dsl-106"
+    ]
+  },
+  {
+    "id": "rule-uni-study-highlighters",
+    "purpose": "university",
+    "name": "Study Summary Glitter Accent Pens",
+    "description": "Vibrant pens for colour-coding reading notes and key research citations",
+    "studyAreas": [
+      "Engineering & STEM",
+      "Medical & Life Sciences",
+      "Business & Management",
+      "Law & Humanities",
+      "General Studies"
+    ],
+    "productId": "prod-linc-shine-glitter-5",
+    "categoryId": "cat-pens",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 2,
+    "priority": 3,
+    "reason": "Colourful accent pens for visual study outlines, thesis summaries and exam revision",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-5"
+    ]
+  },
+  {
+    "id": "rule-office-desk-pens-black",
+    "purpose": "office",
+    "name": "Executive Office Ballpoint Pens (Black)",
+    "description": "Professional black pens for signing official documents, memos and invoices",
+    "officeScale": "individual",
+    "productId": "prod-dsl-1",
+    "categoryId": "cat-pens",
+    "defaultQuantity": 5,
+    "minQuantity": 1,
+    "maxQuantity": 25,
+    "priority": 1,
+    "reason": "Crisp black ballpoint ink for business documentation, signatures, and contracts",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-speed-rim-black"
+    ]
+  },
+  {
+    "id": "rule-office-desk-pens-blue",
+    "purpose": "office",
+    "name": "Daily Office Ballpoint Pens (Blue)",
+    "description": "Standard office ballpoint pens for administrative staff and front desk",
+    "officeScale": "individual",
+    "productId": "prod-dsl-2",
+    "categoryId": "cat-pens",
+    "defaultQuantity": 5,
+    "minQuantity": 1,
+    "maxQuantity": 25,
+    "priority": 2,
+    "reason": "Everyday administrative pens for daily operational tasks and notes",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-speed-rim-blue"
+    ]
+  },
+  {
+    "id": "rule-office-calculator",
+    "purpose": "office",
+    "name": "Desktop Commercial Calculator",
+    "description": "Durable large-display desktop calculator for billing, accounting and procurement",
+    "officeScale": "individual",
+    "productId": "prod-dsl-106",
+    "categoryId": "cat-calculators",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 5,
+    "priority": 3,
+    "reason": "Large-display reliable calculator suited for daily billing, accounts and cashier desks",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-100",
+      "prod-amigo-mi-201n"
+    ]
+  },
+  {
+    "id": "rule-office-packing-tape",
+    "purpose": "office",
+    "name": "Office Packaging & Sealing Tape",
+    "description": "Clear strong adhesive tape for packaging courier mail, invoices and storage boxes",
+    "officeScale": "individual",
+    "productId": "prod-dsl-17",
+    "categoryId": "cat-tapes",
+    "defaultQuantity": 2,
+    "minQuantity": 1,
+    "maxQuantity": 10,
+    "priority": 4,
+    "reason": "Durable 24mm adhesive tape for office mail dispatch, parcel packaging and document filing",
+    "isActive": true
+  },
+  {
+    "id": "rule-art-water-colour",
+    "purpose": "art_craft",
+    "name": "Artist Water Colour Set (12 Cakes)",
+    "description": "Pigment-rich vibrant cake watercolours for sketching, wash techniques and fine art",
+    "activityTypes": [
+      "Water Colour Painting",
+      "General Craft",
+      "Fine Art"
+    ],
+    "productId": "prod-camlin-water-colour-12",
+    "categoryId": "cat-water-colour",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 3,
+    "priority": 1,
+    "reason": "Professional vibrant cake watercolours with smooth blendability for fine art & craft projects",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-doms-colour-12"
+    ]
+  },
+  {
+    "id": "rule-art-sketching-pencil-2b",
+    "purpose": "art_craft",
+    "name": "Artist Drawing Pencil 2B",
+    "description": "Smooth sketching graphite pencil for figure drawing and preliminary outlines",
+    "activityTypes": [
+      "Sketching & Drawing",
+      "Water Colour Painting",
+      "Fine Art"
+    ],
+    "productId": "prod-dsl-31",
+    "categoryId": "cat-pencils",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 5,
+    "priority": 2,
+    "reason": "High-grade graphite pencil for shading, outlines and architectural sketching",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-33",
+      "prod-dsl-35"
+    ]
+  },
+  {
+    "id": "rule-art-sketching-pencil-4b",
+    "purpose": "art_craft",
+    "name": "Artist Drawing Pencil 4B",
+    "description": "Deep-tone graphite pencil for expressive shading, contrast and life drawing",
+    "activityTypes": [
+      "Sketching & Drawing",
+      "Fine Art"
+    ],
+    "productId": "prod-dsl-33",
+    "categoryId": "cat-pencils",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 5,
+    "priority": 3,
+    "reason": "Soft dark 4B graphite pencil for tonal transitions and deep shadow rendering",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-35",
+      "prod-dsl-36"
+    ]
+  },
+  {
+    "id": "rule-art-fabric-paint-blue",
+    "purpose": "art_craft",
+    "name": "Speed Textile Fabric Paint (Blue 351)",
+    "description": "Permanent water-resistant textile paint for custom apparel, t-shirts and fabric crafts",
+    "activityTypes": [
+      "Fabric Painting",
+      "General Craft"
+    ],
+    "productId": "prod-dsl-79",
+    "categoryId": "cat-fabric-paint",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 5,
+    "priority": 2,
+    "reason": "Wash-resistant, bright fabric paint for textile artwork, tote bags and custom clothing",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-90",
+      "prod-dsl-85",
+      "prod-dsl-78"
+    ]
+  },
+  {
+    "id": "rule-art-fabric-paint-red",
+    "purpose": "art_craft",
+    "name": "Speed Textile Fabric Paint (Red 062)",
+    "description": "Rich red fabric pigment suitable for cotton, linen and silk crafts",
+    "activityTypes": [
+      "Fabric Painting",
+      "General Craft"
+    ],
+    "productId": "prod-dsl-90",
+    "categoryId": "cat-fabric-paint",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 5,
+    "priority": 3,
+    "reason": "Vibrant permanent red paint for textile stenciling, block printing and fabric design",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-79",
+      "prod-dsl-83"
+    ]
+  },
+  {
+    "id": "rule-art-modelling-clay",
+    "purpose": "art_craft",
+    "name": "Lido 6-Colour Modeling Clay Set",
+    "description": "Smooth pliable modeling clay for 3D miniature crafting, pottery prototypes and figurines",
+    "activityTypes": [
+      "Modelling Clay & Sculpting",
+      "General Craft"
+    ],
+    "productId": "prod-lido-clay-6",
+    "categoryId": "cat-clay",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 3,
+    "priority": 2,
+    "reason": "Non-drying pliable coloured clay for sculpting models, figurines and creative school dioramas",
+    "isActive": true
+  },
+  {
+    "id": "rule-gift-glitter-pen-pack",
+    "purpose": "gift",
+    "name": "Luxury Glitter Pen Gift Set (10 Pcs)",
+    "description": "Decorative multi-shade sparkling gel pen pack in a premium display wallet",
+    "occasions": [
+      "Birthday Gift",
+      "Student Achievement",
+      "Teacher Appreciation",
+      "Creative Gift"
+    ],
+    "productId": "prod-dsl-5",
+    "categoryId": "cat-pens",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 2,
+    "priority": 1,
+    "reason": "Aesthetic 10-piece sparkling glitter pen gift pack for journaling, card making and lettering",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-linc-shine-glitter-5"
+    ]
+  },
+  {
+    "id": "rule-gift-colour-pencil-kit",
+    "purpose": "gift",
+    "name": "Art Enthusiast Colour Pencil Gift Set",
+    "description": "Vibrant, break-resistant colour pencils set presented in a stylish package",
+    "occasions": [
+      "Birthday Gift",
+      "Student Achievement",
+      "Creative Gift"
+    ],
+    "productId": "prod-doms-colour-12",
+    "categoryId": "cat-pencils",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 2,
+    "priority": 2,
+    "reason": "Delightful gift for budding artists and students with 12 rich pigment shades",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-camlin-water-colour-12"
+    ]
+  },
+  {
+    "id": "rule-gift-water-colour",
+    "purpose": "gift",
+    "name": "Kokuyo Camlin Artist Watercolour Cake Set",
+    "description": "Premium boxed artist watercolours for hobbyists and art students",
+    "occasions": [
+      "Student Achievement",
+      "Teacher Appreciation",
+      "Creative Gift"
+    ],
+    "productId": "prod-camlin-water-colour-12",
+    "categoryId": "cat-water-colour",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 2,
+    "priority": 3,
+    "reason": "Finely milled watercolour palette in a travel-friendly case, perfect for thoughtful gifting",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-lido-clay-6"
+    ]
+  },
+  {
+    "id": "rule-gift-gold-calculator",
+    "purpose": "gift",
+    "name": "Executive Gold White Desktop Calculator",
+    "description": "Sleek luxury gold-finish commercial calculator for professionals, teachers and executives",
+    "occasions": [
+      "Executive Colleague",
+      "Teacher Appreciation",
+      "Student Achievement"
+    ],
+    "productId": "prod-dsl-100",
+    "categoryId": "cat-calculators",
+    "defaultQuantity": 1,
+    "minQuantity": 1,
+    "maxQuantity": 1,
+    "priority": 4,
+    "reason": "Polished gold-finish desktop calculator combining executive elegance with everyday utility",
+    "isActive": true,
+    "substituteProductIds": [
+      "prod-dsl-97",
+      "prod-dsl-106"
+    ]
+  }
+]

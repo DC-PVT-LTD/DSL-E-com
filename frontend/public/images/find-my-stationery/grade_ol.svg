@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+  <defs>
+    <filter id="capShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="2.5" stdDeviation="1.8" flood-color="#451A03" flood-opacity="0.25"/>
+    </filter>
+    <linearGradient id="capBrown" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#B45309"/>
+      <stop offset="40%" stop-color="#92400E"/>
+      <stop offset="100%" stop-color="#78350F"/>
+    </linearGradient>
+    <linearGradient id="topDiamond" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="60%" stop-color="#B45309"/>
+      <stop offset="100%" stop-color="#78350F"/>
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#capShadow)">
+    <!-- Skull Cap Underneath -->
+    <path d="M 20 30 Q 32 37 44 30 L 44 39 Q 32 46 20 39 Z" fill="url(#capBrown)" stroke="#451A03" stroke-width="2" stroke-linejoin="round"/>
+
+    <!-- Diamond Mortarboard Top -->
+    <polygon points="32,12 58,25 32,38 6,25" fill="url(#topDiamond)" stroke="#451A03" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <!-- Inner Rim Highlight -->
+    <polygon points="32,15 54,25 32,35 10,25" fill="none" stroke="#FBBF24" stroke-width="1" opacity="0.5"/>
+
+    <!-- Center Button -->
+    <circle cx="32" cy="25" r="3" fill="#FBBF24" stroke="#78350F" stroke-width="1.5"/>
+
+    <!-- Tassel Cord and Fringe -->
+    <path d="M 32 25 Q 46 26 49 35 L 49 47" fill="none" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M 46 45 L 52 45 L 53 54 L 45 54 Z" fill="#FDE047" stroke="#B45309" stroke-width="1.5" stroke-linejoin="round"/>
+    <line x1="49" y1="46" x2="49" y2="53" stroke="#D97706" stroke-width="1"/>
+  </g>
+</svg>

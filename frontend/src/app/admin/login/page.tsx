@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ShieldCheck, ArrowRight, Store, AlertCircle, Loader2 } from 'lucide-react';
 import { useUserStore } from '@/services/userStore';
 
-export default function AdminLoginPage() {
+function AdminLoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +24,12 @@ export default function AdminLoginPage() {
     try {
       const ok = await loginAdmin(email, password);
       if (ok) {
-        router.push('/admin/dashboard');
+        const rawReturn = searchParams.get('returnUrl');
+        const safeDestination =
+          rawReturn && rawReturn.startsWith('/admin') && !rawReturn.startsWith('//')
+            ? rawReturn
+            : '/admin/dashboard';
+        router.push(safeDestination);
       } else {
         setError('Admin login failed. Insufficient permissions or invalid credentials.');
       }
@@ -106,5 +112,19 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-100">
+          <Loader2 className="w-8 h-8 animate-spin text-[#08275E]" />
+        </div>
+      }
+    >
+      <AdminLoginForm />
+    </Suspense>
   );
 }

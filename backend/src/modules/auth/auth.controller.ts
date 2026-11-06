@@ -33,6 +33,8 @@ import {
   updateProfileSchema,
   createAddressSchema,
   updateAddressSchema,
+  verifyEmailSchema,
+  resendVerificationOtpSchema,
   RegisterDto,
   LoginDto,
   ForgotPasswordDto,
@@ -40,6 +42,8 @@ import {
   UpdateProfileDto,
   CreateAddressDto,
   UpdateAddressDto,
+  VerifyEmailDto,
+  ResendVerificationOtpDto,
 } from './dto/auth.dto';
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -88,6 +92,44 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ) {
     return this.authService.register(dto, res);
+  }
+
+  @ApiTags('Authentication')
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({
+    summary: 'Verify email ownership via OTP and link eligible guest orders',
+    description:
+      'Validates 6-digit OTP, marks user account as verified, securely links eligible guest orders, ' +
+      'and issues HttpOnly authentication session cookies.',
+  })
+  @ApiBody({ type: VerifyEmailDto })
+  @ApiResponse({ status: 200, description: 'Email verified and session established' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired verification code' })
+  @ApiResponse({ status: 429, description: 'Rate limit exceeded' })
+  async verifyEmail(
+    @Body(createZodPipe(verifyEmailSchema)) dto: VerifyEmailDto,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    return this.authService.verifyEmail(dto, res);
+  }
+
+  @ApiTags('Authentication')
+  @Post('resend-verification-otp')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @ApiOperation({
+    summary: 'Resend 6-digit email verification code with rate limiting cooldown',
+  })
+  @ApiBody({ type: ResendVerificationOtpDto })
+  @ApiResponse({ status: 200, description: 'New verification code dispatched if account eligible' })
+  @ApiResponse({ status: 400, description: 'Cooldown period active or account already verified' })
+  @ApiResponse({ status: 429, description: 'Rate limit exceeded' })
+  async resendVerificationOtp(
+    @Body(createZodPipe(resendVerificationOtpSchema)) dto: ResendVerificationOtpDto
+  ) {
+    return this.authService.resendVerificationOtp(dto);
   }
 
   @ApiTags('Authentication')

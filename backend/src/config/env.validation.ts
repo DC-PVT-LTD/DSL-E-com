@@ -53,6 +53,34 @@ export const envSchema = z.object({
     .default('12')
     .transform((val) => parseInt(val, 10))
     .pipe(z.number().int().min(10).max(14)),
+
+  // ─── OCR / Vision Provider Configuration ─────────────────────────────────────
+  OCR_PROVIDER: z
+    .enum(['simulated', 'google_vision', 'gemini_vision', 'auto'])
+    .optional()
+    .default('auto'),
+  OCR_API_KEY: z.string().optional(),
+  GOOGLE_VISION_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
+  OCR_MAX_RETRIES: z
+    .string()
+    .optional()
+    .default('3')
+    .transform((val) => parseInt(val, 10))
+    .pipe(z.number().int().min(1).max(5)),
+  OCR_TIMEOUT_MS: z
+    .string()
+    .optional()
+    .default('15000')
+    .transform((val) => parseInt(val, 10))
+    .pipe(z.number().int().min(1000).max(60000)),
+
+  // ─── Payment Gateway & Application URLs ─────────────────────────────────────
+  PAYHERE_MERCHANT_ID: z.string().optional().default('1211149'),
+  PAYHERE_MERCHANT_SECRET: z.string().optional().default('dsl_payhere_sandbox_secret'),
+  PAYHERE_SANDBOX: z.string().optional().default('true'),
+  FRONTEND_URL: z.string().optional().default('http://localhost:3000'),
+  BACKEND_URL: z.string().optional().default('http://localhost:4000/api/v1'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

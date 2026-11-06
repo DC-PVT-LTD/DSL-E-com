@@ -3,6 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { CustomerUser, SavedList } from '@/types/user';
 import { ShippingAddress } from '@/types/order';
 import { apiClient } from '@/lib/api/apiClient';
+import { useCartStore } from './cartStore';
+import { useWishlistStore } from './wishlistStore';
 
 interface UserState {
   currentUser: CustomerUser | null;
@@ -12,7 +14,15 @@ interface UserState {
 
   // Real backend auth actions
   loginCustomer: (email: string, password?: string) => Promise<boolean>;
-  registerCustomer: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
+  registerCustomer: (
+    name: string,
+    email: string,
+    password: string,
+    phone?: string,
+    orderId?: string
+  ) => Promise<{ success: boolean; requiresVerification?: boolean; email?: string; message?: string }>;
+  verifyEmail: (email: string, otp: string) => Promise<{ success: boolean; message: string; data?: any }>;
+  resendVerificationOtp: (email: string) => Promise<{ success: boolean; message: string }>;
   logoutCustomer: () => Promise<void>;
   fetchCurrentUser: () => Promise<void>;
 
@@ -43,6 +53,13 @@ export const useUserStore = create<UserState>()(
           if (res?.data) {
             const u = res.data;
             const current = get().currentUser;
+            const addrRes = await apiClient
+              .get<{ success: boolean; data: any[] }>('/auth/me/addresses')
+              .catch(() => null);
+            const savedAddresses = Array.isArray(addrRes?.data)
+              ? addrRes.data
+              : current?.addresses || [];
+
             set({
               currentUser: {
                 id: u.id,
@@ -50,16 +67,25 @@ export const useUserStore = create<UserState>()(
                 email: u.email,
                 phone: u.phone || '',
                 role: u.role,
-                addresses: current?.addresses || [],
+                addresses: savedAddresses,
                 wishlistProductIds: current?.wishlistProductIds || [],
                 savedLists: current?.savedLists || [],
               },
               isAdminLoggedIn: u.role === 'ADMIN' || u.role === 'MANAGER',
               adminEmail: u.role === 'ADMIN' || u.role === 'MANAGER' ? u.email : null,
             });
+            // Synchronize customer cart and wishlist from authoritative backend
+            useCartStore.getState().fetchCart();
+            useWishlistStore.getState().fetchWishlist();
           }
         } catch {
-          // Token expired or unauthenticated
+          // Session expired or unauthenticated - synchronize state so UI reflects actual auth
+          useWishlistStore.getState().clearWishlistLocal();
+          set({
+            currentUser: null,
+            isAdminLoggedIn: false,
+            adminEmail: null,
+          });
         }
       },
 
@@ -74,6 +100,13 @@ export const useUserStore = create<UserState>()(
           if (res?.data) {
             const u = res.data;
             const current = get().currentUser;
+            const addrRes = await apiClient
+              .get<{ success: boolean; data: any[] }>('/auth/me/addresses')
+              .catch(() => null);
+            const savedAddresses = Array.isArray(addrRes?.data)
+              ? addrRes.data
+              : current?.addresses || [];
+
             set({
               currentUser: {
                 id: u.id,
@@ -81,7 +114,7 @@ export const useUserStore = create<UserState>()(
                 email: u.email,
                 phone: u.phone || '',
                 role: u.role,
-                addresses: current?.addresses || [],
+                addresses: savedAddresses,
                 wishlistProductIds: current?.wishlistProductIds || [],
                 savedLists: current?.savedLists || [],
               },
@@ -89,6 +122,9 @@ export const useUserStore = create<UserState>()(
               adminEmail: u.role === 'ADMIN' || u.role === 'MANAGER' ? u.email : null,
               isLoading: false,
             });
+            // Merge guest cart items into authenticated user cart
+            await useCartStore.getState().mergeGuestCart();
+            useWishlistStore.getState().fetchWishlist();
             return true;
           }
           set({ isLoading: false });
@@ -99,18 +135,62 @@ export const useUserStore = create<UserState>()(
         }
       },
 
-      registerCustomer: async (name: string, email: string, password: string, phone?: string) => {
+      registerCustomer: async (
+        name: string,
+        email: string,
+        password: string,
+        phone?: string,
+        orderId?: string
+      ) => {
         set({ isLoading: true });
         try {
-          const res = await apiClient.post<{ success: boolean; data: any }>('/auth/register', {
+          const res = await apiClient.post<{
+            success: boolean;
+            requiresVerification?: boolean;
+            email?: string;
+            message?: string;
+            data?: any;
+          }>('/auth/register', {
             name,
             email,
             password,
             phone,
+            orderId,
           });
+
+          set({ isLoading: false });
+          return {
+            success: res?.success ?? true,
+            requiresVerification: res?.requiresVerification ?? true,
+            email: res?.email || email,
+            message: res?.message || 'Verification code sent to your email',
+          };
+        } catch (err) {
+          set({ isLoading: false });
+          throw err;
+        }
+      },
+
+      verifyEmail: async (email: string, otp: string) => {
+        set({ isLoading: true });
+        try {
+          const res = await apiClient.post<{
+            success: boolean;
+            message: string;
+            linkedOrdersCount?: number;
+            data?: any;
+          }>('/auth/verify-email', { email, otp });
 
           if (res?.data) {
             const u = res.data;
+            const current = get().currentUser;
+            const addrRes = await apiClient
+              .get<{ success: boolean; data: any[] }>('/auth/me/addresses')
+              .catch(() => null);
+            const savedAddresses = Array.isArray(addrRes?.data)
+              ? addrRes.data
+              : current?.addresses || [];
+
             set({
               currentUser: {
                 id: u.id,
@@ -118,18 +198,42 @@ export const useUserStore = create<UserState>()(
                 email: u.email,
                 phone: u.phone || '',
                 role: u.role,
-                addresses: [],
-                wishlistProductIds: [],
-                savedLists: [],
+                addresses: savedAddresses,
+                wishlistProductIds: current?.wishlistProductIds || [],
+                savedLists: current?.savedLists || [],
               },
+              isAdminLoggedIn: u.role === 'ADMIN' || u.role === 'MANAGER',
+              adminEmail: u.role === 'ADMIN' || u.role === 'MANAGER' ? u.email : null,
               isLoading: false,
             });
-            return true;
+            await useCartStore.getState().mergeGuestCart();
+            useWishlistStore.getState().fetchWishlist();
+          } else {
+            set({ isLoading: false });
           }
-          set({ isLoading: false });
-          return false;
+
+          return {
+            success: true,
+            message: res?.message || 'Email verified successfully',
+            data: res?.data,
+          };
         } catch (err) {
           set({ isLoading: false });
+          throw err;
+        }
+      },
+
+      resendVerificationOtp: async (email: string) => {
+        try {
+          const res = await apiClient.post<{ success: boolean; message: string }>(
+            '/auth/resend-verification-otp',
+            { email }
+          );
+          return {
+            success: true,
+            message: res?.message || 'A new verification code has been sent.',
+          };
+        } catch (err) {
           throw err;
         }
       },
@@ -140,6 +244,9 @@ export const useUserStore = create<UserState>()(
         } catch {
           // Continue local cleanup even if network fails
         }
+        // Clear local cart and wishlist to guarantee zero cross-customer data exposure
+        useCartStore.getState().clearCartLocal();
+        useWishlistStore.getState().clearWishlistLocal();
         set({ currentUser: null, isAdminLoggedIn: false, adminEmail: null });
       },
 
@@ -191,6 +298,8 @@ export const useUserStore = create<UserState>()(
         const user = get().currentUser;
         if (!user) return;
 
+        useWishlistStore.getState().toggleWishlist({ id: productId } as any);
+
         const exists = user.wishlistProductIds.includes(productId);
         const updatedWishlist = exists
           ? user.wishlistProductIds.filter((id) => id !== productId)
@@ -205,8 +314,7 @@ export const useUserStore = create<UserState>()(
       },
 
       isInWishlist: (productId: string) => {
-        const user = get().currentUser;
-        return user ? user.wishlistProductIds.includes(productId) : false;
+        return useWishlistStore.getState().isInWishlist(productId);
       },
 
       addAddress: async (address) => {
@@ -309,3 +417,28 @@ export const useUserStore = create<UserState>()(
     }
   )
 );
+
+// Synchronize global API client authentication rejections with userStore
+if (typeof window !== 'undefined') {
+  apiClient.onAuthFailure(() => {
+    const state = useUserStore.getState();
+    if (state.isAdminLoggedIn || state.currentUser) {
+      useUserStore.setState({
+        currentUser: null,
+        isAdminLoggedIn: false,
+        adminEmail: null,
+      });
+
+      // If user is currently on an admin route, redirect to login with safe returnUrl
+      if (
+        window.location.pathname.startsWith('/admin') &&
+        window.location.pathname !== '/admin/login'
+      ) {
+        const returnUrl = encodeURIComponent(
+          window.location.pathname + window.location.search
+        );
+        window.location.href = `/admin/login?returnUrl=${returnUrl}`;
+      }
+    }
+  });
+}

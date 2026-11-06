@@ -25,7 +25,10 @@ export interface ProductVariant {
   priceCents: number;
   compareAtPriceCents?: number;
   stockQuantity: number;
+  reservedStock?: number;
+  availableStock?: number;
   attributes: Record<string, string>; // e.g. { color: "Blue", ruling: "Single Line" }
+  isActive?: boolean;
 }
 
 export interface Product {
@@ -41,9 +44,11 @@ export interface Product {
   brandId: string;
   brandName: string;
   priceCents: number;
-  compareAtPriceCents?: number;
-  costPriceCents?: number;
+  compareAtPriceCents?: number | null;
+  costPriceCents?: number | null;
   stockQuantity: number;
+  reservedStock?: number;
+  availableStock?: number;
   lowStockThreshold: number;
   isActive: boolean;
   isFeatured?: boolean;

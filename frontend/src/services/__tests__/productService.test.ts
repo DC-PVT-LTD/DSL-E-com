@@ -8,17 +8,17 @@ describe('productService', () => {
   });
 
   it('filters products by query search', () => {
-    const result = productService.getFilteredAndSorted({ query: 'Chooty' });
+    const result = productService.getFilteredAndSorted({ query: 'SPEED' });
     expect(result.items.length).toBeGreaterThan(0);
-    expect(result.items[0].name).toContain('Chooty');
+    expect(result.items[0].name.toUpperCase()).toContain('SPEED');
   });
 
   it('filters products by category and brand', () => {
-    const result = productService.getFilteredAndSorted({ category: 'cat-books', brand: 'brand-atlas' });
+    const result = productService.getFilteredAndSorted({ category: 'cat-pens', brand: 'brand-speed' });
     expect(result.items.length).toBeGreaterThan(0);
     result.items.forEach((p) => {
-      expect(p.categoryId).toBe('cat-books');
-      expect(p.brandId).toBe('brand-atlas');
+      expect(p.categoryId).toBe('cat-pens');
+      expect(p.brandId).toBe('brand-speed');
     });
   });
 

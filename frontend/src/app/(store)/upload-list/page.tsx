@@ -36,7 +36,7 @@ export default function UploadListPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) {
       setErrorMsg('Please select a booklist file first.');
@@ -44,22 +44,23 @@ export default function UploadListPage() {
     }
 
     setIsUploading(true);
-    setUploadProgress(25);
+    setUploadProgress(20);
 
-    // Simulate OCR progress
-    setTimeout(() => setUploadProgress(60), 400);
-    setTimeout(() => setUploadProgress(90), 800);
-    setTimeout(() => {
-      const doc = uploadService.simulateUpload(
-        {
-          name: selectedFile.name,
-          size: selectedFile.size,
-          type: selectedFile.type,
-        },
-        customerNotes
-      );
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => (prev < 90 ? prev + 15 : prev));
+    }, 300);
+
+    try {
+      const doc = await uploadService.uploadDocument(selectedFile, customerNotes);
+      clearInterval(progressInterval);
+      setUploadProgress(100);
       router.push(`/upload-list/${doc.id}/review`);
-    }, 1200);
+    } catch (err: any) {
+      clearInterval(progressInterval);
+      setIsUploading(false);
+      setUploadProgress(0);
+      setErrorMsg(err.message || 'Failed to upload and analyze document. Please check file format.');
+    }
   };
 
   return (
@@ -79,13 +80,11 @@ export default function UploadListPage() {
         </p>
       </div>
 
-      {/* Demo Notice */}
+      {/* Review-First Notice */}
       <div className="bg-[#FFF9D2] border border-[#FFD84D] rounded-2xl p-4 text-xs text-[#594300] flex items-start gap-3 shadow-xs">
         <AlertCircle className="w-5 h-5 text-[#B38A00] shrink-0 mt-0.5" />
         <div>
-          <strong className="font-bold">Demonstration Notice:</strong> Real OCR machine learning backend is simulated
-          in this frontend prototype using realistic candidate product matching and confidence scores. Files are processed
-          safely without server transmission.
+          <strong className="font-bold">Review-First Guarantee:</strong> Your uploaded list is processed with smart OCR and matched against our live catalogue. You review all items, verify alternatives, and only confirmed items are added to your cart. No automatic orders or payments are ever made.
         </div>
       </div>
 

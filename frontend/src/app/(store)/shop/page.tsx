@@ -117,7 +117,7 @@ function ShopContent() {
   };
 
   return (
-    <div className="bg-[#FFFDF0] min-h-screen">
+    <div className="min-h-screen">
       <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 py-8 sm:py-12">
         {/* Page Title & Breadcrumb */}
         <div className="mb-8">

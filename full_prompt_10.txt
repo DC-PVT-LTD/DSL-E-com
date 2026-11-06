@@ -1,0 +1,532 @@
+<USER_REQUEST>
+# Complete UI/UX Redesign – DSL Stationery | Find My Stationery Page
+
+I want you to completely redesign the existing **Find My Stationery** page to closely match the visual design, styling, colours, typography, illustrations, layout and overall appearance of the attached reference screenshot.
+
+The attached screenshot is the primary design reference. Study it carefully before making any changes.
+
+**Important:** This is a frontend redesign of an existing functional page. Do not create a static screenshot, do not replace the page with a single image, and do not remove existing functionality.
+
+## 1. Overall design direction
+
+Transform the current plain, corporate-looking recommendation form into a cute, colourful, premium-quality stationery shopping experience.
+
+The visual direction should be:
+
+- Cute kawaii stationery illustration style.
+- Soft pastel colours.
+- Warm cream background.
+- Rounded corners and friendly shapes.
+- Soft shadows and subtle glowing highlights.
+- Colourful illustrated cards.
+- Playful but readable typography.
+- A polished, professional e-commerce interface.
+
+The final page should look as close as reasonably possible to the attached reference.
+
+Avoid:
+- Plain white corporate-style layouts.
+- Dark themes.
+- Excessive empty white cards.
+- Generic blue-only buttons and components.
+- Unnecessary borders and sharp corners.
+- Emoji characters as substitutes for proper illustrations.
+- Random design changes that do not match the reference.
+
+## 2. Typography – change the existing fonts
+
+The current typography needs to be redesigned.
+
+Use these font recommendations:
+
+**Main heading:**
+- Font: Fredoka.
+- Weight: 600 or 700.
+- Large, playful rounded typography.
+- Apply a colourful pastel gradient to the text.
+- Use a subtle dark outline or shadow to give the heading a sticker-like appearance.
+
+**Section headings:**
+- Font: Nunito.
+- Weight: 800.
+- Dark navy or deep brown text.
+- Bold, clean and readable.
+
+**Card headings:**
+- Font: Nunito.
+- Weight: 800.
+- Dark navy text.
+
+**Body text:**
+- Font: Nunito.
+- Weight: 400–600.
+- Comfortable line height.
+- Dark warm-grey colour.
+
+**Buttons and labels:**
+- Font: Nunito.
+- Weight: 700–800.
+
+Import fonts from Google Fonts if they are not already available.
+
+Do not use the current generic corporate typography throughout the page.
+
+## 3. Colour palette
+
+Replace the current colour scheme with a soft pastel stationery palette.
+
+Use these approximate colour values:
+
+| Purpose | Colour |
+|---|---|
+| Main background | #FFF8EF |
+| Secondary cream | #FFF3E6 |
+| Dark text | #17234B |
+| Main blue | #0875D1 |
+| Soft blue | #D8EDFF |
+| Pastel pink | #FFD6E7 |
+| Pastel yellow | #FFF0B9 |
+| Pastel green | #D7F5D9 |
+| Pastel purple | #E9DCFF |
+| Pastel peach | #FFE0C7 |
+| Border | #F0DCCB |
+| Muted text | #796D68 |
+| Success green | #19A875 |
+
+Use the colours gently. They should look soft, warm and slightly desaturated rather than overly bright.
+
+The page should maintain the warm cream background shown in the reference.
+
+## 4. Background illustration
+
+Use the supplied cute pastel stationery background image.
+
+Requirements:
+- Preserve the original illustration quality.
+- Keep the cute bears, owls, books, pencils, clouds, stars and stationery decorations.
+- Maintain the spacious centre area.
+- Do not place decorations behind important text or cards.
+- Use `background-size: cover` for the full-screen background sections.
+- Use appropriate positioning and responsive behaviour.
+- Do not stretch the image.
+- For longer page sections, use matching background sections or naturally extend the background instead of stretching one image across the entire page.
+
+The background must remain visible around the page content, especially on the left and right sides.
+
+## 5. Header redesign
+
+Keep the existing navigation links and functionality.
+
+Redesign the header to match the reference:
+
+- Warm cream background.
+- DSL Stationery logo on the left.
+- Dark navy navigation text.
+- Cute yellow highlight behind the active Find My Stationery link.
+- Search icon.
+- Shopping cart icon with quantity badge.
+- User profile icon.
+- Balanced horizontal spacing.
+- Clean, lightweight appearance.
+
+Keep the header responsive on mobile.
+
+## 6. Hero section
+
+Redesign the top hero section.
+
+Add a small yellow rounded badge:
+
+SMART RECOMMENDATION WIZARD
+
+Use a small illustrated yellow star next to the badge.
+
+Main heading:
+
+Find My Stationery
+
+Use:
+- Fredoka font.
+- Large font size.
+- Pastel gradient using blue, pink, purple, yellow and mint.
+- Dark outline or subtle shadow.
+- Rounded, playful lettering.
+
+Subtitle:
+
+"Select your learning stage, school stage, or office purpose. We configure the right mix of CR books, writing pens, and geometry essentials tailored to your budget."
+
+Centre-align the heading and description.
+
+Add small decorative stationery illustrations around the hero without overcrowding the content.
+
+## 7. Shopping purpose cards – major redesign
+
+This is one of the most important parts of the redesign.
+
+Replace the existing plain rectangular selection cards with large, colourful, illustrated cards matching the reference screenshot.
+
+Create five cards:
+
+1. School Student
+2. Art & Craft Enthusiast
+3. University & College
+4. Office & Business
+5. Stationery Gift Pack
+
+Each card must have:
+
+- Large cute illustrated image in the upper-middle area.
+- Bold card heading.
+- Short description.
+- Soft pastel background.
+- Rounded corners (approximately 24px).
+- Soft coloured border.
+- Subtle shadow.
+- Gentle hover animation.
+- Slight lift on hover.
+- Clear selected state.
+
+Use these background colours:
+
+| Card | Background |
+|---|---|
+| School Student | #FFF0C7 |
+| Art & Craft Enthusiast | #FFE0CB |
+| University & College | #DDF5E4 |
+| Office & Business | #DCEBFF |
+| Stationery Gift Pack | #FCE0EF |
+
+### Important: Use actual cute illustrations, not emojis.
+
+Find or generate individual transparent-background illustrations for each card.
+
+Suggested illustration concepts:
+
+- School Student: Cute little school building with colourful stationery.
+- Art & Craft Enthusiast: Watercolour palette with paintbrushes.
+- University & College: Blue graduation cap with a tassel.
+- Office & Business: Cute brown office briefcase with stationery.
+- Stationery Gift Pack: Beautiful pastel gift box with ribbon.
+
+The illustrations should have a consistent visual style:
+- Cute 2D kawaii illustration.
+- Soft pastel colours.
+- Gentle lighting.
+- Soft shadows.
+- Clean outlines.
+- High-quality transparent PNG or WebP.
+- Consistent visual proportions.
+
+Do not use unrelated stock photography, realistic product photos, or random icons.
+
+**Asset requirement:** Search for suitable illustrations or generate individual illustrations if necessary. Save them as separate reusable assets in the project's public assets directory. Do not use one combined image containing all five cards.
+
+## 8. School grade selection
+
+Redesign the grade selector as colourful rounded pill buttons.
+
+Options:
+
+- Grade 1–2
+- Grade 3–9
+- O/L (Grade 10–11)
+- A/L Science
+- A/L Commerce
+
+Each button should have:
+- Small matching stationery illustration or icon.
+- Pastel background.
+- Rounded pill shape.
+- Dark navy text.
+- Soft border.
+- Hover transition.
+- Clearly visible selected state.
+
+Use different pastel colours such as mint, pink, yellow, blue and lavender.
+
+Selected buttons should have a slightly stronger border and background colour.
+
+Keep the selection functionality exactly as it currently works.
+
+## 9. Budget section
+
+Redesign the budget section to match the screenshot.
+
+Heading:
+
+3. TARGET BUDGET IN LKR (OPTIONAL)
+
+Include:
+- Cute money bag illustration on the left.
+- Long pastel gradient range slider.
+- Rounded white price display showing the selected amount.
+- Small rounded information card on the right.
+- Cute coin illustration inside the information card.
+
+Example information:
+
+"Set your budget and we'll recommend the best value mix."
+
+The slider should use a soft blue-to-purple-to-pink-to-yellow gradient.
+
+The selected value must update dynamically.
+
+Maintain the existing budget calculation and recommendation logic.
+
+## 10. Generate Recommended Basket button
+
+Create a large, rounded, bright-blue CTA button.
+
+Text:
+
+Generate Recommended Basket
+
+Design:
+- Blue gradient background.
+- White bold Nunito text.
+- Cute yellow star illustration on the left.
+- Arrow icon on the right.
+- Large pill-shaped border radius.
+- Soft blue shadow.
+- Smooth hover animation.
+- Slight lift on hover.
+
+Keep the existing recommendation generation functionality.
+
+## 11. Decorative transition between sections
+
+Add a gentle visual transition between the recommendation form and basket section.
+
+Use:
+- Soft curved cream background transition.
+- Small blue double-chevron indicator.
+- Subtle decorative stationery illustrations.
+
+Do not add a harsh divider.
+
+## 12. Recommended basket section
+
+Redesign the existing recommended basket area to match the reference screenshot.
+
+Section heading:
+
+Your Recommended Basket
+
+Use a pastel pink-to-blue gradient rounded banner.
+
+Add a cute clipboard illustration to the left of the heading.
+
+Subtitle:
+
+"A personalized stationery list based on your selections."
+
+Below it, create a two-column layout:
+
+**Left column: Recommended Items**
+
+**Right column: Basket Summary**
+
+### Recommended Items card
+
+Use a large white card with:
+- Rounded corners.
+- Very soft shadow.
+- Thin pastel border.
+- Clear header.
+- Horizontal product rows.
+- Subtle separators.
+
+Each product row must contain:
+
+1. Product image thumbnail.
+2. Product name.
+3. Product category.
+4. Unit price in LKR.
+5. Quantity selector with minus and plus buttons.
+6. Delete button.
+
+Use real product images from the existing project catalogue wherever available.
+
+Do not replace actual catalogue products with random illustrations.
+
+Example product types:
+- CR Exercise Book.
+- Gel Pen Set.
+- Geometry Box.
+- Highlighter Set.
+- Craft Basics Pack.
+
+Make sure product images are properly sized and displayed without distortion.
+
+### Basket Summary card
+
+Create a separate rounded card with a very light lavender background.
+
+Include:
+- Cute shopping basket illustration.
+- Basket Summary heading.
+- Number of items.
+- Estimated discount.
+- Total estimated price.
+
+Highlight the total using a soft purple gradient background.
+
+Add three buttons:
+
+1. Add All to Cart – pink gradient, white text.
+2. Download List (PDF) – white background, blue border.
+3. Share List – white background, lavender border.
+
+Keep all existing cart, download and share functions working.
+
+## 13. Card and component styling
+
+Apply consistent styling across the entire page.
+
+Use:
+- Border radius: 20–26px for large cards.
+- Border radius: 12–16px for smaller elements.
+- Soft shadows.
+- Light pastel borders.
+- Comfortable spacing.
+- Consistent illustration sizes.
+- Gentle transitions.
+
+Do not overuse shadows or gradients.
+
+Make the design look polished rather than childish or cluttered.
+
+## 14. Responsive design
+
+The redesign must work on:
+
+- Desktop: 1440px and above.
+- Laptop: 1024px–1366px.
+- Tablet: 768px–1023px.
+- Mobile: 320px–767px.
+
+Desktop:
+- Five purpose cards in one row if sufficient space is available.
+- Recommended items and basket summary side by side.
+
+Tablet:
+- Purpose cards in a responsive grid.
+- Basket summary can move below the recommended items.
+
+Mobile:
+- Stack the purpose cards.
+- Allow grade buttons to wrap.
+- Make the budget slider full width.
+- Stack the recommended basket and summary.
+- Keep all buttons accessible.
+- Prevent horizontal scrolling.
+- Ensure the background decorations do not cover content.
+
+## 15. Functional requirements – DO NOT BREAK EXISTING FEATURES
+
+This is a visual redesign, not a backend rewrite.
+
+Before modifying the code:
+
+1. Inspect the existing Find My Stationery page.
+2. Identify the existing components and styling.
+3. Understand the current recommendation flow.
+4. Identify the existing state management and data sources.
+5. Preserve all existing functionality.
+
+Keep working:
+- Shopping purpose selection.
+- Grade selection.
+- Subject selection if currently supported.
+- Budget selection.
+- Generate Recommended Basket.
+- Recommendation calculations.
+- Product quantities.
+- Remove product.
+- Add All to Cart.
+- Download PDF.
+- Share List.
+- Responsive navigation.
+
+Do not hardcode the screenshot's sample prices or basket totals if the existing application calculates these dynamically.
+
+Do not create fake backend endpoints or replace real API integrations with mock data.
+
+Do not modify unrelated pages, backend logic, database schemas or APIs.
+
+## 16. Implementation instructions
+
+Use the existing project architecture and technology stack.
+
+Create reusable components where appropriate:
+
+- `RecommendationHero`
+- `PurposeSelectionCard`
+- `PurposeSelectionGrid`
+- `GradeSelector`
+- `BudgetSelector`
+- `GenerateBasketButton`
+- `RecommendedBasketSection`
+- `RecommendedProductRow`
+- `BasketSummary`
+
+Keep illustrations in a dedicated assets directory.
+
+Use proper image optimisation, meaningful alt text and responsive image sizing.
+
+Avoid unnecessary dependencies.
+
+## 17. Final quality requirements
+
+After implementing:
+
+1. Run the project.
+2. Inspect the actual page in the browser.
+3. Compare it with the supplied reference screenshot.
+4. Fix spacing, typography, card sizes, colours and alignment.
+5. Verify all selection interactions.
+6. Verify basket quantity changes.
+7. Verify product removal.
+8. Verify add-to-cart functionality.
+9. Verify PDF download and share functionality.
+10. Test desktop, tablet and mobile layouts.
+11. Run TypeScript checks and the project's existing validation/build commands.
+12. Fix any errors introduced by the redesign.
+
+### Final instruction
+
+I want the existing Find My Stationery page to look visually very close to the attached reference screenshot.
+
+The most important visual elements are:
+
+1. The colourful Fredoka heading.
+2. Warm cream stationery background.
+3. Five large pastel purpose cards with cute individual illustrations.
+4. Colourful rounded grade selection buttons.
+5. Gradient budget slider.
+6. Large blue Generate Recommended Basket button.
+7. Beautiful recommended basket section.
+8. Product images and pastel basket summary card.
+
+Do not simply change a few colours in the existing page. Redesign the entire page properly, paying attention to the illustrations, font selection, proportions, spacing, card styling and overall visual consistency.
+
+**Use the screenshot as the visual target and the existing project as the functional source of truth.**
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-11-05T08:52:24+05:30.
+
+The user's current state is as follows:
+Active Document: d:\projects\office\DSL E-com\backend\.env (LANGUAGE_UNSPECIFIED)
+Cursor is on line: 16
+Other open documents:
+- d:\projects\office\DSL E-com\frontend\src\components\common\Navbar.tsx (LANGUAGE_UNSPECIFIED)
+- d:\projects\office\DSL E-com\frontend\src\app\(store)\checkout\page.tsx (LANGUAGE_UNSPECIFIED)
+- d:\projects\office\DSL E-com\backend\src\modules\inventory\inventory.service.ts (LANGUAGE_UNSPECIFIED)
+- d:\projects\office\DSL E-com\frontend\src\services\cartStore.ts (LANGUAGE_UNSPECIFIED)
+- d:\projects\office\DSL E-com\frontend\src\lib\api\apiClient.ts (LANGUAGE_UNSPECIFIED)
+
+The user has uploaded 1 image(s):
+- C:/Users/Yehara Kobbagala/.gemini/antigravity/brain/4fee825d-9a8a-48ab-95a2-debad91a5b78/.user_uploaded/media_1793848932111_59ba960b.jpg
+You can embed this image in an artifact if you need the USER to review it.
+</ADDITIONAL_METADATA>

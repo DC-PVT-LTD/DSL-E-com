@@ -1,0 +1,97 @@
+<USER_REQUEST>
+# Complete UI/UX Redesign – DSL Stationery | Find My Stationery Page
+
+I want you to completely redesign the existing **Find My Stationery** page to closely match the visual design, styling, colours, typography, illustrations, layout and overall appearance of the attached reference screenshot.
+
+The attached screenshot is the primary design reference. Study it carefully before making any changes.
+
+**Important:** This is a frontend redesign of an existing functional page. Do not create a static screenshot, do not replace the page with a single image, and do not remove existing functionality.
+
+## 1. Overall design direction
+
+Transform the current plain, corporate-looking recommendation form into a cute, colourful, premium-quality stationery shopping experience.
+
+The visual direction should be:
+
+- Cute kawaii stationery illustration style.
+- Soft pastel colours.
+- Warm cream background.
+- Rounded corners and friendly shapes.
+- Soft shadows and subtle glowing highlights.
+- Colourful illustrated cards.
+- Playful but readable typography.
+- A polished, professional e-commerce interface.
+
+The final page should look as close as reasonably possible to the attached reference.
+
+Avoid:
+- Plain white corporate-style layouts.
+- Dark themes.
+- Excessive empty white cards.
+- Generic blue-only buttons and components.
+- Unnecessary borders and sharp corners.
+- Emoji characters as substitutes for proper illustrations.
+- Random design changes that do not match the reference.
+
+## 2. Typography – change the existing fonts
+
+The current typography needs to be redesigned.
+
+Use these font recommendations:
+
+**Main heading:**
+- Font: Fredoka.
+- Weight: 600 or 700.
+- Large, playful rounded typography.
+- Apply a colourful pastel gradient to the text.
+- Use a subtle dark outline or shadow to give the heading a sticker-like appearance.
+
+**Section headings:**
+- Font: Nunito.
+- Weight: 800.
+- Dark navy or deep brown text.
+- Bold, clean and readable.
+
+**Card headings:**
+- Font: 
+<truncated 12024 bytes>
+. Test desktop, tablet and mobile layouts.
+11. Run TypeScript checks and the project's existing validation/build commands.
+12. Fix any errors introduced by the redesign.
+
+### Final instruction
+
+I want the existing Find My Stationery page to look visually very close to the attached reference screenshot.
+
+The most important visual elements are:
+
+1. The colourful Fredoka heading.
+2. Warm cream stationery background.
+3. Five large pastel purpose cards with cute individual illustrations.
+4. Colourful rounded grade selection buttons.
+5. Gradient budget slider.
+6. Large blue Generate Recommended Basket button.
+7. Beautiful recommended basket section.
+8. Product images and pastel basket summary card.
+
+Do not simply change a few colours in the existing page. Redesign the entire page properly, paying attention to the illustrations, font selection, proportions, spacing, card styling and overall visual consistency.
+
+**Use the screenshot as the visual target and the existing project as the functional source of truth.**
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-11-05T08:52:24+05:30.
+
+The user's current state is as follows:
+Active Document: d:\projects\office\DSL E-com\backend\.env (LANGUAGE_UNSPECIFIED)
+Cursor is on line: 16
+Other open documents:
+- d:\projects\office\DSL E-com\frontend\src\components\common\Navbar.tsx (LANGUAGE_UNSPECIFIED)
+- d:\projects\office\DSL E-com\frontend\src\app\(store)\checkout\page.tsx (LANGUAGE_UNSPECIFIED)
+- d:\projects\office\DSL E-com\backend\src\modules\inventory\inventory.service.ts (LANGUAGE_UNSPECIFIED)
+- d:\projects\office\DSL E-com\frontend\src\services\cartStore.ts (LANGUAGE_UNSPECIFIED)
+- d:\projects\office\DSL E-com\frontend\src\lib\api\apiClient.ts (LANGUAGE_UNSPECIFIED)
+
+The user has uploaded 1 image(s):
+- C:/Users/Yehara Kobbagala/.gemini/antigravity/brain/4fee825d-9a8a-48ab-95a2-debad91a5b78/.user_uploaded/media_1793848932111_59ba960b.jpg
+You can embed this image in an artifact if you need the USER to review it.
+</ADDITIONAL_METADATA>

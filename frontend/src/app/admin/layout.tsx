@@ -45,9 +45,10 @@ export default function AdminLayout({
 
   useEffect(() => {
     if (!isChecking && !isLoginPage && !isAdminLoggedIn) {
-      router.push('/admin/login');
+      const returnUrl = pathname && pathname !== '/admin/login' ? `?returnUrl=${encodeURIComponent(pathname)}` : '';
+      router.push(`/admin/login${returnUrl}`);
     }
-  }, [isChecking, isLoginPage, isAdminLoggedIn, router]);
+  }, [isChecking, isLoginPage, isAdminLoggedIn, router, pathname]);
 
   if (isLoginPage) {
     return <div className="min-h-screen bg-slate-100">{children}</div>;

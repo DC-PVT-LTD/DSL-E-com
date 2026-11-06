@@ -13,6 +13,7 @@ describe('ProductsService', () => {
         count: vi.fn(),
         findMany: vi.fn(),
         findUnique: vi.fn(),
+        findFirst: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
@@ -133,6 +134,7 @@ describe('ProductsService', () => {
 
     it('throws NotFoundException when slug does not exist', async () => {
       mockPrisma.product.findUnique.mockResolvedValue(null);
+      mockPrisma.product.findFirst.mockResolvedValue(null);
       await expect(service.findBySlug('missing-slug')).rejects.toThrow(
         NotFoundException
       );

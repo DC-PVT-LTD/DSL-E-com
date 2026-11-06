@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { Response } from 'express';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   RegisterDto,
   LoginDto,
@@ -20,6 +21,8 @@ import {
   UpdateProfileDto,
   CreateAddressDto,
   UpdateAddressDto,
+  VerifyEmailDto,
+  ResendVerificationOtpDto,
 } from './dto/auth.dto';
 import { UserRole } from '../../generated/prisma';
 
@@ -33,6 +36,7 @@ export class AuthService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(JwtService) private readonly jwtService: JwtService,
+    @Inject(NotificationsService) private readonly notificationsService: NotificationsService,
     @Inject(ConfigService) private readonly configService?: ConfigService
   ) {
     this.bcryptRounds = this.configService?.get<number>('BCRYPT_ROUNDS', 12) ?? 12;
@@ -84,25 +88,89 @@ export class AuthService {
     });
   }
 
-  async register(dto: RegisterDto, res: Response) {
+  async register(dto: RegisterDto, res?: Response) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
     const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: normalizedEmail },
     });
 
     if (existing) {
-      throw new ConflictException('An account with this email address already exists');
+      if (existing.isEmailVerified) {
+        throw new ConflictException('An account with this email address already exists');
+      }
+
+      // Check resend cooldown if user was created earlier but unverified
+      if (existing.emailVerificationLastSentAt) {
+        const elapsedSeconds = Math.floor(
+          (Date.now() - existing.emailVerificationLastSentAt.getTime()) / 1000
+        );
+        if (elapsedSeconds < 60) {
+          throw new BadRequestException(
+            `A verification code was recently sent. Please wait ${60 - elapsedSeconds}s before requesting a new code.`
+          );
+        }
+      }
+
+      // Update password/info for unverified account and issue fresh OTP
+      const passwordHash = await bcrypt.hash(dto.password, this.bcryptRounds);
+      const otp = crypto.randomInt(100000, 1000000).toString();
+      const otpHash = this.hashToken(otp);
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+      const updatedUser = await this.prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          name: dto.name,
+          phone: dto.phone,
+          passwordHash,
+          emailVerificationOtpHash: otpHash,
+          emailVerificationExpiresAt: expiresAt,
+          emailVerificationAttempts: 0,
+          emailVerificationLastSentAt: new Date(),
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          phone: true,
+          role: true,
+          createdAt: true,
+        },
+      });
+
+      await this.notificationsService.sendEmailVerificationOtp({
+        email: normalizedEmail,
+        name: updatedUser.name,
+        otp,
+      });
+
+      return {
+        success: true,
+        requiresVerification: true,
+        email: normalizedEmail,
+        message: 'A 6-digit verification code has been sent to your email address.',
+        data: updatedUser,
+      };
     }
 
     const passwordHash = await bcrypt.hash(dto.password, this.bcryptRounds);
+    const otp = crypto.randomInt(100000, 1000000).toString();
+    const otpHash = this.hashToken(otp);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     const user = await this.prisma.user.create({
       data: {
         name: dto.name,
-        email: dto.email,
+        email: normalizedEmail,
         phone: dto.phone,
         passwordHash,
         role: UserRole.CUSTOMER,
         isActive: true,
+        isEmailVerified: false,
+        emailVerificationOtpHash: otpHash,
+        emailVerificationExpiresAt: expiresAt,
+        emailVerificationAttempts: 0,
+        emailVerificationLastSentAt: new Date(),
       },
       select: {
         id: true,
@@ -114,14 +182,167 @@ export class AuthService {
       },
     });
 
-    const accessToken = await this.generateAccessToken(user.id, user.email, user.role);
-    const rawRefreshToken = await this.createRefreshTokenSession(user.id);
+    // Phase B.1: OTP is emailed, guest orders are NOT linked yet, cookies NOT set yet
+    await this.notificationsService.sendEmailVerificationOtp({
+      email: user.email,
+      name: user.name,
+      otp,
+    });
+
+    return {
+      success: true,
+      requiresVerification: true,
+      email: user.email,
+      message: 'Account registered. A 6-digit verification code has been sent to your email address.',
+      data: user,
+    };
+  }
+
+  async verifyEmail(dto: VerifyEmailDto, res: Response) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid email or verification code');
+    }
+
+    if (user.isEmailVerified) {
+      return {
+        success: true,
+        message: 'Email is already verified. Please sign in.',
+      };
+    }
+
+    if (!user.emailVerificationOtpHash || !user.emailVerificationExpiresAt) {
+      throw new BadRequestException('No verification code requested or code has expired. Please request a new code.');
+    }
+
+    if (user.emailVerificationExpiresAt < new Date()) {
+      throw new BadRequestException('Verification code has expired. Please request a new code.');
+    }
+
+    if (user.emailVerificationAttempts >= 5) {
+      throw new BadRequestException('Too many failed attempts. Please request a new verification code.');
+    }
+
+    const candidateHash = this.hashToken(dto.otp.trim());
+    const storedHash = user.emailVerificationOtpHash;
+
+    const isMatch =
+      candidateHash.length === storedHash.length &&
+      crypto.timingSafeEqual(Buffer.from(candidateHash), Buffer.from(storedHash));
+
+    if (!isMatch) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerificationAttempts: { increment: 1 } },
+      });
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    // Atomic transaction: verify email, clear OTP fields, and link guest orders
+    const { updatedUser, linkedCount } = await this.prisma.$transaction(async (tx) => {
+      const u = await tx.user.update({
+        where: { id: user.id },
+        data: {
+          isEmailVerified: true,
+          emailVerificationOtpHash: null,
+          emailVerificationExpiresAt: null,
+          emailVerificationAttempts: 0,
+          emailVerificationLastSentAt: null,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          phone: true,
+          role: true,
+          createdAt: true,
+        },
+      });
+
+      const linkResult = await tx.order.updateMany({
+        where: {
+          customerEmail: { equals: normalizedEmail, mode: 'insensitive' },
+          userId: null,
+        },
+        data: {
+          userId: u.id,
+        },
+      });
+
+      return { updatedUser: u, linkedCount: linkResult.count };
+    });
+
+    this.logger.log(`Verified email for user ${updatedUser.id} (${normalizedEmail}) and linked ${linkedCount} guest order(s)`);
+
+    // Issue session cookies upon successful email verification
+    const accessToken = await this.generateAccessToken(updatedUser.id, updatedUser.email, updatedUser.role);
+    const rawRefreshToken = await this.createRefreshTokenSession(updatedUser.id);
     this.setAuthCookies(res, accessToken, rawRefreshToken);
 
     return {
       success: true,
-      message: 'Account registered successfully',
-      data: user,
+      message: 'Email verified successfully and account activated',
+      linkedOrdersCount: linkedCount,
+      data: updatedUser,
+    };
+  }
+
+  async resendVerificationOtp(dto: ResendVerificationOtpDto) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (!user) {
+      return {
+        success: true,
+        message: 'If an unverified account exists for this email, a new verification code has been sent.',
+      };
+    }
+
+    if (user.isEmailVerified) {
+      throw new BadRequestException('This account is already verified. Please log in.');
+    }
+
+    if (user.emailVerificationLastSentAt) {
+      const elapsedSeconds = Math.floor(
+        (Date.now() - user.emailVerificationLastSentAt.getTime()) / 1000
+      );
+      const cooldownSeconds = 60;
+      if (elapsedSeconds < cooldownSeconds) {
+        throw new BadRequestException(
+          `Please wait ${cooldownSeconds - elapsedSeconds} seconds before requesting a new code.`
+        );
+      }
+    }
+
+    const otp = crypto.randomInt(100000, 1000000).toString();
+    const otpHash = this.hashToken(otp);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationOtpHash: otpHash,
+        emailVerificationExpiresAt: expiresAt,
+        emailVerificationAttempts: 0,
+        emailVerificationLastSentAt: new Date(),
+      },
+    });
+
+    await this.notificationsService.sendEmailVerificationOtp({
+      email: user.email,
+      name: user.name,
+      otp,
+    });
+
+    return {
+      success: true,
+      message: 'A new verification code has been sent to your email address.',
     };
   }
 
@@ -138,6 +359,10 @@ export class AuthService {
 
     if (!user.isActive) {
       throw new UnauthorizedException('Account has been deactivated. Please contact customer support.');
+    }
+
+    if (!user.isEmailVerified) {
+      throw new UnauthorizedException('Please verify your email address before signing in. Check your inbox for the verification code.');
     }
 
     if (user.lockedUntil && user.lockedUntil > new Date()) {
@@ -169,6 +394,22 @@ export class AuthService {
           lockedUntil: null,
         },
       });
+    }
+
+    // Phase B: Safely link any guest orders matching this customer's email
+    try {
+      await this.prisma.order.updateMany({
+        where: {
+          customerEmail: { equals: dto.email, mode: 'insensitive' },
+          userId: null,
+        },
+        data: {
+          userId: user.id,
+        },
+      });
+      this.logger.log(`Linked existing guest orders for email "${dto.email}" to user ${user.id}`);
+    } catch (err: any) {
+      this.logger.warn(`Could not link guest orders for "${dto.email}": ${err?.message}`);
     }
 
     const accessToken = await this.generateAccessToken(user.id, user.email, user.role);

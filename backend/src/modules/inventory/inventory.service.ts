@@ -4,6 +4,7 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '../../generated/prisma';
@@ -21,6 +22,8 @@ import {
   createPaginatedResponse,
 } from '../../common/interfaces/api-response.interface';
 import { excludeSensitiveFields } from '../../common/utils/serialization.util';
+import { InventoryGateway } from './inventory.gateway';
+import { BackInStockService } from '../back-in-stock/back-in-stock.service';
 
 export interface StockAdjustmentResult {
   movement: {
@@ -54,7 +57,11 @@ export interface StockAdjustmentResult {
 export class InventoryService {
   private readonly logger = new Logger(InventoryService.name);
 
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Optional() @Inject(InventoryGateway) private readonly inventoryGateway?: InventoryGateway,
+    @Optional() @Inject(BackInStockService) private readonly backInStockService?: BackInStockService
+  ) {}
 
   /**
    * Atomically adjusts stock for a product or product variant within a PostgreSQL transaction.
@@ -64,7 +71,7 @@ export class InventoryService {
     dto: AdjustInventoryDto,
     actor: { id: string; email?: string; name?: string }
   ): Promise<StockAdjustmentResult> {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       // 1. Lock and fetch parent Product with pessimistic row lock
       const lockedProducts = await tx.$queryRaw<
         Array<{
@@ -151,14 +158,26 @@ export class InventoryService {
         );
       }
 
-      // If adjusting a variant, also ensure the parent product aggregate does not go below zero
-      if (variant) {
-        const newParentStock = product.stockQuantity + changeAmount;
-        if (newParentStock < 0) {
-          throw new BadRequestException(
-            `Parent product aggregate stock would become negative: current ${product.stockQuantity}, requested change ${changeAmount}`
-          );
-        }
+      // Enforce fundamental invariant: Physical Stock >= Active Reserved Stock
+      const activeReservations = tx.stockReservationItem
+        ? await tx.stockReservationItem.findMany({
+            where: {
+              productId: dto.productId,
+              ...(dto.variantId ? { variantId: dto.variantId } : {}),
+              reservation: {
+                status: { in: ['ACTIVE', 'PAYMENT_PENDING'] },
+                expiresAt: { gt: new Date() },
+              },
+            },
+            select: { quantity: true },
+          })
+        : [];
+      const reservedStock = activeReservations.reduce((sum, item) => sum + item.quantity, 0);
+
+      if (newQuantity < reservedStock) {
+        throw new BadRequestException(
+          `Cannot reduce physical stock to ${newQuantity}: ${reservedStock} units are currently reserved by customer checkout sessions. Physical stock cannot fall below active reservations.`
+        );
       }
 
       // 4. Update stock atomically
@@ -239,6 +258,146 @@ export class InventoryService {
         variant: null,
       };
     });
+
+    // Invariant: broadcast committed update strictly after transaction commits
+    try {
+      if (this.inventoryGateway) {
+        const activeRes = this.prisma.stockReservationItem
+          ? await this.prisma.stockReservationItem.findMany({
+              where: {
+                productId: result.product.id,
+                ...(result.variant ? { variantId: result.variant.id } : {}),
+                reservation: {
+                  status: { in: ['ACTIVE', 'PAYMENT_PENDING'] },
+                  expiresAt: { gt: new Date() },
+                },
+              },
+              select: { quantity: true },
+            })
+          : [];
+        const currentReserved = activeRes.reduce((s, it) => s + it.quantity, 0);
+        const physStock = result.variant
+          ? result.variant.stockQuantity
+          : result.product.stockQuantity;
+
+        this.inventoryGateway.broadcastStockUpdate({
+          productId: result.product.id,
+          variantId: result.variant?.id || null,
+          physicalStock: physStock,
+          reservedStock: currentReserved,
+          availableStock: Math.max(0, physStock - currentReserved),
+          timestamp: new Date().toISOString(),
+          reason: dto.reason,
+        });
+      }
+    } catch (wsErr) {
+      this.logger.warn('Failed to broadcast inventory update:', wsErr);
+    }
+
+    // Phase 15.4: Automatic back-in-stock alerts trigger on 0 -> positive stock transition
+    const previousStock = result.movement.previousQuantity;
+    const newStock = result.movement.newQuantity;
+
+    if (previousStock === 0 && newStock > 0 && this.backInStockService) {
+      this.logger.log(
+        `Authoritative stock transition (0 -> ${newStock}) detected for product ${result.product.id}. Processing back-in-stock alerts.`
+      );
+      try {
+        await this.backInStockService.processStockRestocked(result.product.id);
+      } catch (alertErr) {
+        this.logger.error('Failed to process back-in-stock alerts:', alertErr);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Retrieves real-time stock breakdown: physical, reserved, and available stock.
+   */
+  async getLiveStockStatus(productId: string, variantId?: string | null): Promise<{
+    productId: string;
+    variantId: string | null;
+    physicalStock: number;
+    reservedStock: number;
+    availableStock: number;
+  }> {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { variants: true },
+    });
+    if (!product) throw new NotFoundException(`Product "${productId}" not found`);
+
+    let physicalStock = product.stockQuantity;
+    if (variantId) {
+      const v = product.variants.find((item) => item.id === variantId);
+      if (!v) throw new NotFoundException(`Variant "${variantId}" not found`);
+      physicalStock = v.stockQuantity;
+    }
+
+    const activeReservations = await this.prisma.stockReservationItem.findMany({
+      where: {
+        productId,
+        ...(variantId ? { variantId } : {}),
+        reservation: {
+          status: { in: ['ACTIVE', 'PAYMENT_PENDING'] },
+          expiresAt: { gt: new Date() },
+        },
+      },
+      select: { quantity: true },
+    });
+    const reservedStock = activeReservations.reduce((sum, item) => sum + item.quantity, 0);
+    const availableStock = Math.max(0, physicalStock - reservedStock);
+
+    return {
+      productId,
+      variantId: variantId || null,
+      physicalStock,
+      reservedStock,
+      availableStock,
+    };
+  }
+
+  /**
+   * Batch retrieves live inventory breakdown for a list of product IDs.
+   */
+  async getBatchLiveStockStatus(productIds: string[]): Promise<
+    Record<string, { physicalStock: number; reservedStock: number; availableStock: number }>
+  > {
+    if (!productIds || productIds.length === 0) return {};
+
+    const products = await this.prisma.product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true, stockQuantity: true },
+    });
+
+    const activeReservations = await this.prisma.stockReservationItem.findMany({
+      where: {
+        productId: { in: productIds },
+        reservation: {
+          status: { in: ['ACTIVE', 'PAYMENT_PENDING'] },
+          expiresAt: { gt: new Date() },
+        },
+      },
+      select: { productId: true, quantity: true },
+    });
+
+    const reservedMap: Record<string, number> = {};
+    for (const r of activeReservations) {
+      reservedMap[r.productId] = (reservedMap[r.productId] || 0) + r.quantity;
+    }
+
+    const result: Record<string, { physicalStock: number; reservedStock: number; availableStock: number }> = {};
+    for (const p of products) {
+      const reserved = reservedMap[p.id] || 0;
+      result[p.id] = {
+        physicalStock: p.stockQuantity,
+        reservedStock: reserved,
+        availableStock: Math.max(0, p.stockQuantity - reserved),
+      };
+    }
+
+    return result;
   }
 
   /**

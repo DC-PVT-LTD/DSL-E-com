@@ -133,7 +133,12 @@ exports.Prisma.UserScalarFieldEnum = {
   failedLoginAttempts: 'failedLoginAttempts',
   lockedUntil: 'lockedUntil',
   passwordResetTokenHash: 'passwordResetTokenHash',
-  passwordResetExpiresAt: 'passwordResetExpiresAt'
+  passwordResetExpiresAt: 'passwordResetExpiresAt',
+  isEmailVerified: 'isEmailVerified',
+  emailVerificationOtpHash: 'emailVerificationOtpHash',
+  emailVerificationExpiresAt: 'emailVerificationExpiresAt',
+  emailVerificationAttempts: 'emailVerificationAttempts',
+  emailVerificationLastSentAt: 'emailVerificationLastSentAt'
 };
 
 exports.Prisma.AddressScalarFieldEnum = {
@@ -284,7 +289,11 @@ exports.Prisma.OrderScalarFieldEnum = {
   estimatedDeliveryDate: 'estimatedDeliveryDate',
   promotionId: 'promotionId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  trackingOtpHash: 'trackingOtpHash',
+  trackingOtpExpiresAt: 'trackingOtpExpiresAt',
+  trackingOtpAttempts: 'trackingOtpAttempts',
+  trackingOtpLastSentAt: 'trackingOtpLastSentAt'
 };
 
 exports.Prisma.OrderAddressSnapshotScalarFieldEnum = {
@@ -298,6 +307,13 @@ exports.Prisma.OrderAddressSnapshotScalarFieldEnum = {
   city: 'city',
   district: 'district',
   postalCode: 'postalCode',
+  province: 'province',
+  buildingNo: 'buildingNo',
+  street: 'street',
+  landmark: 'landmark',
+  formattedAddress: 'formattedAddress',
+  latitude: 'latitude',
+  longitude: 'longitude',
   deliveryNotes: 'deliveryNotes'
 };
 
@@ -313,6 +329,102 @@ exports.Prisma.OrderItemScalarFieldEnum = {
   quantity: 'quantity',
   totalPriceCents: 'totalPriceCents',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.OrderAuditLogScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  adminId: 'adminId',
+  adminName: 'adminName',
+  action: 'action',
+  fieldChanged: 'fieldChanged',
+  previousValue: 'previousValue',
+  newValue: 'newValue',
+  reason: 'reason',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.OrderNoteScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  authorId: 'authorId',
+  authorName: 'authorName',
+  note: 'note',
+  isInternal: 'isInternal',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.OrderReturnRequestScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  returnNumber: 'returnNumber',
+  status: 'status',
+  reason: 'reason',
+  rejectionReason: 'rejectionReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderReturnItemScalarFieldEnum = {
+  id: 'id',
+  returnRequestId: 'returnRequestId',
+  orderItemId: 'orderItemId',
+  productName: 'productName',
+  quantity: 'quantity',
+  reason: 'reason',
+  status: 'status',
+  rejectionReason: 'rejectionReason',
+  receivedAt: 'receivedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.RefundRecordScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  amountCents: 'amountCents',
+  method: 'method',
+  reference: 'reference',
+  reason: 'reason',
+  processedBy: 'processedBy',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.StockReservationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sessionId: 'sessionId',
+  status: 'status',
+  expiresAt: 'expiresAt',
+  idempotencyKey: 'idempotencyKey',
+  orderId: 'orderId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.StockReservationItemScalarFieldEnum = {
+  id: 'id',
+  reservationId: 'reservationId',
+  productId: 'productId',
+  variantId: 'variantId',
+  quantity: 'quantity',
+  unitPriceCents: 'unitPriceCents',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PaymentAttemptScalarFieldEnum = {
+  id: 'id',
+  reservationId: 'reservationId',
+  orderId: 'orderId',
+  amountCents: 'amountCents',
+  currency: 'currency',
+  paymentMethod: 'paymentMethod',
+  status: 'status',
+  gatewayReference: 'gatewayReference',
+  idempotencyKey: 'idempotencyKey',
+  gatewayPayload: 'gatewayPayload',
+  failureReason: 'failureReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PromotionScalarFieldEnum = {
@@ -336,13 +448,21 @@ exports.Prisma.PromotionScalarFieldEnum = {
 exports.Prisma.UploadedDocumentScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  sessionId: 'sessionId',
   fileName: 'fileName',
   fileUrl: 'fileUrl',
+  storagePath: 'storagePath',
   fileSizeBytes: 'fileSizeBytes',
   fileType: 'fileType',
+  pageCount: 'pageCount',
   status: 'status',
   isSimulatedOCR: 'isSimulatedOCR',
+  ocrProvider: 'ocrProvider',
   customerNotes: 'customerNotes',
+  processingError: 'processingError',
+  attempts: 'attempts',
+  processedAt: 'processedAt',
+  confirmedAt: 'confirmedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -353,11 +473,21 @@ exports.Prisma.ExtractedStationeryItemScalarFieldEnum = {
   rawText: 'rawText',
   itemDescription: 'itemDescription',
   quantity: 'quantity',
+  unit: 'unit',
   confidence: 'confidence',
   confidenceScore: 'confidenceScore',
+  extractionConfidence: 'extractionConfidence',
+  matchConfidence: 'matchConfidence',
+  matchReason: 'matchReason',
   matchedProductId: 'matchedProductId',
+  matchedVariantId: 'matchedVariantId',
   candidateProductIds: 'candidateProductIds',
   status: 'status',
+  isConfirmed: 'isConfirmed',
+  confirmedProductId: 'confirmedProductId',
+  confirmedVariantId: 'confirmedVariantId',
+  confirmedQuantity: 'confirmedQuantity',
+  isSubstituted: 'isSubstituted',
   createdAt: 'createdAt'
 };
 
@@ -378,6 +508,23 @@ exports.Prisma.SavedStationeryListScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.SavedListScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SavedListItemScalarFieldEnum = {
+  id: 'id',
+  savedListId: 'savedListId',
+  productId: 'productId',
+  quantity: 'quantity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.StoreBannerScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -390,6 +537,26 @@ exports.Prisma.StoreBannerScalarFieldEnum = {
   imageUrl: 'imageUrl',
   isActive: 'isActive',
   displayOrder: 'displayOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.HomepageBannerScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  subtitle: 'subtitle',
+  description: 'description',
+  desktopImage: 'desktopImage',
+  mobileImage: 'mobileImage',
+  imageAltText: 'imageAltText',
+  buttonText: 'buttonText',
+  buttonLink: 'buttonLink',
+  sortOrder: 'sortOrder',
+  status: 'status',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -417,12 +584,52 @@ exports.Prisma.StoreSettingsScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CartScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sessionId: 'sessionId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CartItemScalarFieldEnum = {
+  id: 'id',
+  cartId: 'cartId',
+  productId: 'productId',
+  variantId: 'variantId',
+  quantity: 'quantity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BackInStockAlertScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  status: 'status',
+  failureReason: 'failureReason',
+  sentAt: 'sentAt',
+  processingStartedAt: 'processingStartedAt',
+  leaseExpiresAt: 'leaseExpiresAt',
+  deliveryAttempts: 'deliveryAttempts',
+  lastAttemptAt: 'lastAttemptAt',
+  idempotencyKey: 'idempotencyKey',
+  uncertainDelivery: 'uncertainDelivery',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
 };
 
 exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull
 };
 
@@ -474,9 +681,41 @@ exports.OrderStatus = exports.$Enums.OrderStatus = {
   PENDING: 'PENDING',
   CONFIRMED: 'CONFIRMED',
   PROCESSING: 'PROCESSING',
+  PACKED: 'PACKED',
   SHIPPED: 'SHIPPED',
   DELIVERED: 'DELIVERED',
   CANCELLED: 'CANCELLED'
+};
+
+exports.ReturnStatus = exports.$Enums.ReturnStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  COMPLETED: 'COMPLETED'
+};
+
+exports.ReturnItemStatus = exports.$Enums.ReturnItemStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  RECEIVED: 'RECEIVED',
+  REFUNDED: 'REFUNDED'
+};
+
+exports.ReservationStatus = exports.$Enums.ReservationStatus = {
+  ACTIVE: 'ACTIVE',
+  CONSUMED: 'CONSUMED',
+  EXPIRED: 'EXPIRED',
+  RELEASED: 'RELEASED',
+  PAYMENT_PENDING: 'PAYMENT_PENDING'
+};
+
+exports.PaymentAttemptStatus = exports.$Enums.PaymentAttemptStatus = {
+  INITIATED: 'INITIATED',
+  PROCESSING: 'PROCESSING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED'
 };
 
 exports.DiscountType = exports.$Enums.DiscountType = {
@@ -487,6 +726,10 @@ exports.DiscountType = exports.$Enums.DiscountType = {
 exports.DocumentStatus = exports.$Enums.DocumentStatus = {
   UPLOADED: 'UPLOADED',
   PROCESSING: 'PROCESSING',
+  REVIEW_REQUIRED: 'REVIEW_REQUIRED',
+  READY_FOR_CONFIRMATION: 'READY_FOR_CONFIRMATION',
+  CONFIRMED: 'CONFIRMED',
+  FAILED: 'FAILED',
   PROCESSED: 'PROCESSED',
   REVIEWED: 'REVIEWED',
   CONVERTED_TO_CART: 'CONVERTED_TO_CART'
@@ -502,7 +745,22 @@ exports.MatchStatus = exports.$Enums.MatchStatus = {
   MATCHED: 'MATCHED',
   UNMATCHED: 'UNMATCHED',
   CUSTOM_SELECTED: 'CUSTOM_SELECTED',
-  SKIPPED: 'SKIPPED'
+  SKIPPED: 'SKIPPED',
+  CONFIRMED: 'CONFIRMED'
+};
+
+exports.BannerStatus = exports.$Enums.BannerStatus = {
+  DRAFT: 'DRAFT',
+  SCHEDULED: 'SCHEDULED',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED'
+};
+
+exports.BackInStockAlertStatus = exports.$Enums.BackInStockAlertStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  SENT: 'SENT',
+  CANCELLED: 'CANCELLED'
 };
 
 exports.Prisma.ModelName = {
@@ -519,14 +777,28 @@ exports.Prisma.ModelName = {
   Order: 'Order',
   OrderAddressSnapshot: 'OrderAddressSnapshot',
   OrderItem: 'OrderItem',
+  OrderAuditLog: 'OrderAuditLog',
+  OrderNote: 'OrderNote',
+  OrderReturnRequest: 'OrderReturnRequest',
+  OrderReturnItem: 'OrderReturnItem',
+  RefundRecord: 'RefundRecord',
+  StockReservation: 'StockReservation',
+  StockReservationItem: 'StockReservationItem',
+  PaymentAttempt: 'PaymentAttempt',
   Promotion: 'Promotion',
   UploadedDocument: 'UploadedDocument',
   ExtractedStationeryItem: 'ExtractedStationeryItem',
   WishlistItem: 'WishlistItem',
   SavedStationeryList: 'SavedStationeryList',
+  SavedList: 'SavedList',
+  SavedListItem: 'SavedListItem',
   StoreBanner: 'StoreBanner',
+  HomepageBanner: 'HomepageBanner',
   AuditLog: 'AuditLog',
-  StoreSettings: 'StoreSettings'
+  StoreSettings: 'StoreSettings',
+  Cart: 'Cart',
+  CartItem: 'CartItem',
+  BackInStockAlert: 'BackInStockAlert'
 };
 
 /**

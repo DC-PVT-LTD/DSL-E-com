@@ -45,11 +45,15 @@ describe('orderService', () => {
     const valid = orderService.updateOrderStatus(newOrder.id, 'processing');
     expect(valid).toBe(true);
 
-    // Transitioning processing -> delivered directly is NOT allowed (must go to shipped first)
+    // Transitioning processing -> delivered directly is NOT allowed (must go to packed first)
     const invalid = orderService.updateOrderStatus(newOrder.id, 'delivered');
     expect(invalid).toBe(false);
 
-    // Transitioning processing -> shipped is allowed
+    // Transitioning processing -> packed is allowed
+    const packedValid = orderService.updateOrderStatus(newOrder.id, 'packed');
+    expect(packedValid).toBe(true);
+
+    // Transitioning packed -> shipped is allowed
     const shippedValid = orderService.updateOrderStatus(newOrder.id, 'shipped');
     expect(shippedValid).toBe(true);
 

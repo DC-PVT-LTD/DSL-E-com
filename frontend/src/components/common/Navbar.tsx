@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Logo } from './Logo';
 import { useCartStore } from '@/services/cartStore';
+import { useWishlistStore } from '@/services/wishlistStore';
 import { useUserStore } from '@/services/userStore';
 import { categoryService } from '@/services/categoryService';
 import { productService } from '@/services/productService';
@@ -33,6 +34,7 @@ export const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCatDropdownOpen, setIsCatDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const catDropdownRef = useRef<HTMLDivElement>(null);
@@ -44,13 +46,22 @@ export const Navbar: React.FC = () => {
   const logoutCustomer = useUserStore((state) => state.logoutCustomer);
 
   const cartItemCount = items.reduce((acc, item) => acc + item.quantity, 0);
-  const wishlistCount = currentUser?.wishlistProductIds.length || 0;
+  const wishlistCount = useWishlistStore((state) => state.itemCount);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 15);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     setIsMounted(true);
     setCategories(categoryService.getCategories());
     categoryService.fetchCategories();
     useUserStore.getState().fetchCurrentUser();
+    useWishlistStore.getState().fetchWishlist();
 
     const unsubCat = categoryService.subscribe(() => {
       setCategories(categoryService.getCategories());
@@ -93,10 +104,19 @@ export const Navbar: React.FC = () => {
     }
   };
 
-  const isHomeActive = pathname === '/' || pathname === '/home';
+  const isHomeActive = pathname === '/home' || pathname === '/';
+  const isFindStationeryActive = pathname === '/find-my-stationery';
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#FFF8ED] select-none">
+    <header
+      className={`sticky top-0 z-40 w-full select-none transition-all duration-200 ${
+        isHomeActive
+          ? isScrolled
+            ? 'bg-[#FFF8ED]/95 backdrop-blur-md shadow-xs border-b border-[#10285D]/10'
+            : 'bg-transparent'
+          : 'bg-[#FFF8ED] border-b border-[#10285D]/10'
+      }`}
+    >
       {/* Main Single Navbar Bar */}
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between h-16 sm:h-[68px]">
         {/* Left: Brand Logo & Mobile Menu Toggle */}
@@ -108,14 +128,14 @@ export const Navbar: React.FC = () => {
           >
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <Logo href="/" />
+          <Logo href="/home" />
         </div>
 
         {/* Center: Navigation Links (Desktop) */}
         <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-sm font-semibold text-[#10285D]">
           {/* 1. Home (active with small yellow underline) */}
           <Link
-            href="/"
+            href="/home"
             className="relative py-1 group transition-colors hover:text-[#0066CC]"
           >
             <span className={isHomeActive ? 'text-[#10285D] font-bold' : 'text-[#10285D]'}>
@@ -245,7 +265,11 @@ export const Navbar: React.FC = () => {
           {/* 5. Find My Stationery */}
           <Link
             href="/find-my-stationery"
-            className="py-1 flex items-center gap-1.5 hover:text-[#0066CC] transition-colors"
+            className={
+              isFindStationeryActive
+                ? 'px-3 py-1 bg-[#FFE79A] text-[#17234B] rounded-full font-extrabold flex items-center gap-1.5 shadow-xs transition-all'
+                : 'py-1 flex items-center gap-1.5 hover:text-[#0066CC] transition-colors'
+            }
           >
             <Sparkles className="w-3.5 h-3.5 text-[#FFB800]" />
             <span>Find My Stationery</span>
@@ -378,6 +402,13 @@ export const Navbar: React.FC = () => {
                     >
                       My Orders
                     </Link>
+                    <Link
+                      href="/saved-lists"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-[#10285D] hover:bg-[#FFF8ED]"
+                    >
+                      Saved Stationery Lists
+                    </Link>
                     <div className="border-t border-[#10285D]/10 my-1" />
                     <button
                       onClick={() => {
@@ -416,7 +447,7 @@ export const Navbar: React.FC = () => {
 
           {/* Wishlist Icon */}
           <Link
-            href="/account/wishlist"
+            href="/wishlist"
             className="relative p-2 text-[#10285D] hover:bg-[#FFEECB] rounded-full transition-colors"
             aria-label="Wishlist"
             title="Wishlist"
@@ -460,7 +491,7 @@ export const Navbar: React.FC = () => {
       {isMobileMenuOpen && (
         <div className="lg:hidden bg-[#FFF8ED] border-b border-[#FFD84D]/40 px-6 py-5 space-y-4 shadow-xl animate-fade-in text-sm font-semibold text-[#10285D]">
           <Link
-            href="/"
+            href="/home"
             onClick={() => setIsMobileMenuOpen(false)}
             className="block py-2 border-b border-[#10285D]/10"
           >

@@ -10,10 +10,25 @@ export default function AdminSettingsPage() {
   const [freeThreshold, setFreeThreshold] = useState(FREE_DELIVERY_THRESHOLD_CENTS / 100);
   const [standardFee, setStandardFee] = useState(STANDARD_DELIVERY_FEE_CENTS / 100);
   const [hotline, setHotline] = useState('+94 11 200 9000');
+  const [whatsappNumber, setWhatsappNumber] = useState('+94 77 123 4567');
   const [saved, setSaved] = useState(false);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('dsl_store_whatsapp_number');
+      if (stored) {
+        setWhatsappNumber(stored);
+      } else if (process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER) {
+        setWhatsappNumber(process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER);
+      }
+    }
+  }, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dsl_store_whatsapp_number', whatsappNumber);
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -64,6 +79,20 @@ export default function AdminSettingsPage() {
                 onChange={(e) => setHotline(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
               />
+            </div>
+
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Official WhatsApp Business Number (Phase 16)</label>
+              <input
+                type="text"
+                placeholder="+94 77 123 4567"
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
+              />
+              <span className="text-[11px] text-slate-400 mt-1 block">
+                Official contact number used for customer WhatsApp-assisted order enquiries. Formatted as international number (e.g. +94 77 123 4567).
+              </span>
             </div>
           </div>
         </div>

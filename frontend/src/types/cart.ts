@@ -1,14 +1,26 @@
 import { Product, ProductVariant } from './product';
 
+export interface CartBundleInfo {
+  packId: string;
+  packName: string;
+  savingsPercentage: number;
+}
+
 export interface CartItem {
   id: string; // unique item id in cart (product.id or product.id + variant.id)
   productId: string;
   variantId?: string;
+  variantName?: string;
   product: Product;
   variant?: ProductVariant;
   quantity: number;
   unitPriceCents: number;
   totalPriceCents: number;
+  isAvailable?: boolean;
+  isOutOfStock?: boolean;
+  exceedsStock?: boolean;
+  bundleInfo?: CartBundleInfo;
+  selected?: boolean; // Phase A: Item selection for selective checkout (default: true)
 }
 
 export interface AppliedDiscount {
@@ -20,13 +32,16 @@ export interface AppliedDiscount {
 }
 
 export interface CartSummary {
-  items: CartItem[];
-  itemCount: number;
-  subtotalCents: number;
-  discountCents: number;
-  deliveryCents: number;
-  totalCents: number;
+  items: CartItem[]; // All items in bag
+  selectedItems: CartItem[]; // Only selected items for checkout
+  itemCount: number; // Total item quantity in bag
+  selectedItemCount: number; // Selected item quantity for checkout
+  subtotalCents: number; // Calculated across selected items
+  discountCents: number; // Calculated across selected items
+  deliveryCents: number; // Calculated across selected items
+  totalCents: number; // Calculated across selected items
   appliedDiscount?: AppliedDiscount;
   isFreeDeliveryEligible: boolean;
   freeDeliveryThresholdCents: number;
+  warnings?: string[];
 }

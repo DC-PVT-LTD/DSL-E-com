@@ -175,98 +175,81 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* MIDDLE SECTION: COMMUNITY & IMPACT (FREE-FLOATING CARDS) */}
-        <section id="impact" className="pt-6 sm:pt-10 space-y-6">
+        {/* MIDDLE SECTION: COMMUNITY & IMPACT (LITTLE HEARTS & LADY RIDGEWAY HOSPITAL) */}
+        <section id="impact" className="pt-6 sm:pt-10 space-y-6 sm:space-y-7">
           <div className="text-center space-y-1">
             <h2 className="text-xl sm:text-2xl font-black text-[#1E293B] tracking-tight uppercase">
               COMMUNITY &amp; IMPACT
             </h2>
-            <p className="text-xs font-extrabold text-[#BF5E49] tracking-wider uppercase">
-              CREATING SUSTAINABLE VALUE &amp; EDUCATIONAL GROWTH ACROSS SRI LANKA
+            <p className="text-xs sm:text-sm font-bold text-[#2D3748]/85 tracking-widest">
+              コミュニティと影響
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 pt-2">
-            {/* 4. PILLAR 1: SUSTAINABLE NOTEBOOK EMOJI */}
-            <div className="flex flex-col items-center text-center space-y-3">
-              <div className="w-36 h-36 relative flex items-center justify-center">
-                <div className="w-32 h-32 relative">
-                  <Image
-                    src="/images/about/dsl-sustainable-notebook.png"
-                    alt="Sustainable Recycled Notebook and Pen"
-                    fill
-                    className="object-contain drop-shadow-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5 text-left w-full max-w-[270px]">
-                <h3 className="text-xs sm:text-sm font-extrabold text-[#1E293B] tracking-wide uppercase text-center">
-                  SUSTAINABLE SOURCING:
-                </h3>
-                <ul className="text-xs text-[#475569] space-y-1 list-disc list-inside leading-relaxed">
-                  <li>Offering a comprehensive range of eco-friendly and recycled stationery products.</li>
-                  <li>Minimizing environmental impact through responsible sourcing and non-toxic materials.</li>
-                </ul>
+          {/* 3 Pastel Cards with Little Hearts Project Illustrations */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 max-w-4xl mx-auto pt-2 px-2">
+            {/* Card 1: Little Heart */}
+            <div className="bg-[#F8DDD3] rounded-[36px] sm:rounded-[44px] p-4 sm:p-5 flex items-center justify-center aspect-[1.35/1] shadow-xs border border-[#F0C9BD]/60 hover:scale-[1.02] transition-transform">
+              <div className="relative w-full h-full min-h-[140px] sm:min-h-[160px] flex items-center justify-center">
+                <Image
+                  src="/images/about/dsl-little-heart.png"
+                  alt="Little Hearts Initiative Mascot"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 640px) 260px, (max-width: 1024px) 240px, 280px"
+                  priority
+                />
               </div>
             </div>
 
-            {/* 5. PILLAR 2: EDUCATIONAL SCHOOLHOUSE EMOJI */}
-            <div className="flex flex-col items-center text-center space-y-3">
-              <div className="w-36 h-36 relative flex items-center justify-center">
-                <div className="w-32 h-32 relative">
-                  <Image
-                    src="/images/about/dsl-educational-school.png"
-                    alt="Schoolhouse, Books and Pencils"
-                    fill
-                    className="object-contain drop-shadow-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5 text-left w-full max-w-[270px]">
-                <h3 className="text-xs sm:text-sm font-extrabold text-[#1E293B] tracking-wide uppercase text-center">
-                  EDUCATIONAL SUPPORT:
-                </h3>
-                <ul className="text-xs text-[#475569] space-y-1 list-disc list-inside leading-relaxed">
-                  <li>Partnering with schools across Sri Lanka to provide essential supplies.</li>
-                  <li>Fostering creativity and continuous learning in the next generation.</li>
-                </ul>
+            {/* Card 2: Hand with Stars */}
+            <div className="bg-[#F8DDD3] rounded-[36px] sm:rounded-[44px] p-4 sm:p-5 flex items-center justify-center aspect-[1.35/1] shadow-xs border border-[#F0C9BD]/60 hover:scale-[1.02] transition-transform">
+              <div className="relative w-full h-full min-h-[140px] sm:min-h-[160px] flex items-center justify-center">
+                <Image
+                  src="/images/about/dsl-community-hand.png"
+                  alt="Helping Hands and Care"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 640px) 260px, (max-width: 1024px) 240px, 280px"
+                  priority
+                />
               </div>
             </div>
 
-            {/* 6. PILLAR 3: LOGISTICS WAREHOUSE EMOJI */}
-            <div className="flex flex-col items-center text-center space-y-3">
-              <div className="w-36 h-36 relative flex items-center justify-center">
-                <div className="w-32 h-32 relative">
-                  <Image
-                    src="/images/about/dsl-distribution-warehouse.png"
-                    alt="DSL Distribution Hub and Delivery Vans"
-                    fill
-                    className="object-contain drop-shadow-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5 text-left w-full max-w-[270px]">
-                <h3 className="text-xs sm:text-sm font-extrabold text-[#1E293B] tracking-wide uppercase text-center">
-                  LOCAL EMPLOYMENT &amp; LOGISTICS:
-                </h3>
-                <ul className="text-xs text-[#475569] space-y-1 list-disc list-inside leading-relaxed">
-                  <li>Investing in local infrastructure and creating stable employment.</li>
-                  <li>Ensuring efficient and reliable supply chain operations island-wide.</li>
-                </ul>
+            {/* Card 3: Lady Ridgeway Hospital */}
+            <div className="bg-[#F8DDD3] rounded-[36px] sm:rounded-[44px] p-4 sm:p-5 flex items-center justify-center aspect-[1.35/1] shadow-xs border border-[#F0C9BD]/60 hover:scale-[1.02] transition-transform">
+              <div className="relative w-full h-full min-h-[140px] sm:min-h-[160px] flex items-center justify-center">
+                <Image
+                  src="/images/about/dsl-cardiac-hospital.png"
+                  alt="Lady Ridgeway Hospital Cardiac Care Complex"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 640px) 260px, (max-width: 1024px) 240px, 280px"
+                  priority
+                />
               </div>
             </div>
           </div>
 
-          {/* Mission Quote Banner */}
-          <div className="max-w-3xl mx-auto text-center pt-2 px-4">
-            <p className="text-xs sm:text-sm text-[#4A5568] leading-relaxed italic font-serif">
-              &ldquo;We believe in making a positive impact not through volunteerism alone, but through our core business
-              operations. Our commitment to society focuses on providing sustainable stationery, supporting education with
-              essential supplies, and investing in local employment and logistics across Sri Lanka.&rdquo;
+          {/* Narrative Paragraph */}
+          <div className="max-w-3xl mx-auto text-center pt-1 px-4 space-y-4">
+            <p className="text-xs sm:text-[13.5px] text-[#2D3748] leading-relaxed font-medium max-w-2xl mx-auto">
+              The Little Hearts project is a heartwarming initiative that directly helps children and the
+              community with the Little Hearts project and a community effort that to support the community and
+              community support. We are committed to providing essential cardiac care to children and the
+              Lady Ridgeway Hospital in Colombo.
             </p>
+
+            {/* Explore Our Brands Button */}
+            <div className="flex justify-center pt-1">
+              <Link
+                href="/brands"
+                className="inline-flex items-center gap-2 bg-white/75 hover:bg-white text-[#2D3748] hover:text-[#08275E] font-semibold text-xs sm:text-sm px-6 py-2 rounded-full border border-[#718096]/50 shadow-xs hover:shadow-md transition-all duration-200 active:scale-95"
+              >
+                <span>Explore Our Brands</span>
+                <span className="font-bold text-[#2D3748]">→</span>
+              </Link>
+            </div>
           </div>
         </section>
       </div>

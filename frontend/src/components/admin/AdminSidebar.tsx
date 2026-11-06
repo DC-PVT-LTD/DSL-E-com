@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   Users,
   GraduationCap,
+  Sparkles,
   Upload,
   Tag,
   Image,
@@ -51,6 +52,7 @@ export const AdminSidebar: React.FC = () => {
       title: 'Smart Features & Bundles',
       items: [
         { href: '/admin/school-packs', label: 'School Packs', icon: GraduationCap },
+        { href: '/admin/find-my-stationery', label: 'Find My Stationery', icon: Sparkles },
         { href: '/admin/upload-reviews', label: 'Upload Reviews Queue', icon: Upload },
       ],
     },

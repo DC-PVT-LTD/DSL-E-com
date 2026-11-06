@@ -1,190 +1,463 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Check, RefreshCw, AlertTriangle, Search } from 'lucide-react';
 import { schoolPackService } from '@/services/schoolPackService';
 import { productService } from '@/services/productService';
-import { SchoolPackTier } from '@/types/school-pack';
+import { Product } from '@/types/product';
+import { formatLKR } from '@/lib/currency';
+
+/** Protected test product that must NEVER appear in new packs */
+const TEST_PRODUCT_ID = 'cmw0j4cro00089kusmwsbv48t';
+/** Warn admin when stock is at or below this threshold */
+const LOW_STOCK_THRESHOLD = 10;
+
+interface PackItemDraft {
+  productId: string;
+  defaultQuantity: number;
+  substituteProductIds: string[];
+}
 
 export default function AdminNewSchoolPackPage() {
   const router = useRouter();
-  const allProducts = productService.getAll();
+
+  const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
+  const [gradeOptions, setGradeOptions] = useState<string[]>([
+    'Grade 1-2',
+    'Grade 3-5',
+    'Grade 6-9',
+    'O/L (Grade 10-11)',
+    'A/L Science',
+    'A/L Commerce',
+    'A/L Arts',
+  ]);
+  const [tierOptions, setTierOptions] = useState<string[]>(['essential', 'standard', 'premium']);
 
   const [name, setName] = useState('');
-  const [grade, setGrade] = useState('Grade 6-9');
-  const [tier, setTier] = useState<SchoolPackTier>('standard');
+  const [slug, setSlug] = useState('');
+  const [grade, setGrade] = useState('Grade 1-2');
+  const [tier, setTier] = useState('essential');
   const [description, setDescription] = useState('');
-  const [savingsPercentage, setSavingsPercentage] = useState(15);
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([
-    allProducts[0]?.id || '',
-    allProducts[3]?.id || '',
-  ]);
+  const [savingsPercentage, setSavingsPercentage] = useState(10);
+  const [items, setItems] = useState<PackItemDraft[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [productSearch, setProductSearch] = useState<Record<number, string>>({});
+  const [subSearch, setSubSearch] = useState<Record<number, string>>({});
 
-  const handleToggleProduct = (pid: string) => {
-    if (selectedProductIds.includes(pid)) {
-      setSelectedProductIds(selectedProductIds.filter((id) => id !== pid));
-    } else {
-      setSelectedProductIds([...selectedProductIds, pid]);
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [prodRes, configRes] = await Promise.all([
+          productService.fetchProducts({}, 'name_asc', 1, 100),
+          schoolPackService.getConfig(),
+        ]);
+        setAvailableProducts(prodRes.items.filter((p) => p.isActive && p.id !== TEST_PRODUCT_ID));
+        if (configRes.gradeGroups.length) {
+          setGradeOptions(configRes.gradeGroups);
+          setGrade(configRes.gradeGroups[0]);
+        }
+        if (configRes.tiers.length) {
+          setTierOptions(configRes.tiers);
+          setTier(configRes.tiers[0]);
+        }
+
+        // Prepopulate with first available product
+        if (prodRes.items.length > 0) {
+          setItems([{ productId: prodRes.items[0].id, defaultQuantity: 1, substituteProductIds: [] }]);
+        }
+      } catch (err) {
+        console.error('Failed to load products for pack builder:', err);
+      }
+    }
+    loadData();
+  }, []);
+
+  const handleAddItem = () => {
+    const unselected = availableProducts.find((p) => !items.some((i) => i.productId === p.id));
+    if (unselected) {
+      setItems([...items, { productId: unselected.id, defaultQuantity: 1, substituteProductIds: [] }]);
+    } else if (availableProducts.length > 0) {
+      setItems([...items, { productId: availableProducts[0].id, defaultQuantity: 1, substituteProductIds: [] }]);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleRemoveItem = (index: number) => {
+    if (items.length <= 1) return;
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateItemProduct = (index: number, newProductId: string) => {
+    setItems(items.map((it, i) => (i === index ? { ...it, productId: newProductId } : it)));
+  };
+
+  const handleUpdateItemQty = (index: number, qty: number) => {
+    if (qty < 1) return;
+    setItems(items.map((it, i) => (i === index ? { ...it, defaultQuantity: qty } : it)));
+  };
+
+  const handleToggleSubstitute = (index: number, subId: string) => {
+    setItems(
+      items.map((it, i) => {
+        if (i !== index) return it;
+        const exists = it.substituteProductIds.includes(subId);
+        const nextSubs = exists
+          ? it.substituteProductIds.filter((id) => id !== subId)
+          : [...it.substituteProductIds, subId];
+        return { ...it, substituteProductIds: nextSubs };
+      })
+    );
+  };
+
+  // Authoritative calculations in integer cents
+  const productMap = new Map(availableProducts.map((p) => [p.id, p]));
+  const calculatedSubtotalCents = items.reduce((acc, it) => {
+    const p = productMap.get(it.productId);
+    return acc + (p ? p.priceCents * it.defaultQuantity : 0);
+  }, 0);
+  const calculatedSavingsCents = Math.round((calculatedSubtotalCents * savingsPercentage) / 100);
+  const calculatedTotalCents = Math.max(0, calculatedSubtotalCents - calculatedSavingsCents);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    setErrorMsg(null);
 
-    const items = selectedProductIds.map((pid, idx) => {
-      const prod = allProducts.find((p) => p.id === pid)!;
-      return {
-        id: `pi-${Date.now()}-${idx}`,
-        productId: prod.id,
-        productName: prod.name,
-        defaultQuantity: 2,
-        unitPriceCents: prod.priceCents,
-      };
-    });
+    if (!name.trim()) {
+      setErrorMsg('Please enter a pack title.');
+      return;
+    }
 
-    const calculatedTotal = schoolPackService.calculatePackTotal(items, savingsPercentage);
+    // Verify duplicate primary products
+    const pids = items.map((i) => i.productId);
+    if (new Set(pids).size !== pids.length) {
+      setErrorMsg('Cannot add duplicate primary products to the pack. Please remove duplicate rows.');
+      return;
+    }
 
-    schoolPackService.createPack({
-      name,
-      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      grade,
-      tier,
-      description: description || `Curated ${tier} stationery kit for ${grade} students in Sri Lanka.`,
-      savingsPercentage,
-      totalPriceCents: calculatedTotal,
-      isActive: true,
-      items,
-    });
+    setIsSubmitting(true);
+    try {
+      await schoolPackService.createPack({
+        name: name.trim(),
+        slug: slug.trim() || undefined,
+        grade,
+        tier,
+        description: description.trim() || `Complete ${tier} stationery pack for ${grade} students.`,
+        savingsPercentage,
+        isActive: true,
+        items: items.map((it) => ({
+          productId: it.productId,
+          defaultQuantity: it.defaultQuantity,
+          substituteProductIds: it.substituteProductIds,
+        })),
+      });
 
-    router.push('/admin/school-packs');
+      router.push('/admin/school-packs');
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Failed to create school pack.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between pb-4 border-b border-slate-200">
         <div>
-          <Link href="/admin/school-packs" className="text-xs font-semibold text-[#08275E] hover:underline flex items-center gap-1 mb-1">
+          <Link
+            href="/admin/school-packs"
+            className="text-xs font-semibold text-[#08275E] hover:underline flex items-center gap-1 mb-1"
+          >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Packs</span>
           </Link>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Create School Bundle Pack</h1>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            Create School Bundle Pack
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Assemble real PostgreSQL products with live stock into a discounted student pack
+          </p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-6 shadow-xs text-xs">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="sm:col-span-2">
-            <label className="font-bold text-slate-700 block mb-1">Pack Title *</label>
-            <input
-              type="text"
-              placeholder="e.g. Grade 10 O/L Revision Science Bundle"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
-            />
-          </div>
+      {errorMsg && (
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-2xl font-medium">
+          {errorMsg}
+        </div>
+      )}
 
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Grade Level</label>
-            <select
-              value={grade}
-              onChange={(e) => setGrade(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white"
-            >
-              <option value="Grade 1-2">Grade 1-2</option>
-              <option value="Grade 3-5">Grade 3-5</option>
-              <option value="Grade 6-9">Grade 6-9</option>
-              <option value="O/L (Grade 10-11)">O/L (Grade 10-11)</option>
-              <option value="A/L Science">A/L Science</option>
-              <option value="A/L Commerce">A/L Commerce</option>
-            </select>
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-6 text-xs">
+        {/* Basic Details */}
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-4 shadow-xs">
+          <h2 className="text-sm font-bold text-slate-900">1. Pack Details</h2>
 
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Tier</label>
-            <select
-              value={tier}
-              onChange={(e) => setTier(e.target.value as any)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white uppercase"
-            >
-              <option value="essential">Essential Tier</option>
-              <option value="standard">Standard Tier</option>
-              <option value="premium">Premium Tier</option>
-            </select>
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className="font-bold text-slate-700 block mb-1">Pack Title *</label>
+              <input
+                type="text"
+                placeholder="e.g. Grade 10 O/L Revision Science Bundle"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (!slug) {
+                    setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+                  }
+                }}
+                required
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-1 focus:ring-[#08275E]"
+              />
+            </div>
 
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Bundle Savings (%)</label>
-            <input
-              type="number"
-              min="0"
-              max="50"
-              value={savingsPercentage}
-              onChange={(e) => setSavingsPercentage(Number(e.target.value))}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
-            />
-          </div>
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Slug (URL)</label>
+              <input
+                type="text"
+                placeholder="e.g. grade-10-ol-revision-science-bundle"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+              />
+            </div>
 
-          <div className="sm:col-span-2">
-            <label className="font-bold text-slate-700 block mb-1">Description</label>
-            <textarea
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="What does this pack include and who is it intended for?"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200"
-            />
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Discount Savings %</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={savingsPercentage}
+                onChange={(e) => setSavingsPercentage(parseInt(e.target.value) || 0)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Grade Level</label>
+              <select
+                value={grade}
+                onChange={(e) => setGrade(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs"
+              >
+                {gradeOptions.map((g) => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Tier</label>
+              <select
+                value={tier}
+                onChange={(e) => setTier(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs uppercase"
+              >
+                {tierOptions.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="font-bold text-slate-700 block mb-1">Description</label>
+              <textarea
+                rows={3}
+                placeholder="Brief description of the pack contents and intended syllabus."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Products Selection */}
-        <div className="space-y-3 pt-4 border-t border-slate-100">
-          <label className="font-bold text-slate-900 block text-sm">
-            Select Products Included in Pack ({selectedProductIds.length} selected)
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
-            {allProducts.map((p) => {
-              const isChecked = selectedProductIds.includes(p.id);
+        {/* Component Products & Quantities */}
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900">2. Component Products &amp; Substitutes</h2>
+              <p className="text-[11px] text-slate-500">
+                Choose primary real catalogue products and allowed swap alternatives
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddItem}
+              className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 text-xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Item</span>
+            </button>
+          </div>
+
+          <div className="space-y-4 divide-y divide-slate-100">
+            {items.map((item, idx) => {
+              const selectedProduct = productMap.get(item.productId);
+              const isLowStock = selectedProduct && selectedProduct.stockQuantity <= LOW_STOCK_THRESHOLD;
+              const search = productSearch[idx] ?? '';
+              const sSrch = subSearch[idx] ?? '';
+              const filteredSubs = availableProducts
+                .filter((p) => p.id !== item.productId)
+                .filter((p) =>
+                  sSrch.trim() === '' || p.name.toLowerCase().includes(sSrch.toLowerCase())
+                );
               return (
-                <label
-                  key={p.id}
-                  className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-colors ${
-                    isChecked ? 'border-[#08275E] bg-blue-50/40' : 'border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 truncate pr-2">
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => handleToggleProduct(p.id)}
-                      className="w-4 h-4 text-[#08275E] rounded"
-                    />
-                    <span className="truncate font-semibold text-slate-800">{p.name}</span>
+                <div key={idx} className="pt-4 first:pt-0 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex-1 space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-600 block">
+                        Product Item #{idx + 1}
+                      </label>
+                      {/* Product search filter */}
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+                        <input
+                          type="text"
+                          placeholder="Filter products…"
+                          value={search}
+                          onChange={(e) => setProductSearch((prev) => ({ ...prev, [idx]: e.target.value }))}
+                          className="w-full pl-7 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 mb-1"
+                        />
+                      </div>
+                      <select
+                        value={item.productId}
+                        onChange={(e) => handleUpdateItemProduct(idx, e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium"
+                      >
+                        {availableProducts
+                          .filter((p) =>
+                            search.trim() === '' || p.name.toLowerCase().includes(search.toLowerCase())
+                          )
+                          .map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} — Rs. {(p.priceCents / 100).toFixed(2)} (Stock: {p.stockQuantity})
+                            </option>
+                          ))}
+                      </select>
+                      {isLowStock && (
+                        <div className="flex items-center gap-1.5 text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg text-[10px] font-bold">
+                          <AlertTriangle className="w-3 h-3 shrink-0" />
+                          Low Stock: only {selectedProduct.stockQuantity} units available
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="w-28">
+                      <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                        Default Qty
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={item.defaultQuantity}
+                        onChange={(e) => handleUpdateItemQty(idx, parseInt(e.target.value) || 1)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-center"
+                      />
+                    </div>
+
+                    <div className="w-28 text-right self-end sm:self-center">
+                      <span className="text-[10px] text-slate-400 uppercase block">Line Total</span>
+                      <span className="font-black text-[#08275E]">
+                        {selectedProduct
+                          ? formatLKR(selectedProduct.priceCents * item.defaultQuantity)
+                          : 'Rs. 0'}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem(idx)}
+                      disabled={items.length <= 1}
+                      className="p-2 text-slate-400 hover:text-rose-600 disabled:opacity-30 self-end sm:self-center rounded-lg"
+                      title="Remove item"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                  <span className="font-mono text-slate-500 shrink-0">Rs. {p.priceCents / 100}</span>
-                </label>
+
+                  {/* Allowed Substitutes */}
+                  <div className="pl-4 border-l-2 border-[#C6E7FF] space-y-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
+                      <RefreshCw className="w-3 h-3 text-[#0066CC]" />
+                      Allowed Brand Substitutes ({filteredSubs.filter((p) => item.substituteProductIds.includes(p.id)).length} selected):
+                    </span>
+                    {/* Substitute search */}
+                    <div className="relative max-w-xs">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Search substitutes…"
+                        value={sSrch}
+                        onChange={(e) => setSubSearch((prev) => ({ ...prev, [idx]: e.target.value }))}
+                        className="w-full pl-7 pr-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-[11px] text-slate-700"
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                      {filteredSubs.map((sub) => {
+                        const isSub = item.substituteProductIds.includes(sub.id);
+                        return (
+                          <button
+                            key={sub.id}
+                            type="button"
+                            onClick={() => handleToggleSubstitute(idx, sub.id)}
+                            title={`${sub.name} — Rs. ${(sub.priceCents / 100).toFixed(2)} (Stock: ${sub.stockQuantity})`}
+                            className={`text-[10px] px-2 py-0.5 rounded-full border transition-all ${
+                              isSub
+                                ? 'bg-[#0066CC] text-white border-[#0066CC]'
+                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            {isSub ? '✓ ' : '+ '}
+                            {sub.name.length > 20 ? sub.name.slice(0, 20) + '…' : sub.name}
+                          </button>
+                        );
+                      })}
+                      {filteredSubs.length === 0 && (
+                        <span className="text-[10px] text-slate-400 italic">No matching products</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               );
             })}
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
-          <Link
-            href="/admin/school-packs"
-            className="px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-600"
-          >
-            Cancel
-          </Link>
+        {/* Server Authoritative Summary Bar */}
+        <div className="bg-[#08275E] text-white rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
+          <div className="space-y-1 text-center sm:text-left">
+            <span className="text-xs text-slate-300 block">Server Authoritative Pack Pricing</span>
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl font-black text-[#FFD21C]">
+                {formatLKR(calculatedTotalCents)}
+              </span>
+              <span className="text-xs text-slate-300 line-through">
+                {formatLKR(calculatedSubtotalCents)}
+              </span>
+              <span className="text-xs font-bold text-emerald-400">
+                Save {formatLKR(calculatedSavingsCents)} ({savingsPercentage}% Off)
+              </span>
+            </div>
+          </div>
+
           <button
             type="submit"
-            className="bg-[#08275E] hover:bg-[#103b8c] text-white font-bold px-6 py-2.5 rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+            disabled={isSubmitting}
+            className="w-full sm:w-auto px-8 py-3.5 bg-[#FFD21C] hover:bg-[#ffe066] text-[#08275E] font-black rounded-full shadow-md transition-all text-xs flex items-center justify-center gap-2"
           >
-            <Save className="w-4 h-4 text-[#FFD21C]" />
-            <span>Create Pack &amp; Publish</span>
+            {isSubmitting ? (
+              <span>Saving Pack to Database...</span>
+            ) : (
+              <>
+                <Check className="w-4 h-4 text-[#08275E]" />
+                <span>Save School Pack</span>
+              </>
+            )}
           </button>
         </div>
       </form>

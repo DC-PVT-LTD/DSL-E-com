@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Heart,
@@ -17,13 +17,19 @@ import {
   ArrowLeft,
   AlertCircle,
   RefreshCw,
+  Share2,
+  Copy,
+  Bookmark,
 } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { Product, ProductVariant } from '@/types/product';
 import { formatLKR, calculateSavingsPercent } from '@/lib/currency';
 import { useCartStore } from '@/services/cartStore';
+import { useWishlistStore } from '@/services/wishlistStore';
 import { useUserStore } from '@/services/userStore';
 import { ProductCard } from '@/components/products/ProductCard';
+import { SaveToListModal } from '@/components/products/SaveToListModal';
+import { BackInStockButton } from '@/components/products/BackInStockButton';
 
 function ProductDetailSkeleton() {
   return (
@@ -48,21 +54,25 @@ function ProductDetailSkeleton() {
 }
 
 function ProductDetailContent() {
+  const router = useRouter();
   const params = useParams();
   const slug = params.slug as string;
 
   const [product, setProduct] = useState<Product | null | undefined>(undefined);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(undefined);
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const [copied, setCopied] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const addItem = useCartStore((state) => state.addItem);
-  const setDrawerOpen = useCartStore((state) => state.setDrawerOpen);
-  const isInWishlist = useUserStore((state) => state.isInWishlist);
-  const toggleWishlist = useUserStore((state) => state.toggleWishlist);
+  const isInWishlist = useWishlistStore((state) => state.isInWishlist);
+  const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
 
   const loadProduct = useCallback(async () => {
     setIsLoading(true);
@@ -74,10 +84,12 @@ function ProductDetailContent() {
       }
 
       setProduct(p);
+      setActiveImageIdx(0);
 
       if (p) {
-        if (p.variants && p.variants.length > 0) {
-          setSelectedVariant(p.variants[0]);
+        const activeVariants = (p.variants || []).filter((v) => v.isActive);
+        if (activeVariants.length > 0) {
+          setSelectedVariant(activeVariants[0]);
         } else {
           setSelectedVariant(undefined);
         }
@@ -166,13 +178,18 @@ function ProductDetailContent() {
 
   const savings = comparePrice ? calculateSavingsPercent(comparePrice, currentPrice) : 0;
 
-  const handleAddToCart = () => {
-    if (isOutOfStock) return;
-    const success = addItem(product, quantity, selectedVariant);
-    if (success) {
-      setAdded(true);
-      setTimeout(() => setAdded(false), 1500);
-      setDrawerOpen(true);
+  const handleAddToCart = async () => {
+    if (isOutOfStock || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const success = await addItem(product, quantity, selectedVariant);
+      if (success) {
+        setAdded(true);
+        setTimeout(() => setAdded(false), 1500);
+        // Note: Do not automatically open the cart drawer per requirement.
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -202,21 +219,55 @@ function ProductDetailContent() {
                   {savings}% OFF
                 </span>
               )}
-              {product.images && product.images.length > 0 && typeof product.images[0] === 'string' && !product.images[0].includes('.png') ? (
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="w-full h-full object-cover object-center rounded-2xl"
-                />
-              ) : (
-                <div className="w-36 h-36 rounded-3xl bg-[#FAF7EE] border border-[#C6E7FF] text-[#0066CC] flex flex-col items-center justify-center p-4">
-                  <span className="font-heylowitch text-6xl leading-none">{product.name.charAt(0)}</span>
-                  <span className="text-xs font-bold uppercase text-[#292525]/60 mt-2">
-                    {product.brandName}
-                  </span>
-                </div>
-              )}
+              {(() => {
+                const activeImg = (product.images && product.images[activeImageIdx]) || (product.images && product.images[0]);
+                if (activeImg && typeof activeImg === 'string' && (activeImg.startsWith('http') || !activeImg.includes('.png'))) {
+                  return (
+                    <img
+                      src={activeImg}
+                      alt={product.name}
+                      className="w-full h-full object-contain object-center p-4 rounded-2xl transition-all duration-200"
+                    />
+                  );
+                }
+                return (
+                  <div className="w-36 h-36 rounded-3xl bg-[#FAF7EE] border border-[#C6E7FF] text-[#0066CC] flex flex-col items-center justify-center p-4">
+                    <span className="font-heylowitch text-6xl leading-none">{product.name.charAt(0)}</span>
+                    <span className="text-xs font-bold uppercase text-[#292525]/60 mt-2">
+                      {product.brandName}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
+
+            {/* Thumbnail Gallery (when product has multiple images) */}
+            {product.images && product.images.length > 1 && (
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 scrollbar-thin">
+                {product.images.map((imgUrl, idx) => {
+                  const isActive = idx === activeImageIdx;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveImageIdx(idx)}
+                      className={`relative w-20 h-20 rounded-2xl bg-white border-2 p-1.5 shrink-0 overflow-hidden transition-all ${
+                        isActive
+                          ? 'border-[#0066CC] ring-2 ring-[#0066CC]/20 shadow-xs'
+                          : 'border-[#C6E7FF]/80 hover:border-[#0066CC]/50'
+                      }`}
+                      aria-label={`View image ${idx + 1}`}
+                    >
+                      <img
+                        src={imgUrl}
+                        alt={`${product.name} view ${idx + 1}`}
+                        className="w-full h-full object-contain object-center"
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Right: Product Buy Box & Configuration */}
@@ -245,18 +296,26 @@ function ProductDetailContent() {
 
             {/* Pricing */}
             <div className="p-5 rounded-3xl bg-white border border-[#C6E7FF]/70 flex items-baseline gap-3 shadow-xs">
-              <span className="text-3xl font-black text-[#292525]">
-                {formatLKR(currentPrice)}
-              </span>
-              {comparePrice && comparePrice > currentPrice && (
+              {currentPrice > 0 ? (
                 <>
-                  <span className="text-base text-[#292525]/40 line-through">
-                    {formatLKR(comparePrice)}
+                  <span className="text-3xl font-black text-[#292525]">
+                    {formatLKR(currentPrice)}
                   </span>
-                  <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">
-                    Save {formatLKR(comparePrice - currentPrice)}
-                  </span>
+                  {comparePrice && comparePrice > currentPrice && (
+                    <>
+                      <span className="text-base text-[#292525]/40 line-through">
+                        {formatLKR(comparePrice)}
+                      </span>
+                      <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                        Save {formatLKR(comparePrice - currentPrice)}
+                      </span>
+                    </>
+                  )}
                 </>
+              ) : (
+                <span className="text-2xl font-black text-[#0066CC]">
+                  Price on Request
+                </span>
               )}
             </div>
 
@@ -265,31 +324,33 @@ function ProductDetailContent() {
             </p>
 
             {/* Variants selection */}
-            {product.variants && product.variants.length > 0 && (
+            {product.variants && product.variants.filter((v) => v.isActive).length > 0 && (
               <div className="space-y-2 pt-2">
                 <label className="text-xs font-bold text-[#292525] block uppercase tracking-wider">
                   Select Option:
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {product.variants.map((variant) => {
-                    const isSelected = selectedVariant?.id === variant.id;
-                    return (
-                      <button
-                        key={variant.id}
-                        onClick={() => {
-                          setSelectedVariant(variant);
-                          setQuantity(1);
-                        }}
-                        className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                          isSelected
-                            ? 'bg-[#0066CC] text-white shadow-xs'
-                            : 'bg-white border border-[#C6E7FF] text-[#292525] hover:bg-[#FFFDF0]'
-                        }`}
-                      >
-                        {variant.name} ({formatLKR(variant.priceCents)})
-                      </button>
-                    );
-                  })}
+                  {product.variants
+                    .filter((v) => v.isActive)
+                    .map((variant) => {
+                      const isSelected = selectedVariant?.id === variant.id;
+                      return (
+                        <button
+                          key={variant.id}
+                          onClick={() => {
+                            setSelectedVariant(variant);
+                            setQuantity(1);
+                          }}
+                          className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                            isSelected
+                              ? 'bg-[#0066CC] text-white shadow-xs'
+                              : 'bg-white border border-[#C6E7FF] text-[#292525] hover:bg-[#FFFDF0]'
+                          }`}
+                        >
+                          {variant.name} ({formatLKR(variant.priceCents)})
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
             )}
@@ -312,66 +373,138 @@ function ProductDetailContent() {
               )}
             </div>
 
-            {/* Quantity and Add to Cart Row */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <div className="flex items-center border border-[#C6E7FF] rounded-full overflow-hidden bg-white shadow-xs">
+            {/* Quantity and Add to Cart or Back-in-Stock Alert Row */}
+            {isOutOfStock ? (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <BackInStockButton
+                      productId={product.id}
+                      productName={product.name}
+                    />
+                  </div>
+
+                  <button
+                    onClick={async () => {
+                      if (!product) return;
+                      const res = await toggleWishlist(product);
+                      if (res.requiresAuth) {
+                        router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+                      }
+                    }}
+                    className={`p-3.5 rounded-full border transition-all ${
+                      inWishlist
+                        ? 'bg-rose-50 border-[#0066CC] text-[#0066CC]'
+                        : 'bg-white border-[#C6E7FF] text-[#292525] hover:text-[#0066CC]'
+                    }`}
+                    title={inWishlist ? 'In your Wishlist' : 'Add to Wishlist'}
+                    aria-label={inWishlist ? 'In your Wishlist' : 'Add to Wishlist'}
+                  >
+                    <Heart className={`w-5 h-5 ${inWishlist ? 'fill-[#0066CC]' : ''}`} />
+                  </button>
+
+                  <button
+                    onClick={() => setIsSaveModalOpen(true)}
+                    className="p-3.5 rounded-full border border-[#C6E7FF] bg-white text-[#292525] hover:text-[#0066CC] hover:bg-[#F0F7FF] transition-all"
+                    title="Save to Stationery List"
+                    aria-label="Save to Stationery List"
+                  >
+                    <Bookmark className="w-5 h-5 text-[#0066CC]" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <div className="flex items-center border border-[#C6E7FF] rounded-full overflow-hidden bg-white shadow-xs">
+                  <button
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    disabled={quantity <= 1}
+                    className="p-3 hover:bg-[#FFFDF0] text-[#292525] disabled:opacity-40 transition-colors"
+                    title="Decrease"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="px-4 py-2 font-bold text-sm text-[#292525]">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => setQuantity((q) => Math.min(currentStock, q + 1))}
+                    disabled={quantity >= currentStock}
+                    className="p-3 hover:bg-[#FFFDF0] text-[#292525] disabled:opacity-40 transition-colors"
+                    title="Increase"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
                 <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  disabled={quantity <= 1 || isOutOfStock}
-                  className="p-3 hover:bg-[#FFFDF0] text-[#292525] disabled:opacity-40 transition-colors"
-                  title="Decrease"
+                  onClick={handleAddToCart}
+                  disabled={isSubmitting}
+                  className={`flex-1 py-3.5 px-6 rounded-full font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md ${
+                    isSubmitting
+                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                      : added
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-[#0066CC] hover:bg-[#0052a3] text-white hover:scale-102'
+                  }`}
                 >
-                  <Minus className="w-4 h-4" />
+                  {added ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Added to Cart!</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4" />
+                      <span>
+                        Add to Cart{currentPrice > 0 ? ` • ${formatLKR(currentPrice * quantity)}` : ''}
+                      </span>
+                    </>
+                  )}
                 </button>
-                <span className="px-4 py-2 font-bold text-sm text-[#292525]">
-                  {quantity}
-                </span>
+
                 <button
-                  onClick={() => setQuantity((q) => Math.min(currentStock, q + 1))}
-                  disabled={quantity >= currentStock || isOutOfStock}
-                  className="p-3 hover:bg-[#FFFDF0] text-[#292525] disabled:opacity-40 transition-colors"
-                  title="Increase"
+                  onClick={async () => {
+                    if (!product) return;
+                    const res = await toggleWishlist(product);
+                    if (res.requiresAuth) {
+                      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+                    }
+                  }}
+                  className={`p-3.5 rounded-full border transition-all ${
+                    inWishlist
+                      ? 'bg-rose-50 border-[#0066CC] text-[#0066CC]'
+                      : 'bg-white border-[#C6E7FF] text-[#292525] hover:text-[#0066CC]'
+                  }`}
+                  title={inWishlist ? 'In your Wishlist' : 'Add to Wishlist'}
+                  aria-label={inWishlist ? 'In your Wishlist' : 'Add to Wishlist'}
                 >
-                  <Plus className="w-4 h-4" />
+                  <Heart className={`w-5 h-5 ${inWishlist ? 'fill-[#0066CC]' : ''}`} />
+                </button>
+
+                <button
+                  onClick={() => setIsSaveModalOpen(true)}
+                  className="p-3.5 rounded-full border border-[#C6E7FF] bg-white text-[#292525] hover:text-[#0066CC] hover:bg-[#F0F7FF] transition-all"
+                  title="Save to Stationery List"
+                  aria-label="Save to Stationery List"
+                >
+                  <Bookmark className="w-5 h-5 text-[#0066CC]" />
                 </button>
               </div>
+            )}
 
-              <button
-                onClick={handleAddToCart}
-                disabled={isOutOfStock}
-                className={`flex-1 py-3.5 px-6 rounded-full font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md ${
-                  isOutOfStock
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                    : added
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-[#0066CC] hover:bg-[#0052a3] text-white hover:scale-102'
-                }`}
-              >
-                {added ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>Added to Cart!</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="w-4 h-4" />
-                    <span>Add to Cart • {formatLKR(currentPrice * quantity)}</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={() => toggleWishlist(product.id)}
-                className={`p-3.5 rounded-full border transition-all ${
-                  inWishlist
-                    ? 'bg-rose-50 border-[#0066CC] text-[#0066CC]'
-                    : 'bg-white border-[#C6E7FF] text-[#292525] hover:text-[#0066CC]'
-                }`}
-                title={inWishlist ? 'In your Wishlist' : 'Add to Wishlist'}
-              >
-                <Heart className={`w-5 h-5 ${inWishlist ? 'fill-[#0066CC]' : ''}`} />
-              </button>
-            </div>
+            {product && (
+              <SaveToListModal
+                isOpen={isSaveModalOpen}
+                onClose={() => setIsSaveModalOpen(false)}
+                product={{
+                  id: product.id,
+                  name: product.name,
+                  images: product.images,
+                  priceCents: currentPrice,
+                }}
+              />
+            )}
 
             {/* Reassurance Features */}
             <div className="grid grid-cols-3 gap-3 pt-4 border-t border-[#C6E7FF]/40 text-[11px] text-[#292525]/75 font-medium">
@@ -386,6 +519,59 @@ function ProductDetailContent() {
               <div className="flex items-center gap-1.5">
                 <RotateCcw className="w-4 h-4 text-[#0066CC] shrink-0" />
                 <span>Easy Returns</span>
+              </div>
+            </div>
+
+            {/* Share product */}
+            <div className="pt-4 border-t border-[#C6E7FF]/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <span className="font-bold text-[#292525]/70 flex items-center gap-1.5">
+                <Share2 className="w-3.5 h-3.5 text-[#0066CC]" />
+                Share this item:
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                    `Check out ${product.name} on DSL Stationery: ${typeof window !== 'undefined' ? window.location.href : ''}`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-full bg-[#E8F8EE] text-[#0A8A3A] font-bold text-xs hover:bg-[#D3F3DC] transition-colors"
+                >
+                  WhatsApp
+                </a>
+                <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                    typeof window !== 'undefined' ? window.location.href : ''
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-full bg-[#EEF4FF] text-[#1877F2] font-bold text-xs hover:bg-[#DBE7FF] transition-colors"
+                >
+                  Facebook
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      navigator.clipboard.writeText(window.location.href);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-full bg-stone-100 text-[#292525] font-bold text-xs hover:bg-stone-200 transition-colors inline-flex items-center gap-1"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-600" />
+                      <span className="text-emerald-700">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3 text-[#292525]/60" />
+                      <span>Copy Link</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>

@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Query,
+  Param,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -132,6 +133,20 @@ export class InventoryController {
     @Query(createZodPipe(lowStockQuerySchema)) query: LowStockQueryDto
   ) {
     return this.inventoryService.getLowStock(query);
+  }
+
+  @Get('products/:id/status')
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Get live inventory breakdown (physical, reserved, available) for a product or variant',
+  })
+  async getProductStatus(
+    @Param('id') id: string,
+    @Query('variantId') variantId?: string
+  ) {
+    const status = await this.inventoryService.getLiveStockStatus(id, variantId || null);
+    return createApiResponse(status, 'Live stock breakdown retrieved');
   }
 }
 

@@ -9,12 +9,27 @@ import { UploadedListDocument } from '@/types/upload';
 export default function AdminUploadReviewsPage() {
   const [uploads, setUploads] = useState<UploadedListDocument[]>([]);
   const [selectedUpload, setSelectedUpload] = useState<UploadedListDocument | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const loadData = () => {
-    const all = uploadService.getAll();
-    setUploads(all);
-    if (all.length > 0 && !selectedUpload) {
-      setSelectedUpload(all[0]);
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const res = await uploadService.getAllAdmin();
+      if (res && res.data) {
+        setUploads(res.data);
+        if (res.data.length > 0 && !selectedUpload) {
+          setSelectedUpload(res.data[0]);
+        }
+      }
+    } catch {
+      // Fall back to local/cached uploads
+      const all = uploadService.getAll();
+      setUploads(all);
+      if (all.length > 0 && !selectedUpload) {
+        setSelectedUpload(all[0]);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -65,8 +80,8 @@ export default function AdminUploadReviewsPage() {
                   </span>
                 </div>
                 <div className="text-[11px] text-slate-400 flex items-center justify-between">
-                  <span>{new Date(u.uploadedAt).toLocaleDateString()}</span>
-                  <span>{u.extractedItems.length} lines extracted</span>
+                  <span>{new Date(u.uploadedAt || u.createdAt).toLocaleDateString()}</span>
+                  <span>{u.extractedItems?.length || 0} lines extracted</span>
                 </div>
               </button>
             );
@@ -81,7 +96,7 @@ export default function AdminUploadReviewsPage() {
                 <div>
                   <h2 className="text-lg font-bold text-slate-900">{selectedUpload.fileName}</h2>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Uploaded: {new Date(selectedUpload.uploadedAt).toLocaleString()} • Type: {selectedUpload.fileType}
+                    Uploaded: {new Date(selectedUpload.uploadedAt || selectedUpload.createdAt).toLocaleString()} • Type: {selectedUpload.fileType}
                   </p>
                 </div>
 

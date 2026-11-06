@@ -16,6 +16,17 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { CartModule } from './modules/cart/cart.module';
+import { UploadedDocumentsModule } from './modules/uploaded-documents/uploaded-documents.module';
+import { SchoolPacksModule } from './modules/school-packs/school-packs.module';
+import { CheckoutModule } from './modules/checkout/checkout.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { RecommendationsModule } from './modules/recommendations/recommendations.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
+import { SavedListsModule } from './modules/saved-lists/saved-lists.module';
+import { BackInStockModule } from './modules/back-in-stock/back-in-stock.module';
+import { BannersModule } from './modules/banners/banners.module';
 
 @Module({
   imports: [
@@ -40,6 +51,17 @@ import { UploadModule } from './modules/upload/upload.module';
     BrandsModule,
     ProductsModule,
     InventoryModule,
+    CartModule,
+    UploadedDocumentsModule,
+    SchoolPacksModule,
+    CheckoutModule,
+    OrdersModule,
+    NotificationsModule,
+    RecommendationsModule,
+    WishlistModule,
+    SavedListsModule,
+    BackInStockModule,
+    BannersModule,
   ],
   providers: [
     {

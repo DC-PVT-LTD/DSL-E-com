@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100" width="120" height="100">
+  <defs>
+    <filter id="shadow5" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#831843" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow5)">
+    <!-- Box Body (Pastel Pink) -->
+    <rect x="24" y="42" width="72" height="46" rx="6" fill="#FBCFE8" stroke="#9D174D" stroke-width="2.5"/>
+    <!-- Box Lid -->
+    <rect x="20" y="34" width="80" height="12" rx="4" fill="#F472B6" stroke="#9D174D" stroke-width="2.5"/>
+
+    <!-- Vertical Ribbon -->
+    <rect x="54" y="34" width="12" height="54" fill="#E11D48" stroke="#881337" stroke-width="1.5"/>
+    <!-- Horizontal Ribbon on Lid -->
+    <rect x="20" y="37" width="80" height="6" fill="#E11D48" stroke="#881337" stroke-width="1"/>
+
+    <!-- Big Satin Ribbon Bow at Top -->
+    <!-- Left Loop -->
+    <path d="M60 32 C45 14 30 18 36 28 C42 34 56 32 60 32 Z" fill="#F43F5E" stroke="#881337" stroke-width="2"/>
+    <path d="M54 30 C45 20 38 22 42 27" stroke="#FFF" stroke-width="1.5" fill="none" opacity="0.6"/>
+    <!-- Right Loop -->
+    <path d="M60 32 C75 14 90 18 84 28 C78 34 64 32 60 32 Z" fill="#F43F5E" stroke="#881337" stroke-width="2"/>
+    <path d="M66 30 C75 20 82 22 78 27" stroke="#FFF" stroke-width="1.5" fill="none" opacity="0.6"/>
+    <!-- Center Ribbon Knot -->
+    <circle cx="60" cy="32" r="5" fill="#E11D48" stroke="#881337" stroke-width="2"/>
+
+    <!-- Cute Sparkle Stars -->
+    <path d="M96 22 L98 26 L102 28 L98 30 L96 34 L94 30 L90 28 L94 26 Z" fill="#FDE047" stroke="#CA8A04" stroke-width="1"/>
+    <circle cx="18" cy="28" r="2" fill="#FDE047"/>
+  </g>
+</svg>

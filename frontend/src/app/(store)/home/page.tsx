@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Star,
   CheckCircle2,
+  Check,
   Package,
   Layers,
   Heart,
@@ -25,6 +26,8 @@ import { Product, ProductCategory } from '@/types/product';
 import { SchoolPack } from '@/types/school-pack';
 import { ProductCard } from '@/components/products/ProductCard';
 import { ScrapbookHero } from '@/components/home/ScrapbookHero';
+import { DynamicHeroBanners } from '@/components/home/DynamicHeroBanners';
+import InteractiveAboutSection from '@/components/home/InteractiveAboutSection';
 import { formatLKR } from '@/lib/currency';
 
 export default function HomeStorefrontPage() {
@@ -51,13 +54,17 @@ export default function HomeStorefrontPage() {
     Promise.all([
       productService.fetchProducts({}, 'newest', 1, 50),
       categoryService.fetchCategories(),
-    ]).then(([productRes, catList]) => {
+      schoolPackService.getPacks({ limit: 4 }),
+    ]).then(([productRes, catList, packsRes]) => {
       if (isMounted) {
         const items = productRes.items;
         setFeaturedProducts(items.filter((p) => p.isFeatured).slice(0, 5));
         setBestSellers(items.filter((p) => p.isBestSeller).slice(0, 5));
         setNewArrivals(items.filter((p) => p.isNewArrival || p.tags.includes('new')).slice(0, 5));
         setCategories(catList.slice(0, 6));
+        if (packsRes?.items) {
+          setSchoolPacks(packsRes.items.slice(0, 4));
+        }
       }
     }).catch((err) => {
       console.warn('Home storefront API fetch error, using local dataset:', err);
@@ -99,36 +106,13 @@ export default function HomeStorefrontPage() {
 
   return (
     <div className="bg-[#FFF8ED] text-[#10285D] space-y-16 sm:space-y-24 pb-20 overflow-hidden w-full">
-      {/* SECTION A: SCRAPBOOK HERO BANNER MATCHING REFERENCE SCREENSHOT */}
-      <ScrapbookHero />
+      {/* SECTION A: DYNAMIC HERO BANNER WITH SCRAPBOOK FALLBACK */}
+      <div className="lg:-mt-[68px]">
+        <DynamicHeroBanners />
+      </div>
 
-      {/* SECTION B: INTRODUCTION */}
-      <section className="max-w-4xl mx-auto px-4 text-center space-y-4">
-        <div className="inline-flex items-center gap-2 text-[#0066CC] text-xs font-bold tracking-widest uppercase">
-          <span>✿</span>
-          <span className="text-[#292525] font-extrabold">Curated essentials for refined living</span>
-          <span>✿</span>
-        </div>
-
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#292525] tracking-tight">
-          Little Essentials. Big Ideas.
-        </h2>
-
-        <p className="text-xs sm:text-sm text-[#292525]/70 leading-relaxed font-medium max-w-xl mx-auto">
-          We’re a modern stationery store offering everyday essentials, simple finds, and quality products 
-          designed to make studying, working, planning, and creating effortless and joyful. We handpick items 
-          you truly love — practical, affordable, and stylish.
-        </p>
-
-        <div className="pt-2">
-          <Link
-            href="/about"
-            className="inline-flex items-center justify-center px-6 py-2 rounded-full border border-[#292525] text-xs font-bold text-[#292525] hover:bg-[#292525] hover:text-white transition-all shadow-xs"
-          >
-            Know More
-          </Link>
-        </div>
-      </section>
+      {/* SECTION B: REDESIGNED INTERACTIVE ABOUT SECTION */}
+      <InteractiveAboutSection />
 
       {/* SECTION C: SHOP BY COLLECTION / CATEGORY (FULL-WIDTH EXPANDED GRID) */}
       <section className="w-full max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 space-y-8">
@@ -379,6 +363,92 @@ export default function HomeStorefrontPage() {
           ))}
         </div>
       </section>
+
+      {/* SECTION: CURATED SCHOOL PACKS */}
+      {schoolPacks.length > 0 && (
+        <section className="w-full max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 space-y-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="inline-flex items-center gap-1.5 bg-[#FFD84D] text-[#594300] text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-1 shadow-2xs">
+                <span>🎒 Sri Lankan Syllabus Approved</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-[#292525] tracking-tight">
+                — School Stationery Bundles —
+              </h2>
+              <p className="text-xs text-[#292525]/60 mt-0.5">
+                Save up to 18% with pre-packed grade kits for primary, junior, O/L and A/L
+              </p>
+            </div>
+            <Link
+              href="/school-packs"
+              className="text-xs font-bold text-[#0066CC] hover:underline flex items-center gap-1"
+            >
+              <span>Explore All Packs</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {schoolPacks.slice(0, 3).map((pack) => (
+              <div
+                key={pack.id}
+                className="bg-white rounded-3xl border border-[#C6E7FF]/60 hover:border-[#0066CC] p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-bold text-[#292525] bg-[#FFFDF0] border border-[#C6E7FF] px-2.5 py-0.5 rounded-full">
+                      {pack.grade}
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-[#594300] bg-[#FFD84D] px-2.5 py-0.5 rounded-full shadow-2xs">
+                      {pack.tier} Tier • Save {pack.savingsPercentage}%
+                    </span>
+                  </div>
+
+                  <h3 className="text-base font-bold text-[#292525] leading-snug">
+                    {pack.name}
+                  </h3>
+                  <p className="text-xs text-[#292525]/60 mt-1.5 line-clamp-2 leading-relaxed">
+                    {pack.description}
+                  </p>
+
+                  <div className="mt-4 pt-3 border-t border-[#C6E7FF]/30 space-y-1.5">
+                    {pack.items.slice(0, 3).map((item) => (
+                      <div key={item.id} className="flex items-center gap-2 text-xs text-[#292525]/80">
+                        <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                        <span className="truncate">
+                          {item.defaultQuantity}x {item.productName || item.product?.name}
+                        </span>
+                      </div>
+                    ))}
+                    {pack.items.length > 3 && (
+                      <span className="text-[10px] text-[#0066CC] font-bold pl-5 block">
+                        +{pack.items.length - 3} more items included
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-[#C6E7FF]/30 flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] text-[#292525]/50 uppercase block">Bundle Total</span>
+                    <span className="text-xl font-black text-[#0066CC]">
+                      {formatLKR(pack.totalPriceCents)}
+                    </span>
+                  </div>
+
+                  <Link
+                    href={`/school-packs/${pack.slug || pack.id}`}
+                    className="bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold px-4 py-2 rounded-full transition-all shadow-sm flex items-center gap-1.5"
+                  >
+                    <span>Customize</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* SECTION H: WHY SHOP WITH US? */}
       <section className="w-full max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">

@@ -32,6 +32,7 @@ async function bootstrap() {
     .addTag('Variants', 'Product variants, SKU pricing, and option management')
     .addTag('Categories', 'Public category hierarchy and category products')
     .addTag('Brands', 'Public brand catalogue and brand products')
+    .addTag('Cart', 'Shopping cart management for guests and authenticated customers with server-side pricing, live stock checks, and cart merging')
     .addTag('Health', 'System health and database connectivity checks')
     .addCookieAuth('dsl_access_token', {
       type: 'apiKey',

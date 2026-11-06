@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+  <defs>
+    <filter id="flaskShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#0369A1" flood-opacity="0.22"/>
+    </filter>
+    <linearGradient id="liquidGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#A3E635"/>
+      <stop offset="40%" stop-color="#4ADE80"/>
+      <stop offset="100%" stop-color="#16A34A"/>
+    </linearGradient>
+    <linearGradient id="glassCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE"/>
+      <stop offset="100%" stop-color="#BAE6FD"/>
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#flaskShadow)">
+    <!-- Flask Glass Body -->
+    <path d="M 27 10 L 37 10 L 37 22 L 51 46 C 53 50 50 56 44 56 L 20 56 C 14 56 11 50 13 46 L 27 22 Z" 
+          fill="url(#glassCyan)" stroke="#0284C7" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <!-- Lip Rim at Top -->
+    <rect x="25" y="8" width="14" height="4" rx="2" fill="#BAE6FD" stroke="#0284C7" stroke-width="2"/>
+
+    <!-- Liquid Inside (Lime Green) -->
+    <path d="M 20 35 Q 26 38 32 35 Q 38 32 44 35 L 49 46 C 50.5 49 48.5 53.5 44 53.5 L 20 53.5 C 15.5 53.5 13.5 49 15 46 Z"
+          fill="url(#liquidGreen)" stroke="#15803D" stroke-width="1.8" stroke-linejoin="round"/>
+
+    <!-- Glass Curved Specular Highlight -->
+    <path d="M 18 46 L 28 26 L 28 14" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.75"/>
+
+    <!-- Rising Bubbles -->
+    <circle cx="30" cy="44" r="2" fill="#FFFFFF" opacity="0.8"/>
+    <circle cx="36" cy="41" r="1.4" fill="#FFFFFF" opacity="0.7"/>
+    <circle cx="32" cy="30" r="1.8" fill="#4ADE80" stroke="#15803D" stroke-width="0.8"/>
+    <circle cx="31" cy="18" r="1.2" fill="#4ADE80" stroke="#15803D" stroke-width="0.8"/>
+  </g>
+</svg>

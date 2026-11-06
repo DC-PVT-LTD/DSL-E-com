@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100" width="120" height="100">
+  <defs>
+    <filter id="shadow3" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#065F46" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow3)">
+    <!-- Bottom Book (Pastel Teal) -->
+    <rect x="24" y="68" width="72" height="14" rx="3" fill="#A7F3D0" stroke="#065F46" stroke-width="2.5"/>
+    <rect x="90" y="70" width="6" height="10" rx="1" fill="#FFFFFF"/>
+    <!-- Middle Book (Pastel Lavender) -->
+    <rect x="28" y="54" width="64" height="14" rx="3" fill="#DDD6FE" stroke="#5B21B6" stroke-width="2.5"/>
+    <rect x="86" y="56" width="6" height="10" rx="1" fill="#FFFFFF"/>
+
+    <!-- Mortarboard Cap Sitting on Books -->
+    <!-- Cap Skull Base -->
+    <path d="M44 38 Q60 44 76 38 L76 46 Q60 52 44 46 Z" fill="#1E3A8A" stroke="#0F172A" stroke-width="2"/>
+    <!-- Diamond Board Top -->
+    <polygon points="60,14 100,28 60,42 20,28" fill="#2563EB" stroke="#0F172A" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="60,18 94,28 60,38 26,28" fill="#3B82F6"/>
+    <!-- Gold Center Button -->
+    <circle cx="60" cy="28" r="3" fill="#FBBF24" stroke="#B45309" stroke-width="1.5"/>
+    <!-- Gold Tassel -->
+    <path d="M60 28 Q80 30 84 42 L84 54" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+    <polygon points="81,53 87,53 88,62 80,62" fill="#FCD34D" stroke="#B45309" stroke-width="1.5"/>
+  </g>
+</svg>

@@ -110,7 +110,7 @@ export class ProductsService {
         include: {
           category: { select: { id: true, name: true, slug: true } },
           brand: { select: { id: true, name: true, slug: true } },
-          variants: true,
+          variants: { where: { isActive: true } },
         },
       }),
     ]);
@@ -134,7 +134,7 @@ export class ProductsService {
       include: {
         category: { select: { id: true, name: true, slug: true } },
         brand: { select: { id: true, name: true, slug: true } },
-        variants: true,
+        variants: includeInactive ? true : { where: { isActive: true } },
       },
     });
 
@@ -151,14 +151,77 @@ export class ProductsService {
   }
 
   async findBySlug(slug: string, includeInactive = false) {
-    const product = await this.prisma.product.findUnique({
-      where: { slug },
+    const cleanSlug = slug.trim();
+    const normalizedSlug = cleanSlug.toLowerCase().replace(/_/g, '-');
+
+    // 1. Try exact match on slug
+    let product = await this.prisma.product.findUnique({
+      where: { slug: cleanSlug },
       include: {
         category: { select: { id: true, name: true, slug: true } },
         brand: { select: { id: true, name: true, slug: true } },
-        variants: true,
+        variants: includeInactive ? true : { where: { isActive: true } },
       },
     });
+
+    // 2. Try normalized slug (lowercase with hyphens)
+    if (!product && normalizedSlug !== cleanSlug) {
+      product = await this.prisma.product.findUnique({
+        where: { slug: normalizedSlug },
+        include: {
+          category: { select: { id: true, name: true, slug: true } },
+          brand: { select: { id: true, name: true, slug: true } },
+          variants: includeInactive ? true : { where: { isActive: true } },
+        },
+      });
+    }
+
+    // 3. Try case-insensitive search on slug
+    if (!product) {
+      product = await this.prisma.product.findFirst({
+        where: {
+          slug: { equals: normalizedSlug, mode: 'insensitive' },
+        },
+        include: {
+          category: { select: { id: true, name: true, slug: true } },
+          brand: { select: { id: true, name: true, slug: true } },
+          variants: includeInactive ? true : { where: { isActive: true } },
+        },
+      });
+    }
+
+    // 4. Try matching by ID (e.g. prod-dsl-46 or cuid) or numeric original ID
+    if (!product) {
+      product = await this.prisma.product.findFirst({
+        where: {
+          OR: [
+            { id: cleanSlug },
+            { id: `prod-dsl-${cleanSlug}` },
+            { sku: { contains: `-${cleanSlug}-` } },
+          ],
+        },
+        include: {
+          category: { select: { id: true, name: true, slug: true } },
+          brand: { select: { id: true, name: true, slug: true } },
+          variants: includeInactive ? true : { where: { isActive: true } },
+        },
+      });
+    }
+
+    // 5. Try matching by product Name (e.g. if slug passed was derived from name)
+    if (!product) {
+      const nameGuess = cleanSlug.replace(/[-_]/g, ' ');
+      product = await this.prisma.product.findFirst({
+        where: {
+          name: { equals: nameGuess, mode: 'insensitive' },
+        },
+        include: {
+          category: { select: { id: true, name: true, slug: true } },
+          brand: { select: { id: true, name: true, slug: true } },
+          variants: includeInactive ? true : { where: { isActive: true } },
+        },
+      });
+    }
 
     if (!product || (!product.isActive && !includeInactive)) {
       throw new NotFoundException(`Product with slug "${slug}" not found`);

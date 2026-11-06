@@ -18,7 +18,7 @@ export const ScrapbookHero: React.FC = () => {
       */}
       <div className="relative w-full max-w-[1920px] mx-auto">
         {/* Background Image on Desktop */}
-        <div className="hidden lg:block relative w-full aspect-[2048/826]">
+        <div className="hidden lg:block relative w-full aspect-[1024/467]">
           <img
             src="/images/hero/hero_section_2x.png"
             alt="DSL Stationery Creative Scrapbook Desk with stationery supplies"
@@ -28,7 +28,7 @@ export const ScrapbookHero: React.FC = () => {
 
           {/* Center Interactive Content Overlay (Aligned 1:1 with Reference) */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-4">
-            <div className="max-w-2xl text-center flex flex-col items-center pointer-events-auto mt-[-10px]">
+            <div className="max-w-2xl text-center flex flex-col items-center pointer-events-auto translate-y-[1cm]">
               {/* Main Heading with Yellow Accent Strokes on Left and Right */}
               <div className="relative inline-flex items-center justify-center gap-3 sm:gap-4 mb-3">
                 {/* Left 3 Radiating Yellow Accent Strokes */}
@@ -88,20 +88,38 @@ export const ScrapbookHero: React.FC = () => {
               </div>
             </div>
 
-            {/* Clickable hotspot overlay on lower-left card's "Shop collection →" */}
-            <div className="absolute left-[3%] bottom-[12%] z-20 pointer-events-auto">
-              <Link
-                href="/shop"
-                className="inline-block w-48 h-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B91]"
-                title="Shop handmade collection"
-                aria-label="Shop collection"
-              />
+            {/* Lower-Left Scrapbook Card Content Overlay */}
+            <div className="absolute left-[1.5%] bottom-[4.5%] w-[24.5%] aspect-[245/180] flex flex-col justify-between p-3.5 sm:p-4 md:p-5 pointer-events-auto text-left select-none">
+              <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-sm sm:text-base">🌸</span>
+                  <span className="font-extrabold text-xs sm:text-sm lg:text-[14.5px] text-[#10285D] tracking-tight">
+                    Handmade with love!
+                  </span>
+                </div>
+                <p className="text-[10px] sm:text-[11px] lg:text-[11.5px] text-[#10285D]/80 leading-snug font-medium line-clamp-3">
+                  Carefully packed book bundles, smooth gel pens, and joyful notebooks ready to inspire your study desk.
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-[#10285D]/15 flex items-center justify-between text-[10px] sm:text-[11px]">
+                <span className="font-extrabold text-[9px] sm:text-[10px] text-[#10285D] tracking-wider uppercase">
+                  DSL STATIONERY
+                </span>
+                <Link
+                  href="/shop"
+                  className="font-bold text-[#10285D] hover:text-[#0066CC] flex items-center gap-1 group transition-colors"
+                >
+                  <span className="underline decoration-[#10285D]/40 underline-offset-2">Shop collection</span>
+                  <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Responsive Mobile / Tablet Layout (screens < 1024px) */}
-        <div className="lg:hidden relative bg-[#FFF8ED] px-6 py-12 sm:py-16 text-center overflow-hidden">
+        <div className="lg:hidden relative bg-[#FFF8ED] px-6 pt-12 sm:pt-16 pb-12 sm:pb-16 text-center overflow-hidden">
           {/* Pastel blue organic wave accents top and bottom */}
           <div className="absolute top-0 left-0 right-0 h-4 bg-[#A9DFFF] rounded-b-3xl opacity-60" />
 

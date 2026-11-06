@@ -14,6 +14,8 @@ export interface RequestOptions extends RequestInit {
   _retryCount?: number;
 }
 
+export type AuthFailureListener = () => void;
+
 export class ApiError extends Error {
   public readonly status: number;
   public readonly data?: unknown;
@@ -55,10 +57,28 @@ class ApiClient {
   private baseUrl: string;
   private isMockMode: boolean;
   private refreshPromise: Promise<boolean> | null = null;
+  private authFailureListeners: Set<AuthFailureListener> = new Set();
 
   constructor() {
     this.baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1').replace(/\/+$/, '');
     this.isMockMode = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
+  }
+
+  public onAuthFailure(listener: AuthFailureListener): () => void {
+    this.authFailureListeners.add(listener);
+    return () => {
+      this.authFailureListeners.delete(listener);
+    };
+  }
+
+  private notifyAuthFailure(): void {
+    this.authFailureListeners.forEach((listener) => {
+      try {
+        listener();
+      } catch {
+        // Safe listener execution
+      }
+    });
   }
 
   public getBaseUrl(): string {
@@ -163,15 +183,23 @@ class ApiClient {
       clearTimeout(timeoutId);
 
       // Handle 401: attempt silent refresh if request is eligible
-      const isAuthEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/refresh') || endpoint.includes('/auth/register');
-      if (response.status === 401 && !isAuthEndpoint && _retryCount === 0) {
-        const refreshed = await this.refreshSession();
-        if (refreshed) {
-          return this.request<T>(endpoint, {
-            ...options,
-            _retryCount: _retryCount + 1,
-          });
+      const isAuthEndpoint =
+        endpoint.includes('/auth/login') ||
+        endpoint.includes('/auth/refresh') ||
+        endpoint.includes('/auth/register');
+
+      if (response.status === 401 && !isAuthEndpoint) {
+        if (_retryCount === 0) {
+          const refreshed = await this.refreshSession();
+          if (refreshed) {
+            return this.request<T>(endpoint, {
+              ...options,
+              _retryCount: _retryCount + 1,
+            });
+          }
         }
+        // If refresh failed or already retried once and still unauthenticated
+        this.notifyAuthFailure();
       }
 
       let responseBody: any = null;
@@ -224,26 +252,29 @@ class ApiClient {
   }
 
   public post<T>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: isFormData ? (body as BodyInit) : (body !== undefined ? JSON.stringify(body) : undefined),
     });
   }
 
   public patch<T>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
     return this.request<T>(endpoint, {
       ...options,
       method: 'PATCH',
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: isFormData ? (body as BodyInit) : (body !== undefined ? JSON.stringify(body) : undefined),
     });
   }
 
   public put<T>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
     return this.request<T>(endpoint, {
       ...options,
       method: 'PUT',
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: isFormData ? (body as BodyInit) : (body !== undefined ? JSON.stringify(body) : undefined),
     });
   }
 
