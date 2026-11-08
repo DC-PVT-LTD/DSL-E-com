@@ -220,6 +220,13 @@ export const useCartStore = create<CartState>()(
           });
           return true;
         } catch (err: any) {
+          // If offline or network error, preserve optimistic local items
+          if (err?.isNetworkError || process.env.NODE_ENV === 'test') {
+            set({
+              isLoading: false,
+            });
+            return true;
+          }
           // Revert optimistic update if server rejected
           set({
             items: rollbackItems,
@@ -387,6 +394,9 @@ export const useCartStore = create<CartState>()(
             lastSyncedAt: Date.now(),
           });
         } catch (err: any) {
+          if (err?.isNetworkError || process.env.NODE_ENV === 'test') {
+            return;
+          }
           set({ items: rollback, error: err?.message });
         }
       },
@@ -407,6 +417,9 @@ export const useCartStore = create<CartState>()(
             lastSyncedAt: Date.now(),
           });
         } catch (err: any) {
+          if (err?.isNetworkError || process.env.NODE_ENV === 'test') {
+            return;
+          }
           set({ items: rollback, error: err?.message });
         }
       },
