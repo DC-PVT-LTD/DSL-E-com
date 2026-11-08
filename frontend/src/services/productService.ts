@@ -1,4 +1,4 @@
-import { Product } from '@/types/product';
+import { Product, ImportPreviewResult, ImportPreviewRow } from '@/types/product';
 import { FilterParams, PaginatedResult, SortOption } from '@/types/common';
 import {
   apiClient,
@@ -556,6 +556,85 @@ class ProductService {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Generate automatic SKU preview for a category and brand.
+   */
+  public async generateProductSku(categoryId: string, brandId: string): Promise<string> {
+    const res = await apiClient.get<BackendApiResponse<{ sku: string }>>(
+      `products/generate-sku?categoryId=${encodeURIComponent(categoryId)}&brandId=${encodeURIComponent(brandId)}`
+    );
+    if (res.success && res.data?.sku) {
+      return res.data.sku;
+    }
+    throw new Error(res.message || 'Failed to generate SKU');
+  }
+
+  /**
+   * Generate automatic variant SKU preview for a parent product.
+   */
+  public async generateVariantSku(productId: string, color?: string): Promise<string> {
+    const query = color ? `?color=${encodeURIComponent(color)}` : '';
+    const res = await apiClient.get<BackendApiResponse<{ sku: string }>>(
+      `products/${productId}/variants/generate-sku${query}`
+    );
+    if (res.success && res.data?.sku) {
+      return res.data.sku;
+    }
+    throw new Error(res.message || 'Failed to generate variant SKU');
+  }
+
+  /**
+   * Download Excel or CSV product import template.
+   */
+  public async downloadImportTemplate(format: 'excel' | 'csv'): Promise<Blob> {
+    const endpoint = `products/import/template/${format}`;
+    const url = apiClient.buildUrl(endpoint);
+    const res = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to download ${format} template: HTTP ${res.status}`);
+    }
+    return res.blob();
+  }
+
+  /**
+   * Upload and preview Excel/CSV product import without database mutations.
+   */
+  public async uploadImportPreview(file: File): Promise<ImportPreviewResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiClient.post<BackendApiResponse<ImportPreviewResult>>(
+      'products/import/preview',
+      formData
+    );
+    if (res.success && res.data) {
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to parse and validate import file');
+  }
+
+  /**
+   * Download validation error report as CSV or Excel.
+   */
+  public async downloadErrorReport(rows: ImportPreviewRow[], format: 'csv' | 'xlsx' = 'csv'): Promise<Blob> {
+    const endpoint = `products/import/error-report?format=${format}`;
+    const url = apiClient.buildUrl(endpoint);
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ rows }),
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to generate error report: HTTP ${res.status}`);
+    }
+    return res.blob();
   }
 }
 

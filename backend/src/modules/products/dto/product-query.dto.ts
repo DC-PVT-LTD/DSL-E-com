@@ -114,6 +114,7 @@ export const productQuerySchema = createPaginationSchema(productSortFields, 'cre
     q: z.string().optional(),
     categoryId: z.string().optional(),
     categorySlug: z.string().optional(),
+    subcategoryId: z.string().optional(),
     brandId: z.string().optional(),
     brandSlug: z.string().optional(),
     minPrice: priceQueryTransform,
@@ -164,6 +165,9 @@ export class ProductQueryDto {
 
   @ApiPropertyOptional({ description: 'Filter by Category slug', example: 'pens-and-writing' })
   categorySlug?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by Subcategory UUID', example: 'cmw01sub10000pous00010001' })
+  subcategoryId?: string;
 
   @ApiPropertyOptional({ description: 'Filter by Brand UUID', example: 'cmw01def20000pous00020002' })
   brandId?: string;

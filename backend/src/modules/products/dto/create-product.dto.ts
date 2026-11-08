@@ -7,11 +7,12 @@ export const createProductSchema = z.object({
     .string()
     .min(2, 'Slug must be at least 2 characters')
     .regex(/^[a-z0-9-]+$/, 'Slug must consist of lowercase letters, numbers, and hyphens'),
-  sku: z.string().min(2, 'SKU must be at least 2 characters'),
+  sku: z.string().min(2, 'SKU must be at least 2 characters').optional().or(z.literal('')),
   barcode: z.string().optional(),
   description: z.string().min(5, 'Description must be at least 5 characters'),
   shortDescription: z.string().min(3, 'Short description must be at least 3 characters'),
   categoryId: z.string().min(1, 'categoryId is required'),
+  subcategoryId: z.string().nullable().optional(),
   brandId: z.string().min(1, 'brandId is required'),
   priceCents: z.number().int().min(0, 'priceCents must be a non-negative integer'),
   compareAtPriceCents: z.number().int().min(0).optional(),
@@ -43,12 +44,12 @@ export class CreateProductDto {
   })
   slug: string;
 
-  @ApiProperty({
-    description: 'Unique Stock Keeping Unit (SKU)',
-    example: 'ATL-PEN-001',
+  @ApiPropertyOptional({
+    description: 'Unique Stock Keeping Unit (SKU) - Auto-generated using DSL-{CAT}-{BRD}-{SEQ} if omitted',
+    example: 'DSL-PEN-SPD-00001',
     minLength: 2,
   })
-  sku: string;
+  sku?: string;
 
   @ApiPropertyOptional({
     description: 'Barcode (EAN/UPC)',
@@ -75,6 +76,13 @@ export class CreateProductDto {
     example: 'cmw01abc10000pous00010001',
   })
   categoryId: string;
+
+  @ApiPropertyOptional({
+    description: 'Subcategory ID foreign key (must belong to the selected category)',
+    example: 'cmw01sub10000pous00010001',
+    nullable: true,
+  })
+  subcategoryId?: string | null;
 
   @ApiProperty({
     description: 'Brand ID foreign key',

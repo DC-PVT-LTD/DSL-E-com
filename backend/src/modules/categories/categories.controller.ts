@@ -71,6 +71,22 @@ export class CategoriesController {
   }
 
   @ApiTags('Categories')
+  @Get('tree')
+  @ApiOperation({
+    summary: 'Get category hierarchy tree',
+    description:
+      'Public endpoint to retrieve top-level categories nested with their subcategories and combined product counts.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Category tree retrieved successfully',
+  })
+  async getCategoryTree() {
+    const tree = await this.categoriesService.getCategoryTree();
+    return createApiResponse(tree);
+  }
+
+  @ApiTags('Categories')
   @Get('slug/:slug')
   @ApiOperation({
     summary: 'Get category by slug',

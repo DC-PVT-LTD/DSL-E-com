@@ -12,6 +12,7 @@ export const createCategorySchema = z.object({
   image: z.string().optional(),
   featured: z.boolean().optional().default(false),
   displayOrder: z.number().int().optional().default(0),
+  parentId: z.string().nullable().optional(),
 });
 
 export const updateCategorySchema = createCategorySchema.partial();
@@ -62,6 +63,13 @@ export class CreateCategoryDto {
     default: 0,
   })
   displayOrder?: number;
+
+  @ApiPropertyOptional({
+    description: 'Parent category ID for subcategories (null for top-level categories)',
+    example: 'cmw01abc10000pous00010001',
+    nullable: true,
+  })
+  parentId?: string | null;
 }
 
 export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {}

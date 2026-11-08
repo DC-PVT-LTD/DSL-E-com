@@ -5,9 +5,10 @@ import { ReservationsService } from './reservations.service';
 import { InventoryModule } from '../inventory/inventory.module';
 import { CartModule } from '../cart/cart.module';
 import { AuthModule } from '../auth/auth.module';
+import { PromotionsModule } from '../promotions/promotions.module';
 
 @Module({
-  imports: [InventoryModule, CartModule, AuthModule],
+  imports: [InventoryModule, CartModule, AuthModule, PromotionsModule],
   controllers: [CheckoutController],
   providers: [CheckoutService, ReservationsService],
   exports: [CheckoutService, ReservationsService],

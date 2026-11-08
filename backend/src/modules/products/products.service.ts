@@ -7,6 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { SkuGeneratorService } from './sku-generator.service';
 import { AuditService } from '../audit/audit.service';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
@@ -27,8 +28,9 @@ import {
 export class ProductsService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(SkuGeneratorService) private readonly skuGenerator: SkuGeneratorService,
     @Optional() @Inject(AuditService) private readonly auditService?: AuditService,
-  ) {}
+  ) { }
 
   async findAll(query: ProductQueryDto): Promise<PaginatedResponse<any>> {
     const where: any = {
@@ -52,6 +54,11 @@ export class ProductsService {
       where.categoryId = query.categoryId;
     } else if (query.categorySlug) {
       where.category = { slug: query.categorySlug };
+    }
+
+    // Subcategory filter by ID
+    if (query.subcategoryId) {
+      where.subcategoryId = query.subcategoryId;
     }
 
     // Brand filter by ID or Slug
@@ -109,6 +116,7 @@ export class ProductsService {
         orderBy: orderBy || { createdAt: 'desc' },
         include: {
           category: { select: { id: true, name: true, slug: true } },
+          subcategory: { select: { id: true, name: true, slug: true } },
           brand: { select: { id: true, name: true, slug: true } },
           variants: { where: { isActive: true } },
         },
@@ -121,6 +129,7 @@ export class ProductsService {
     const items = sanitized.map((p) => ({
       ...normalizePrismaValues(p),
       categoryName: p.category?.name || '',
+      subcategoryName: p.subcategory?.name || null,
       brandName: p.brand?.name || '',
     }));
 
@@ -133,6 +142,7 @@ export class ProductsService {
       where: { id },
       include: {
         category: { select: { id: true, name: true, slug: true } },
+        subcategory: { select: { id: true, name: true, slug: true } },
         brand: { select: { id: true, name: true, slug: true } },
         variants: includeInactive ? true : { where: { isActive: true } },
       },
@@ -146,6 +156,7 @@ export class ProductsService {
     return {
       ...normalizePrismaValues(sanitized),
       categoryName: product.category?.name || '',
+      subcategoryName: product.subcategory?.name || null,
       brandName: product.brand?.name || '',
     };
   }
@@ -154,25 +165,24 @@ export class ProductsService {
     const cleanSlug = slug.trim();
     const normalizedSlug = cleanSlug.toLowerCase().replace(/_/g, '-');
 
+    const defaultInclude = {
+      category: { select: { id: true, name: true, slug: true } },
+      subcategory: { select: { id: true, name: true, slug: true } },
+      brand: { select: { id: true, name: true, slug: true } },
+      variants: includeInactive ? true : { where: { isActive: true } },
+    };
+
     // 1. Try exact match on slug
     let product = await this.prisma.product.findUnique({
       where: { slug: cleanSlug },
-      include: {
-        category: { select: { id: true, name: true, slug: true } },
-        brand: { select: { id: true, name: true, slug: true } },
-        variants: includeInactive ? true : { where: { isActive: true } },
-      },
+      include: defaultInclude,
     });
 
     // 2. Try normalized slug (lowercase with hyphens)
     if (!product && normalizedSlug !== cleanSlug) {
       product = await this.prisma.product.findUnique({
         where: { slug: normalizedSlug },
-        include: {
-          category: { select: { id: true, name: true, slug: true } },
-          brand: { select: { id: true, name: true, slug: true } },
-          variants: includeInactive ? true : { where: { isActive: true } },
-        },
+        include: defaultInclude,
       });
     }
 
@@ -182,11 +192,7 @@ export class ProductsService {
         where: {
           slug: { equals: normalizedSlug, mode: 'insensitive' },
         },
-        include: {
-          category: { select: { id: true, name: true, slug: true } },
-          brand: { select: { id: true, name: true, slug: true } },
-          variants: includeInactive ? true : { where: { isActive: true } },
-        },
+        include: defaultInclude,
       });
     }
 
@@ -200,11 +206,7 @@ export class ProductsService {
             { sku: { contains: `-${cleanSlug}-` } },
           ],
         },
-        include: {
-          category: { select: { id: true, name: true, slug: true } },
-          brand: { select: { id: true, name: true, slug: true } },
-          variants: includeInactive ? true : { where: { isActive: true } },
-        },
+        include: defaultInclude,
       });
     }
 
@@ -215,11 +217,7 @@ export class ProductsService {
         where: {
           name: { equals: nameGuess, mode: 'insensitive' },
         },
-        include: {
-          category: { select: { id: true, name: true, slug: true } },
-          brand: { select: { id: true, name: true, slug: true } },
-          variants: includeInactive ? true : { where: { isActive: true } },
-        },
+        include: defaultInclude,
       });
     }
 
@@ -231,21 +229,30 @@ export class ProductsService {
     return {
       ...normalizePrismaValues(sanitized),
       categoryName: product.category?.name || '',
+      subcategoryName: product.subcategory?.name || null,
       brandName: product.brand?.name || '',
     };
   }
 
   async create(dto: CreateProductDto, actorId?: string | null) {
+    // Auto-generate SKU if omitted or empty
+    if (!dto.sku || dto.sku.trim() === '') {
+      dto.sku = await this.skuGenerator.generateProductSku(dto.categoryId, dto.brandId);
+    } else {
+      dto.sku = dto.sku.trim().toUpperCase();
+    }
+
     // Uniqueness checks
-    const [existingSlug, existingSku] = await Promise.all([
+    const [existingSlug, existingSku, existingGlobalSku] = await Promise.all([
       this.prisma.product.findUnique({ where: { slug: dto.slug } }),
       this.prisma.product.findUnique({ where: { sku: dto.sku } }),
+      this.prisma.globalSku.findUnique({ where: { sku: dto.sku } }),
     ]);
 
     if (existingSlug) {
       throw new ConflictException(`Product slug "${dto.slug}" already exists`);
     }
-    if (existingSku) {
+    if (existingSku || existingGlobalSku) {
       throw new ConflictException(`Product SKU "${dto.sku}" already exists`);
     }
 
@@ -262,12 +269,28 @@ export class ProductsService {
       throw new NotFoundException(`Brand "${dto.brandId}" not found`);
     }
 
+    // Validate subcategory belongs to category
+    if (dto.subcategoryId) {
+      const subcategory = await this.prisma.category.findUnique({
+        where: { id: dto.subcategoryId },
+      });
+      if (!subcategory) {
+        throw new NotFoundException(`Subcategory "${dto.subcategoryId}" not found`);
+      }
+      if (subcategory.parentId !== dto.categoryId) {
+        throw new BadRequestException(
+          'The selected subcategory does not belong to the selected parent category.'
+        );
+      }
+    }
+
     try {
       return await this.prisma.$transaction(async (tx) => {
         const created = await tx.product.create({
           data: dto as any,
           include: {
             category: { select: { id: true, name: true, slug: true } },
+            subcategory: { select: { id: true, name: true, slug: true } },
             brand: { select: { id: true, name: true, slug: true } },
             variants: true,
           },
@@ -287,12 +310,15 @@ export class ProductsService {
                 priceCents: { new: created.priceCents },
                 stockQuantity: { new: created.stockQuantity },
                 categoryId: { new: created.categoryId },
+                subcategoryId: { new: created.subcategoryId },
                 brandId: { new: created.brandId },
               },
             },
             tx
           );
         }
+
+        await this.skuGenerator.syncSequenceIfHigher(created.sku, tx);
 
         return excludeSensitiveFields(created, ['costPriceCents']);
       });
@@ -315,9 +341,49 @@ export class ProductsService {
     }
 
     if (dto.sku) {
-      const existingSku = await this.prisma.product.findUnique({ where: { sku: dto.sku } });
+      dto.sku = dto.sku.trim().toUpperCase();
+      const [existingSku, existingGlobalSku] = await Promise.all([
+        this.prisma.product.findUnique({ where: { sku: dto.sku } }),
+        this.prisma.globalSku.findUnique({ where: { sku: dto.sku } }),
+      ]);
       if (existingSku && existingSku.id !== id) {
         throw new ConflictException(`Product SKU "${dto.sku}" already exists`);
+      }
+      if (existingGlobalSku && existingGlobalSku.productId !== id) {
+        throw new ConflictException(`Product SKU "${dto.sku}" already exists`);
+      }
+    }
+
+    if (dto.categoryId) {
+      const cat = await this.prisma.category.findUnique({ where: { id: dto.categoryId } });
+      if (!cat) {
+        throw new NotFoundException(`Category "${dto.categoryId}" not found`);
+      }
+    }
+
+    if (dto.brandId) {
+      const br = await this.prisma.brand.findUnique({ where: { id: dto.brandId } });
+      if (!br) {
+        throw new NotFoundException(`Brand "${dto.brandId}" not found`);
+      }
+    }
+
+    // Validate subcategory belongs to category
+    const targetCategoryId = dto.categoryId ?? existing.categoryId;
+    const targetSubcategoryId =
+      dto.subcategoryId !== undefined ? dto.subcategoryId : (existing as any).subcategoryId;
+
+    if (targetSubcategoryId) {
+      const subcategory = await this.prisma.category.findUnique({
+        where: { id: targetSubcategoryId },
+      });
+      if (!subcategory) {
+        throw new NotFoundException(`Subcategory "${targetSubcategoryId}" not found`);
+      }
+      if (subcategory.parentId !== targetCategoryId) {
+        throw new BadRequestException(
+          'The selected subcategory does not belong to the selected parent category.'
+        );
       }
     }
 
@@ -327,6 +393,7 @@ export class ProductsService {
         data: dto as any,
         include: {
           category: { select: { id: true, name: true, slug: true } },
+          subcategory: { select: { id: true, name: true, slug: true } },
           brand: { select: { id: true, name: true, slug: true } },
           variants: true,
         },
@@ -341,6 +408,7 @@ export class ProductsService {
           'description',
           'shortDescription',
           'categoryId',
+          'subcategoryId',
           'brandId',
           'priceCents',
           'compareAtPriceCents',
@@ -467,13 +535,23 @@ export class ProductsService {
   async createVariant(productId: string, dto: CreateVariantDto, actorId?: string | null) {
     const product = await this.findById(productId, true);
 
-    // Enforce SKU uniqueness across products and variants
-    const [existingProductSku, existingVariantSku] = await Promise.all([
+    // Auto-generate variant SKU if omitted or empty
+    if (!dto.sku || dto.sku.trim() === '') {
+      dto.sku = await this.skuGenerator.generateVariantSku(productId, {
+        color: dto.attributes?.color,
+      });
+    } else {
+      dto.sku = dto.sku.trim().toUpperCase();
+    }
+
+    // Enforce SKU uniqueness across products, variants, and global SKU registry
+    const [existingProductSku, existingVariantSku, existingGlobalSku] = await Promise.all([
       this.prisma.product.findUnique({ where: { sku: dto.sku } }),
       this.prisma.productVariant.findUnique({ where: { sku: dto.sku } }),
+      this.prisma.globalSku.findUnique({ where: { sku: dto.sku } }),
     ]);
 
-    if (existingProductSku || existingVariantSku) {
+    if (existingProductSku || existingVariantSku || existingGlobalSku) {
       throw new ConflictException(`SKU "${dto.sku}" is already in use`);
     }
 
@@ -485,7 +563,7 @@ export class ProductsService {
           data: {
             productId,
             name: dto.name,
-            sku: dto.sku,
+            sku: dto.sku!,
             priceCents: dto.priceCents,
             compareAtPriceCents: dto.compareAtPriceCents ?? null,
             stockQuantity: initialStock,
@@ -555,13 +633,19 @@ export class ProductsService {
   ) {
     const variant = await this.findVariantById(productId, variantId, true);
 
-    if (dto.sku && dto.sku !== variant.sku) {
-      const [existingProductSku, existingVariantSku] = await Promise.all([
+    if (dto.sku && dto.sku.trim().toUpperCase() !== variant.sku) {
+      dto.sku = dto.sku.trim().toUpperCase();
+      const [existingProductSku, existingVariantSku, existingGlobalSku] = await Promise.all([
         this.prisma.product.findUnique({ where: { sku: dto.sku } }),
         this.prisma.productVariant.findUnique({ where: { sku: dto.sku } }),
+        this.prisma.globalSku.findUnique({ where: { sku: dto.sku } }),
       ]);
 
-      if (existingProductSku || existingVariantSku) {
+      if (
+        existingProductSku ||
+        (existingVariantSku && existingVariantSku.id !== variantId) ||
+        (existingGlobalSku && existingGlobalSku.variantId !== variantId)
+      ) {
         throw new ConflictException(`SKU "${dto.sku}" is already in use`);
       }
     }
@@ -667,5 +751,26 @@ export class ProductsService {
 
       return updated;
     });
+  }
+
+  /**
+   * Generates a preview SKU for a product without consuming sequence numbers.
+   */
+  async previewProductSku(categoryId: string, brandId: string): Promise<string> {
+    return this.skuGenerator.previewProductSku(categoryId, brandId);
+  }
+
+  /**
+   * Generates a preview SKU for a product.
+   */
+  async generateProductSku(categoryId: string, brandId: string): Promise<string> {
+    return this.skuGenerator.generateProductSku(categoryId, brandId);
+  }
+
+  /**
+   * Generates a preview SKU for a product variant.
+   */
+  async generateVariantSku(productId: string, color?: string): Promise<string> {
+    return this.skuGenerator.generateVariantSku(productId, { color });
   }
 }

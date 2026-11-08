@@ -249,3 +249,60 @@ export class CreateAddressDto {
 
 export class UpdateAddressDto extends PartialType(CreateAddressDto) { }
 
+export const adminLoginSchema = z.object({
+  email: z.string().trim().toLowerCase().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+export class AdminLoginDto {
+  @ApiProperty({
+    description: 'Administrator email address',
+    example: 'admin@dslstationery.lk',
+  })
+  email: string;
+
+  @ApiProperty({
+    description: 'Administrator password',
+    example: 'AdminSecurePass123!',
+  })
+  password: string;
+}
+
+export const acceptInvitationSchema = z.object({
+  token: z.string().trim().min(1, 'Invitation token is required'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password cannot exceed 128 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
+});
+
+export class AcceptInvitationDto {
+  @ApiProperty({
+    description: 'Raw invitation token received via email/link',
+    example: 'a4b8c9d0...',
+  })
+  token: string;
+
+  @ApiProperty({
+    description: 'New administrator password to set',
+    example: 'NewSecurePass123!',
+  })
+  password: string;
+}
+
+export const verifyInvitationQuerySchema = z.object({
+  token: z.string().trim().min(1, 'Invitation token is required'),
+});
+
+export class VerifyInvitationQueryDto {
+  @ApiProperty({
+    description: 'Raw invitation token to verify',
+    example: 'a4b8c9d0...',
+  })
+  token: string;
+}
+
+

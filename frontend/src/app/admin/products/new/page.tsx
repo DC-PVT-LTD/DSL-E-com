@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, AlertCircle, RotateCcw, Upload, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, RotateCcw, Upload, Image as ImageIcon, X, Sparkles } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { categoryService } from '@/services/categoryService';
 import { brandService } from '@/services/brandService';
@@ -17,10 +17,12 @@ export default function AdminNewProductPage() {
 
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
+  const [isGeneratingSku, setIsGeneratingSku] = useState(false);
   const [barcode, setBarcode] = useState('');
   const [description, setDescription] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [subcategoryId, setSubcategoryId] = useState('');
   const [brandId, setBrandId] = useState('');
   const [priceRupees, setPriceRupees] = useState<number | ''>('');
   const [comparePriceRupees, setComparePriceRupees] = useState<number | ''>('');
@@ -43,7 +45,8 @@ export default function AdminNewProductPage() {
         ]);
         setCategories(cats);
         setBrands(brs);
-        if (cats.length > 0) setCategoryId(cats[0].id);
+        const roots = cats.filter((c) => !c.parentId);
+        if (roots.length > 0) setCategoryId(roots[0].id);
         if (brs.length > 0) setBrandId(brs[0].id);
       } catch (err) {
         console.error('Error loading categories/brands:', err);
@@ -52,10 +55,31 @@ export default function AdminNewProductPage() {
     loadOptions();
   }, []);
 
+  const handleGenerateSku = async () => {
+    if (!categoryId || !brandId) {
+      setErrors((prev) => ({ ...prev, sku: 'Please select Category and Brand first' }));
+      return;
+    }
+    setIsGeneratingSku(true);
+    try {
+      const generated = await productService.generateProductSku(categoryId, brandId);
+      setSku(generated);
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy.sku;
+        return copy;
+      });
+    } catch (err: any) {
+      console.error('Failed to generate SKU:', err);
+      setErrors((prev) => ({ ...prev, sku: err?.message || 'Failed to auto-generate SKU' }));
+    } finally {
+      setIsGeneratingSku(false);
+    }
+  };
+
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = 'Product name is required';
-    if (!sku.trim()) errs.sku = 'SKU is required';
     if (!priceRupees || Number(priceRupees) <= 0) errs.price = 'Valid price is required';
     if (stockQuantity === '' || Number(stockQuantity) < 0) errs.stock = 'Valid stock is required';
     if (!categoryId) errs.category = 'Category selection is required';
@@ -114,6 +138,7 @@ export default function AdminNewProductPage() {
         description: description || name,
         shortDescription: shortDescription || (description ? description.slice(0, 100) : name),
         categoryId,
+        subcategoryId: subcategoryId ? subcategoryId : undefined,
         brandId,
         priceCents: rupeesToCents(Number(priceRupees)),
         compareAtPriceCents: comparePriceRupees ? rupeesToCents(Number(comparePriceRupees)) : undefined,
@@ -174,10 +199,21 @@ export default function AdminNewProductPage() {
             </div>
 
             <div>
-              <label className="font-bold text-slate-700 block mb-1">SKU (Stock Keeping Unit) *</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="font-bold text-slate-700 block">SKU (Stock Keeping Unit)</label>
+                <button
+                  type="button"
+                  onClick={handleGenerateSku}
+                  disabled={isGeneratingSku || !categoryId || !brandId}
+                  className="text-xs font-semibold text-[#08275E] hover:underline flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Sparkles className={`w-3.5 h-3.5 ${isGeneratingSku ? 'animate-spin text-[#FFD21C]' : ''}`} />
+                  <span>{isGeneratingSku ? 'Generating...' : 'Auto-generate SKU'}</span>
+                </button>
+              </div>
               <input
                 type="text"
-                placeholder="e.g. ATL-CR-200-SL"
+                placeholder="e.g. DSL-PEN-SPD-00001 (or leave blank to auto-generate)"
                 value={sku}
                 onChange={(e) => setSku(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono focus:outline-none focus:ring-1 focus:ring-[#08275E]"
@@ -197,16 +233,43 @@ export default function AdminNewProductPage() {
             </div>
 
             <div>
-              <label className="font-bold text-slate-700 block mb-1">Category *</label>
+              <label className="font-bold text-slate-700 block mb-1">Parent Category *</label>
               <select
                 value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
+                onChange={(e) => {
+                  setCategoryId(e.target.value);
+                  setSubcategoryId('');
+                }}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white"
               >
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
+                {categories
+                  .filter((c) => !c.parentId)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
               </select>
+            </div>
+
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Subcategory (Optional)</label>
+              {(() => {
+                const availableSubs = categories.filter((c) => c.parentId === categoryId);
+                return (
+                  <select
+                    value={subcategoryId}
+                    onChange={(e) => setSubcategoryId(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white disabled:bg-slate-50 disabled:text-slate-400"
+                    disabled={availableSubs.length === 0}
+                  >
+                    <option value="">
+                      {availableSubs.length > 0 ? '-- Select Subcategory (Optional) --' : 'No subcategories under selected category'}
+                    </option>
+                    {availableSubs.map((sc) => (
+                      <option key={sc.id} value={sc.id}>{sc.name}</option>
+                    ))}
+                  </select>
+                );
+              })()}
             </div>
 
             <div>

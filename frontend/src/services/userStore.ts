@@ -253,14 +253,26 @@ export const useUserStore = create<UserState>()(
       loginAdmin: async (email: string, password = 'AdminPassword123!') => {
         set({ isLoading: true });
         try {
-          const res = await apiClient.post<{ success: boolean; data: any }>('/auth/login', {
-            email,
-            password,
-          });
+          let res: any;
+          try {
+            res = await apiClient.post<{ success: boolean; data: any }>('/auth/admin/login', {
+              email,
+              password,
+            });
+          } catch (adminErr: any) {
+            if (adminErr?.statusCode === 404) {
+              res = await apiClient.post<{ success: boolean; data: any }>('/auth/login', {
+                email,
+                password,
+              });
+            } else {
+              throw adminErr;
+            }
+          }
 
           if (res?.data) {
             const u = res.data;
-            if (u.role !== 'ADMIN' && u.role !== 'MANAGER') {
+            if (u.role !== 'ADMIN' && u.role !== 'MANAGER' && u.role !== 'STAFF') {
               throw new Error('Access denied: administrative role required');
             }
             set({
@@ -289,7 +301,7 @@ export const useUserStore = create<UserState>()(
 
       logoutAdmin: async () => {
         try {
-          await apiClient.post('/auth/logout');
+          await apiClient.post('/auth/admin/logout').catch(() => apiClient.post('/auth/logout'));
         } catch {}
         set({ isAdminLoggedIn: false, adminEmail: null });
       },

@@ -13,6 +13,7 @@ export default function CartPage() {
   const [mounted, setMounted] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [couponMsg, setCouponMsg] = useState<{ text: string; error: boolean } | null>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   const items = useCartStore((state) => state.items);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
@@ -37,12 +38,20 @@ export default function CartPage() {
   const remainingForFreeDelivery = Math.max(0, FREE_DELIVERY_THRESHOLD_CENTS - summary.subtotalCents);
   const freeDeliveryPercent = Math.min(100, Math.round((summary.subtotalCents / FREE_DELIVERY_THRESHOLD_CENTS) * 100));
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!couponCode.trim()) return;
-    const res = applyPromoCode(couponCode);
-    setCouponMsg({ text: res.message, error: !res.success });
-    if (res.success) setCouponCode('');
+    if (!couponCode.trim() || isApplyingCoupon) return;
+    setIsApplyingCoupon(true);
+    setCouponMsg(null);
+    try {
+      const res = await applyPromoCode(couponCode);
+      setCouponMsg({ text: res.message, error: !res.success });
+      if (res.success) setCouponCode('');
+    } catch (err: any) {
+      setCouponMsg({ text: err?.message || 'Failed to apply coupon', error: true });
+    } finally {
+      setIsApplyingCoupon(false);
+    }
   };
 
   if (summary.items.length === 0) {
@@ -245,17 +254,29 @@ export default function CartPage() {
 
             {/* Promo code form */}
             {summary.appliedDiscount ? (
-              <div className="flex items-center justify-between bg-[#EBD5FA]/50 border border-[#EBD5FA] text-[#6b21a8] px-3.5 py-2.5 rounded-full text-xs font-medium">
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-[#6b21a8] shrink-0" />
-                  <span>Coupon <strong>{summary.appliedDiscount.code}</strong> applied</span>
+              <div className="bg-[#EBD5FA]/40 border border-[#EBD5FA] text-[#6b21a8] p-3.5 rounded-2xl text-xs space-y-1.5">
+                <div className="flex items-center justify-between font-bold">
+                  <div className="flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-[#6b21a8] shrink-0" />
+                    <span>Coupon <strong>{summary.appliedDiscount.code}</strong></span>
+                  </div>
+                  <button
+                    onClick={removePromoCode}
+                    className="text-[#6b21a8] hover:text-rose-600 hover:underline font-bold text-[11px]"
+                  >
+                    Remove
+                  </button>
                 </div>
-                <button
-                  onClick={removePromoCode}
-                  className="text-[#6b21a8] hover:underline font-bold text-[11px]"
-                >
-                  Remove
-                </button>
+                {summary.appliedDiscount.promotionName && (
+                  <p className="text-[11px] text-[#6b21a8]/80 font-medium pl-5">
+                    {summary.appliedDiscount.promotionName}
+                  </p>
+                )}
+                {summary.appliedDiscount.isFreeDelivery && (
+                  <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full ml-5">
+                    🚚 Free Delivery Voucher Applied
+                  </div>
+                )}
               </div>
             ) : (
               <form onSubmit={handleApplyCoupon} className="space-y-2">
@@ -267,19 +288,21 @@ export default function CartPage() {
                       placeholder="Enter code (e.g. 20OFF)"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      className="w-full pl-8 pr-3 py-2 bg-[#FFFDF0] border border-[#C6E7FF] rounded-full text-xs uppercase font-medium focus:outline-none focus:ring-1 focus:ring-[#0066CC]"
+                      disabled={isApplyingCoupon}
+                      className="w-full pl-8 pr-3 py-2 bg-[#FFFDF0] border border-[#C6E7FF] rounded-full text-xs uppercase font-medium focus:outline-none focus:ring-1 focus:ring-[#0066CC] disabled:opacity-50"
                     />
                     <Tag className="w-3.5 h-3.5 text-[#0066CC] absolute left-2.5 top-1/2 -translate-y-1/2" />
                   </div>
                   <button
                     type="submit"
-                    className="bg-[#292525] hover:bg-black text-white text-xs font-bold px-5 py-2 rounded-full transition-colors"
+                    disabled={isApplyingCoupon || !couponCode.trim()}
+                    className="bg-[#292525] hover:bg-black disabled:opacity-50 text-white text-xs font-bold px-5 py-2 rounded-full transition-colors flex items-center gap-1"
                   >
-                    Apply
+                    {isApplyingCoupon ? 'Checking...' : 'Apply'}
                   </button>
                 </div>
                 {couponMsg && (
-                  <p className={`text-[11px] ${couponMsg.error ? 'text-rose-600' : 'text-emerald-600'} font-medium`}>
+                  <p className={`text-[11px] ${couponMsg.error ? 'text-rose-600 font-semibold' : 'text-emerald-600 font-medium'} leading-tight`}>
                     {couponMsg.text}
                   </p>
                 )}
@@ -293,18 +316,35 @@ export default function CartPage() {
                 <span className="font-semibold text-[#292525]">{formatLKR(summary.subtotalCents)}</span>
               </div>
 
-              {summary.discountCents > 0 && (
-                <div className="flex justify-between text-[#0066CC] font-semibold">
-                  <span>Bundle & Promotional Savings</span>
-                  <span>-{formatLKR(summary.discountCents)}</span>
+              {/* School Pack bundle discount breakdown */}
+              {(summary.bundleDiscountCents ?? 0) > 0 && (
+                <div className="flex justify-between text-emerald-700 font-semibold">
+                  <span>School Pack Bundle Savings</span>
+                  <span>-{formatLKR(summary.bundleDiscountCents || 0)}</span>
                 </div>
               )}
 
+              {/* Voucher promo discount breakdown */}
+              {(summary.voucherDiscountCents ?? 0) > 0 && (
+                <div className="flex justify-between text-[#0066CC] font-semibold">
+                  <span>Voucher Discount ({summary.appliedDiscount?.code})</span>
+                  <span>-{formatLKR(summary.voucherDiscountCents || 0)}</span>
+                </div>
+              )}
+
+              {/* Delivery Fee line with free delivery breakdown */}
               <div className="flex justify-between text-[#292525]/70">
                 <span>Standard Islandwide Delivery</span>
                 <span className="font-semibold text-[#292525]">
                   {summary.deliveryCents === 0 ? (
-                    <span className="text-emerald-700 font-bold">FREE</span>
+                    <span className="text-emerald-700 font-bold inline-flex items-center gap-1">
+                      FREE
+                      {summary.appliedDiscount?.isFreeDelivery && (
+                        <span className="text-[10px] text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded-full">
+                          Coupon
+                        </span>
+                      )}
+                    </span>
                   ) : (
                     formatLKR(summary.deliveryCents)
                   )}

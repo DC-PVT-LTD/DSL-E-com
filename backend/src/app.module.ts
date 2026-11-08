@@ -28,6 +28,9 @@ import { SavedListsModule } from './modules/saved-lists/saved-lists.module';
 import { BackInStockModule } from './modules/back-in-stock/back-in-stock.module';
 import { BannersModule } from './modules/banners/banners.module';
 import { NewsletterModule } from './modules/newsletter/newsletter.module';
+import { PromotionsModule } from './modules/promotions/promotions.module';
+import { AdminUsersModule } from './modules/admin-users/admin-users.module';
+import { RolesModule } from './modules/admin/roles/roles.module';
 
 @Module({
   imports: [
@@ -64,6 +67,9 @@ import { NewsletterModule } from './modules/newsletter/newsletter.module';
     BackInStockModule,
     BannersModule,
     NewsletterModule,
+    PromotionsModule,
+    AdminUsersModule,
+    RolesModule,
   ],
   providers: [
     {

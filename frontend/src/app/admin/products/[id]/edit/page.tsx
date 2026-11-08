@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Plus, Trash2, AlertCircle, RotateCcw, Layers, Upload, X } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, AlertCircle, RotateCcw, Layers, Upload, X, Sparkles } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { categoryService } from '@/services/categoryService';
 import { brandService } from '@/services/brandService';
@@ -25,6 +25,7 @@ function AdminEditProductContent() {
   const [priceRupees, setPriceRupees] = useState<number | ''>('');
   const [stockQuantity, setStockQuantity] = useState<number | ''>('');
   const [categoryId, setCategoryId] = useState('');
+  const [subcategoryId, setSubcategoryId] = useState('');
   const [brandId, setBrandId] = useState('');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<string[]>([]);
@@ -39,8 +40,12 @@ function AdminEditProductContent() {
   const [isAddingVariant, setIsAddingVariant] = useState(false);
   const [newVarTitle, setNewVarTitle] = useState('');
   const [newVarSku, setNewVarSku] = useState('');
+  const [newVarColor, setNewVarColor] = useState('');
+  const [newVarAttrKey, setNewVarAttrKey] = useState('');
+  const [newVarAttrVal, setNewVarAttrVal] = useState('');
   const [newVarPriceRupees, setNewVarPriceRupees] = useState<number | ''>('');
   const [newVarStock, setNewVarStock] = useState<number | ''>(0);
+  const [isGeneratingVarSku, setIsGeneratingVarSku] = useState(false);
   const [variantError, setVariantError] = useState<string | null>(null);
 
   const loadAllData = async () => {
@@ -65,6 +70,7 @@ function AdminEditProductContent() {
         setPriceRupees(centsToRupees(p.priceCents));
         setStockQuantity(p.stockQuantity);
         setCategoryId(p.categoryId);
+        setSubcategoryId(p.subcategoryId || '');
         setBrandId(p.brandId);
         setDescription(p.description);
         setImages(p.images && p.images.length > 0 ? p.images : ['/products/default.png']);
@@ -123,6 +129,7 @@ function AdminEditProductContent() {
         priceCents: rupeesToCents(Number(priceRupees)),
         stockQuantity: Number(stockQuantity),
         categoryId,
+        subcategoryId: subcategoryId ? subcategoryId : null,
         brandId,
         description,
         images: images.length > 0 ? images : ['/products/default.png'],
@@ -137,22 +144,50 @@ function AdminEditProductContent() {
     }
   };
 
+  const handleGenerateVarSku = async () => {
+    setIsGeneratingVarSku(true);
+    setVariantError(null);
+    try {
+      const generated = await productService.generateVariantSku(id, newVarColor.trim());
+      setNewVarSku(generated);
+    } catch (err: any) {
+      console.error('Failed to generate variant SKU:', err);
+      setVariantError(err?.message || 'Failed to auto-generate variant SKU');
+    } finally {
+      setIsGeneratingVarSku(false);
+    }
+  };
+
   const handleAddVariant = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newVarTitle.trim() || !newVarSku.trim()) {
-      setVariantError('Variant title and SKU are required');
+    if (!newVarTitle.trim()) {
+      setVariantError('Variant title is required');
       return;
     }
     setVariantError(null);
+
+    const attributes: Record<string, any> = {};
+    if (newVarColor.trim()) {
+      attributes.color = newVarColor.trim();
+    }
+    if (newVarAttrKey.trim() && newVarAttrVal.trim()) {
+      attributes[newVarAttrKey.trim()] = newVarAttrVal.trim();
+    }
+
     try {
       await productService.createVariant(id, {
         title: newVarTitle.trim(),
-        sku: newVarSku.trim().toUpperCase(),
+        name: newVarTitle.trim(),
+        sku: newVarSku.trim() ? newVarSku.trim().toUpperCase() : undefined,
         priceCents: newVarPriceRupees ? rupeesToCents(Number(newVarPriceRupees)) : undefined,
         initialStock: Number(newVarStock) || 0,
+        attributes,
       });
       setNewVarTitle('');
       setNewVarSku('');
+      setNewVarColor('');
+      setNewVarAttrKey('');
+      setNewVarAttrVal('');
       setNewVarPriceRupees('');
       setNewVarStock(0);
       setIsAddingVariant(false);
@@ -267,16 +302,47 @@ function AdminEditProductContent() {
           </div>
 
           <div>
-            <label className="font-bold text-slate-700 block mb-1">Category</label>
+            <label className="font-bold text-slate-700 block mb-1">Parent Category</label>
             <select
               value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
+              onChange={(e) => {
+                const newCatId = e.target.value;
+                setCategoryId(newCatId);
+                const belongs = categories.some((c) => c.id === subcategoryId && c.parentId === newCatId);
+                if (!belongs) {
+                  setSubcategoryId('');
+                }
+              }}
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white"
             >
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
+              {categories
+                .filter((c) => !c.parentId)
+                .map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
             </select>
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block mb-1">Subcategory (Optional)</label>
+            {(() => {
+              const availableSubs = categories.filter((c) => c.parentId === categoryId);
+              return (
+                <select
+                  value={subcategoryId}
+                  onChange={(e) => setSubcategoryId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white disabled:bg-slate-50 disabled:text-slate-400"
+                  disabled={availableSubs.length === 0}
+                >
+                  <option value="">
+                    {availableSubs.length > 0 ? '-- Select Subcategory (Optional) --' : 'No subcategories under selected category'}
+                  </option>
+                  {availableSubs.map((sc) => (
+                    <option key={sc.id} value={sc.id}>{sc.name}</option>
+                  ))}
+                </select>
+              );
+            })()}
           </div>
 
           <div>
@@ -408,9 +474,9 @@ function AdminEditProductContent() {
         {isAddingVariant && (
           <form onSubmit={handleAddVariant} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3 animate-fade-in">
             <h3 className="font-bold text-slate-800">Add New SKU Variant</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Title *</label>
+                <label className="font-bold text-slate-700 block mb-1">Variant Title *</label>
                 <input
                   type="text"
                   placeholder="e.g. Blue Ink, 0.5mm"
@@ -421,14 +487,56 @@ function AdminEditProductContent() {
                 />
               </div>
               <div>
-                <label className="font-bold text-slate-700 block mb-1">SKU *</label>
+                <label className="font-bold text-slate-700 block mb-1">Color / Variant Shade</label>
                 <input
                   type="text"
-                  placeholder="e.g. ATL-PEN-BL"
+                  placeholder="e.g. Blue, Red, Black"
+                  value={newVarColor}
+                  onChange={(e) => setNewVarColor(e.target.value)}
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white"
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Custom Attribute (Key: Value)</label>
+                <div className="flex gap-1.5">
+                  <input
+                    type="text"
+                    placeholder="e.g. size"
+                    value={newVarAttrKey}
+                    onChange={(e) => setNewVarAttrKey(e.target.value)}
+                    className="w-1/2 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs"
+                  />
+                  <input
+                    type="text"
+                    placeholder="e.g. 0.5mm"
+                    value={newVarAttrVal}
+                    onChange={(e) => setNewVarAttrVal(e.target.value)}
+                    className="w-1/2 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-slate-700 block">Variant SKU</label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateVarSku}
+                    disabled={isGeneratingVarSku}
+                    className="text-xs font-semibold text-[#08275E] hover:underline flex items-center gap-1 disabled:opacity-50"
+                  >
+                    <Sparkles className={`w-3 h-3 ${isGeneratingVarSku ? 'animate-spin text-[#FFD21C]' : ''}`} />
+                    <span>{isGeneratingVarSku ? 'Generating...' : 'Auto-generate'}</span>
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Leave blank to auto-generate"
                   value={newVarSku}
                   onChange={(e) => setNewVarSku(e.target.value)}
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-mono"
-                  required
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-mono text-xs"
                 />
               </div>
               <div>
@@ -480,6 +588,7 @@ function AdminEditProductContent() {
               <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="py-2.5 px-3 font-bold">Variant Title</th>
+                  <th className="py-2.5 px-3 font-bold">Attributes</th>
                   <th className="py-2.5 px-3 font-bold">SKU</th>
                   <th className="py-2.5 px-3 font-bold">Price</th>
                   <th className="py-2.5 px-3 font-bold">Stock</th>
@@ -490,7 +599,38 @@ function AdminEditProductContent() {
               <tbody className="divide-y divide-slate-100">
                 {variants.map((v) => (
                   <tr key={v.id} className="hover:bg-slate-50">
-                    <td className="py-2.5 px-3 font-bold text-slate-800">{v.title}</td>
+                    <td className="py-2.5 px-3 font-bold text-slate-800">{v.name || v.title}</td>
+                    <td className="py-2.5 px-3">
+                      {v.attributes && Object.keys(v.attributes).length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {Object.entries(v.attributes).map(([k, val]) => (
+                            <span
+                              key={k}
+                              className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200"
+                            >
+                              {k === 'color' ? (
+                                <span className="inline-flex items-center gap-1">
+                                  <span
+                                    className="w-2 h-2 rounded-full inline-block border border-black/20"
+                                    style={{
+                                      backgroundColor:
+                                        String(val).toLowerCase() === 'white'
+                                          ? '#ffffff'
+                                          : String(val).toLowerCase(),
+                                    }}
+                                  />
+                                  {String(val)}
+                                </span>
+                              ) : (
+                                `${k}: ${val}`
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 italic">None</span>
+                      )}
+                    </td>
                     <td className="py-2.5 px-3 font-mono text-slate-500">{v.sku}</td>
                     <td className="py-2.5 px-3 font-bold text-[#08275E]">
                       {v.priceCents ? formatLKR(v.priceCents) : `${formatLKR(product.priceCents)} (Base)`}

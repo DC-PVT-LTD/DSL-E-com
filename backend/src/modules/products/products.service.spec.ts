@@ -33,10 +33,23 @@ describe('ProductsService', () => {
       inventoryMovement: {
         create: vi.fn(),
       },
+      globalSku: {
+        findUnique: vi.fn().mockResolvedValue(null),
+      },
       $transaction: vi.fn(async (cb) => cb(mockPrisma)),
     };
 
-    service = new ProductsService(mockPrisma as unknown as PrismaService);
+    const mockSkuGenerator = {
+      generateProductSku: vi.fn().mockResolvedValue('DSL-PEN-SPD-00001'),
+      previewProductSku: vi.fn().mockResolvedValue('DSL-PEN-SPD-00001'),
+      generateVariantSku: vi.fn().mockResolvedValue('DSL-PEN-SPD-00001-V01'),
+      syncSequenceIfHigher: vi.fn().mockResolvedValue(undefined),
+    };
+
+    service = new ProductsService(
+      mockPrisma as unknown as PrismaService,
+      mockSkuGenerator as any
+    );
   });
 
   describe('findAll', () => {

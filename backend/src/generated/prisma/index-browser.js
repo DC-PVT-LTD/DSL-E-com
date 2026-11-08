@@ -126,6 +126,7 @@ exports.Prisma.UserScalarFieldEnum = {
   phone: 'phone',
   name: 'name',
   role: 'role',
+  roleId: 'roleId',
   passwordHash: 'passwordHash',
   isActive: 'isActive',
   createdAt: 'createdAt',
@@ -175,6 +176,7 @@ exports.Prisma.CategoryScalarFieldEnum = {
   image: 'image',
   featured: 'featured',
   displayOrder: 'displayOrder',
+  parentId: 'parentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -200,6 +202,7 @@ exports.Prisma.ProductScalarFieldEnum = {
   description: 'description',
   shortDescription: 'shortDescription',
   categoryId: 'categoryId',
+  subcategoryId: 'subcategoryId',
   brandId: 'brandId',
   priceCents: 'priceCents',
   compareAtPriceCents: 'compareAtPriceCents',
@@ -288,6 +291,7 @@ exports.Prisma.OrderScalarFieldEnum = {
   trackingNumber: 'trackingNumber',
   estimatedDeliveryDate: 'estimatedDeliveryDate',
   promotionId: 'promotionId',
+  promoCode: 'promoCode',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   trackingOtpHash: 'trackingOtpHash',
@@ -429,20 +433,66 @@ exports.Prisma.PaymentAttemptScalarFieldEnum = {
 
 exports.Prisma.PromotionScalarFieldEnum = {
   id: 'id',
-  code: 'code',
+  name: 'name',
   title: 'title',
+  code: 'code',
   description: 'description',
+  promotionType: 'promotionType',
   discountType: 'discountType',
   discountValue: 'discountValue',
-  minOrderAmountCents: 'minOrderAmountCents',
+  maximumDiscountAmount: 'maximumDiscountAmount',
   maxDiscountCents: 'maxDiscountCents',
+  minimumOrderAmount: 'minimumOrderAmount',
+  minOrderAmountCents: 'minOrderAmountCents',
+  status: 'status',
   startDate: 'startDate',
   endDate: 'endDate',
+  priority: 'priority',
+  isStackableWithSchoolPacks: 'isStackableWithSchoolPacks',
   isActive: 'isActive',
   usageLimit: 'usageLimit',
   usageCount: 'usageCount',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PromotionCodeScalarFieldEnum = {
+  id: 'id',
+  promotionId: 'promotionId',
+  code: 'code',
+  isActive: 'isActive',
+  maximumTotalUsage: 'maximumTotalUsage',
+  maximumUsagePerCustomer: 'maximumUsagePerCustomer',
+  totalUsage: 'totalUsage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PromotionProductScalarFieldEnum = {
+  id: 'id',
+  promotionId: 'promotionId',
+  productId: 'productId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PromotionCategoryScalarFieldEnum = {
+  id: 'id',
+  promotionId: 'promotionId',
+  categoryId: 'categoryId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PromotionRedemptionScalarFieldEnum = {
+  id: 'id',
+  promotionId: 'promotionId',
+  promotionCodeId: 'promotionCodeId',
+  customerId: 'customerId',
+  customerEmail: 'customerEmail',
+  orderId: 'orderId',
+  discountAmount: 'discountAmount',
+  redeemedAt: 'redeemedAt'
 };
 
 exports.Prisma.UploadedDocumentScalarFieldEnum = {
@@ -652,6 +702,122 @@ exports.Prisma.NewsletterConsentEventScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.AdminInvitationScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  tokenHash: 'tokenHash',
+  name: 'name',
+  phone: 'phone',
+  role: 'role',
+  roleId: 'roleId',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  invitedById: 'invitedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RoleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  isSystem: 'isSystem',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PermissionScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  displayName: 'displayName',
+  description: 'description',
+  category: 'category',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RolePermissionScalarFieldEnum = {
+  roleId: 'roleId',
+  permissionId: 'permissionId',
+  assignedAt: 'assignedAt'
+};
+
+exports.Prisma.GlobalSkuScalarFieldEnum = {
+  sku: 'sku',
+  ownerType: 'ownerType',
+  productId: 'productId',
+  variantId: 'variantId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SkuSequenceScalarFieldEnum = {
+  prefix: 'prefix',
+  lastSequence: 'lastSequence',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProductImportPreviewScalarFieldEnum = {
+  id: 'id',
+  fileName: 'fileName',
+  fileSize: 'fileSize',
+  fileSha256: 'fileSha256',
+  previewChecksum: 'previewChecksum',
+  normalizedRows: 'normalizedRows',
+  summary: 'summary',
+  createdById: 'createdById',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ImportExecutionLeaseScalarFieldEnum = {
+  id: 'id',
+  batchId: 'batchId',
+  ownerId: 'ownerId',
+  status: 'status',
+  currentChunk: 'currentChunk',
+  heartbeatAt: 'heartbeatAt',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProductImportBatchScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  adminId: 'adminId',
+  previewId: 'previewId',
+  requestFingerprint: 'requestFingerprint',
+  stockMode: 'stockMode',
+  allowUpdates: 'allowUpdates',
+  status: 'status',
+  totalRows: 'totalRows',
+  totalChunks: 'totalChunks',
+  committedChunk: 'committedChunk',
+  processedRows: 'processedRows',
+  successfulRows: 'successfulRows',
+  failedRows: 'failedRows',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProductImportRowResultScalarFieldEnum = {
+  id: 'id',
+  batchId: 'batchId',
+  rowNumber: 'rowNumber',
+  sku: 'sku',
+  action: 'action',
+  status: 'status',
+  productId: 'productId',
+  variantId: 'variantId',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -751,9 +917,27 @@ exports.PaymentAttemptStatus = exports.$Enums.PaymentAttemptStatus = {
   EXPIRED: 'EXPIRED'
 };
 
+exports.PromotionType = exports.$Enums.PromotionType = {
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
+  FREE_DELIVERY: 'FREE_DELIVERY',
+  PRODUCT_SPECIFIC: 'PRODUCT_SPECIFIC',
+  CATEGORY_SPECIFIC: 'CATEGORY_SPECIFIC',
+  ORDER_LEVEL: 'ORDER_LEVEL'
+};
+
 exports.DiscountType = exports.$Enums.DiscountType = {
   PERCENTAGE: 'PERCENTAGE',
-  FIXED_AMOUNT: 'FIXED_AMOUNT'
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
+  FREE_DELIVERY: 'FREE_DELIVERY'
+};
+
+exports.PromotionStatus = exports.$Enums.PromotionStatus = {
+  DRAFT: 'DRAFT',
+  SCHEDULED: 'SCHEDULED',
+  ACTIVE: 'ACTIVE',
+  EXPIRED: 'EXPIRED',
+  DISABLED: 'DISABLED'
 };
 
 exports.DocumentStatus = exports.$Enums.DocumentStatus = {
@@ -809,6 +993,30 @@ exports.NewsletterConsentEventType = exports.$Enums.NewsletterConsentEventType =
   RESUBSCRIPTION_REQUESTED: 'RESUBSCRIPTION_REQUESTED'
 };
 
+exports.SkuOwnerType = exports.$Enums.SkuOwnerType = {
+  PRODUCT: 'PRODUCT',
+  VARIANT: 'VARIANT'
+};
+
+exports.ImportStockMode = exports.$Enums.ImportStockMode = {
+  SET_STOCK: 'SET_STOCK',
+  ADD_STOCK: 'ADD_STOCK'
+};
+
+exports.ImportBatchStatus = exports.$Enums.ImportBatchStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  PARTIALLY_FAILED: 'PARTIALLY_FAILED',
+  FAILED: 'FAILED'
+};
+
+exports.ImportRowStatus = exports.$Enums.ImportRowStatus = {
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Address: 'Address',
@@ -832,6 +1040,10 @@ exports.Prisma.ModelName = {
   StockReservationItem: 'StockReservationItem',
   PaymentAttempt: 'PaymentAttempt',
   Promotion: 'Promotion',
+  PromotionCode: 'PromotionCode',
+  PromotionProduct: 'PromotionProduct',
+  PromotionCategory: 'PromotionCategory',
+  PromotionRedemption: 'PromotionRedemption',
   UploadedDocument: 'UploadedDocument',
   ExtractedStationeryItem: 'ExtractedStationeryItem',
   WishlistItem: 'WishlistItem',
@@ -847,7 +1059,17 @@ exports.Prisma.ModelName = {
   BackInStockAlert: 'BackInStockAlert',
   NewsletterSubscriber: 'NewsletterSubscriber',
   NewsletterVerificationToken: 'NewsletterVerificationToken',
-  NewsletterConsentEvent: 'NewsletterConsentEvent'
+  NewsletterConsentEvent: 'NewsletterConsentEvent',
+  AdminInvitation: 'AdminInvitation',
+  Role: 'Role',
+  Permission: 'Permission',
+  RolePermission: 'RolePermission',
+  GlobalSku: 'GlobalSku',
+  SkuSequence: 'SkuSequence',
+  ProductImportPreview: 'ProductImportPreview',
+  ImportExecutionLease: 'ImportExecutionLease',
+  ProductImportBatch: 'ProductImportBatch',
+  ProductImportRowResult: 'ProductImportRowResult'
 };
 
 /**

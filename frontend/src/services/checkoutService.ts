@@ -68,6 +68,7 @@ export interface AuthoritativeTotals {
     code: string;
     discountType: string;
     discountValue: number;
+    isFreeDelivery?: boolean;
   };
 }
 

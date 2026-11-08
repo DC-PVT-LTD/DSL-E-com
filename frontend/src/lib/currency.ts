@@ -52,7 +52,7 @@ export function centsToRupees(cents: number): number {
  */
 export function calculateDiscountCents(
   subtotalCents: number,
-  discountType: 'percentage' | 'fixed',
+  discountType: 'percentage' | 'fixed' | 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FREE_DELIVERY' | string,
   discountValue: number,
   maxDiscountCents?: number
 ): number {
@@ -60,9 +60,13 @@ export function calculateDiscountCents(
     return 0;
   }
 
+  if (discountType === 'FREE_DELIVERY') {
+    return 0;
+  }
+
   let discountCents = 0;
 
-  if (discountType === 'percentage') {
+  if (discountType === 'percentage' || discountType === 'PERCENTAGE') {
     // Integer percentage calculation
     discountCents = Math.round((subtotalCents * discountValue) / 100);
   } else {

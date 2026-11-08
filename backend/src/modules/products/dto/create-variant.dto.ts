@@ -4,7 +4,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 const baseVariantSchema = z.object({
   name: z.string().min(2, 'Variant name must be at least 2 characters').optional(),
   title: z.string().min(2).optional(),
-  sku: z.string().min(2, 'SKU must be at least 2 characters'),
+  sku: z.string().min(2, 'SKU must be at least 2 characters').optional().or(z.literal('')),
   priceCents: z.number().int('priceCents must be an integer').min(0, 'priceCents must be non-negative'),
   compareAtPriceCents: z.number().int('compareAtPriceCents must be an integer').min(0).optional().nullable(),
   stockQuantity: z.number().int('stockQuantity must be an integer').min(0).optional(),
@@ -33,12 +33,12 @@ export class CreateVariantDto {
   })
   name: string;
 
-  @ApiProperty({
-    description: 'Unique Stock Keeping Unit (SKU) for this variant',
-    example: 'ATL-CR-120-SL-BL',
+  @ApiPropertyOptional({
+    description: 'Unique Stock Keeping Unit (SKU) for this variant - Auto-generated if omitted',
+    example: 'DSL-PEN-SPD-00001-V01',
     minLength: 2,
   })
-  sku: string;
+  sku?: string;
 
   @ApiProperty({
     description: 'Selling price in integer cents (e.g. 7500 = Rs. 75.00)',

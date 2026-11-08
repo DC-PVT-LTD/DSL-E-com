@@ -11,7 +11,13 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  BadRequestException,
+  Res,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { Response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -20,8 +26,15 @@ import {
   ApiBody,
   ApiBearerAuth,
   ApiCookieAuth,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
+import { ProductImportService } from './product-import.service';
+import {
+  ImportPreviewRow,
+  ExecuteImportDto,
+  executeImportSchema,
+} from './dto/product-import.dto';
 import { productQuerySchema, ProductQueryDto } from './dto/product-query.dto';
 import {
   createProductSchema,
@@ -39,6 +52,8 @@ import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { AdminAuthGuard } from '../../common/guards/admin-auth.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser, AuthenticatedUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../../generated/prisma';
@@ -48,7 +63,9 @@ import { createApiResponse } from '../../common/interfaces/api-response.interfac
 export class ProductsController {
   constructor(
     @Inject(ProductsService)
-    private readonly productsService: ProductsService
+    private readonly productsService: ProductsService,
+    @Inject(ProductImportService)
+    private readonly productImportService: ProductImportService
   ) {}
 
   @ApiTags('Products')
@@ -98,6 +115,252 @@ export class ProductsController {
   }
 
   @ApiTags('Products')
+  @ApiTags('Admin API', 'Products', 'SKU')
+  @Get('generate-sku')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Generate an automatic product SKU preview',
+    description: 'Generates the next sequential unique SKU for a given category and brand.',
+  })
+  async generateProductSku(
+    @Query('categoryId') categoryId: string,
+    @Query('brandId') brandId: string,
+  ) {
+    if (!categoryId || !brandId) {
+      throw new BadRequestException('Both categoryId and brandId are required');
+    }
+    const sku = await this.productsService.previewProductSku(categoryId, brandId);
+    return createApiResponse({ sku }, 'Product SKU preview generated successfully');
+  }
+
+  @ApiTags('Admin API', 'Products', 'Import')
+  @Get('import/template/excel')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.view')
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Download product import Excel template',
+    description:
+      'Generates and streams a standardized Excel (.xlsx) spreadsheet with column headers, sample data, and field instructions.',
+  })
+  async downloadExcelTemplate(@Res() res: Response) {
+    const buffer = await this.productImportService.generateTemplate('xlsx');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="dsl-product-import-template.xlsx"'
+    );
+    res.send(buffer);
+  }
+
+  @ApiTags('Admin API', 'Products', 'Import')
+  @Get('import/template/csv')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.view')
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Download product import CSV template',
+    description:
+      'Generates and streams a standardized CSV (.csv) template with column headers and sample data.',
+  })
+  async downloadCsvTemplate(@Res() res: Response) {
+    const buffer = await this.productImportService.generateTemplate('csv');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="dsl-product-import-template.csv"'
+    );
+    res.send(buffer);
+  }
+
+  @ApiTags('Admin API', 'Products', 'Import')
+  @Post('import/preview')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.view')
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Preview and validate Excel/CSV product import',
+    description:
+      'Parses and validates product rows against database categories, brands, variants, and GlobalSku uniqueness without modifying database.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Excel (.xlsx, .xls) or CSV (.csv) file up to 10MB',
+        },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    })
+  )
+  async previewImport(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() actor?: AuthenticatedUser
+  ) {
+    if (!file) {
+      throw new BadRequestException('Please provide a file to import (.xlsx, .xls, .csv).');
+    }
+    const result = await this.productImportService.parseAndValidate(file, actor);
+    return createApiResponse(result, 'Product import file parsed and validated successfully.');
+  }
+
+  @ApiTags('Admin API', 'Products', 'Import')
+  @Post('import/execute')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.import')
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Execute validated product import batch',
+    description:
+      'Atomically executes an import preview in 50-row chunks with idempotency, lease locking, stock adjustment, and GlobalSku registry synchronization.',
+  })
+  async executeImport(
+    @Body(createZodPipe(executeImportSchema)) dto: ExecuteImportDto,
+    @CurrentUser() actor: AuthenticatedUser
+  ) {
+    const result = await this.productImportService.executeImport(actor, dto);
+    return createApiResponse(result, 'Product import execution completed.');
+  }
+
+  @ApiTags('Admin API', 'Products', 'Import')
+  @Get('import/history')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.view')
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'List product import execution history',
+    description:
+      'Retrieves a paginated list of previous product import batches with progress and status.',
+  })
+  async getImportHistory(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+    @CurrentUser() actor: AuthenticatedUser
+  ) {
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 20;
+    const result = await this.productImportService.getImportHistory(actor, {
+      page: pageNum,
+      limit: limitNum,
+    });
+    return createApiResponse(result);
+  }
+
+  @ApiTags('Admin API', 'Products', 'Import')
+  @Get('import/batch/:batchId')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.view')
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Get import batch status and row results',
+    description: 'Retrieves status, progress counters, and row results for a specific import batch.',
+  })
+  async getBatchStatus(
+    @Param('batchId') batchId: string,
+    @CurrentUser() actor: AuthenticatedUser
+  ) {
+    const result = await this.productImportService.getBatchStatus(batchId, actor);
+    return createApiResponse(result);
+  }
+
+  @ApiTags('Admin API', 'Products', 'Import')
+  @Get('import/batch/:batchId/error-report')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.view')
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Download error report for an import batch',
+    description:
+      'Streams a CSV or Excel error report containing all failed rows for the specified batch.',
+  })
+  async downloadBatchErrorReport(
+    @Param('batchId') batchId: string,
+    @Query('format') format: 'csv' | 'xlsx' = 'csv',
+    @CurrentUser() actor: AuthenticatedUser,
+    @Res() res: Response
+  ) {
+    const buffer = await this.productImportService.getBatchErrorReport(
+      batchId,
+      actor,
+      format === 'xlsx' ? 'xlsx' : 'csv'
+    );
+    const contentType =
+      format === 'xlsx'
+        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        : 'text/csv';
+    const ext = format === 'xlsx' ? 'xlsx' : 'csv';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="batch-${batchId}-errors.${ext}"`
+    );
+    res.send(buffer);
+  }
+
+  @ApiTags('Admin API', 'Products', 'Import')
+  @Post('import/error-report')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.view')
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Download error report for invalid import rows',
+    description:
+      'Generates a downloadable CSV or Excel report highlighting failed rows with exact validation error explanations.',
+  })
+  async downloadErrorReport(
+    @Body('rows') rows: ImportPreviewRow[],
+    @Query('format') format: 'csv' | 'xlsx' = 'csv',
+    @Res() res: Response
+  ) {
+    if (!rows || !Array.isArray(rows)) {
+      throw new BadRequestException('Invalid payload: "rows" array is required.');
+    }
+    const buffer = await this.productImportService.generateErrorReport(
+      rows,
+      format === 'xlsx' ? 'xlsx' : 'csv'
+    );
+    if (format === 'xlsx') {
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      );
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="dsl-import-validation-report.xlsx"'
+      );
+    } else {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="dsl-import-validation-report.csv"'
+      );
+    }
+    res.send(buffer);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get product by ID',
@@ -310,6 +573,25 @@ export class ProductsController {
   async getVariants(@Param('productId') productId: string) {
     const variants = await this.productsService.findVariants(productId);
     return createApiResponse(variants);
+  }
+
+  @ApiTags('Admin API', 'Variants', 'SKU')
+  @Get(':productId/variants/generate-sku')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @ApiParam({ name: 'productId', description: 'Parent product ID' })
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Generate an automatic variant SKU preview',
+    description: 'Generates the next sequential or color-coded unique variant SKU.',
+  })
+  async generateVariantSku(
+    @Param('productId') productId: string,
+    @Query('color') color?: string,
+  ) {
+    const sku = await this.productsService.generateVariantSku(productId, color);
+    return createApiResponse({ sku }, 'Variant SKU generated successfully');
   }
 
   @ApiTags('Products', 'Variants')

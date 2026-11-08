@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   RotateCcw,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { categoryService } from '@/services/categoryService';
@@ -125,6 +126,14 @@ export default function AdminProductsPage() {
             <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
+          <Link
+            href="/admin/products/import"
+            className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-colors"
+            title="Import products from Excel (.xlsx) or CSV (.csv)"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
+            <span>Import Excel/CSV</span>
+          </Link>
           <Link
             href="/admin/products/new"
             className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-colors"

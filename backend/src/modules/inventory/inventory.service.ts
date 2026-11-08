@@ -72,191 +72,7 @@ export class InventoryService {
     actor: { id: string; email?: string; name?: string }
   ): Promise<StockAdjustmentResult> {
     const result = await this.prisma.$transaction(async (tx) => {
-      // 1. Lock and fetch parent Product with pessimistic row lock
-      const lockedProducts = await tx.$queryRaw<
-        Array<{
-          id: string;
-          name: string;
-          sku: string;
-          stockQuantity: number;
-          lowStockThreshold: number;
-          isActive: boolean;
-        }>
-      >`
-        SELECT id, name, sku, "stockQuantity", "lowStockThreshold", "isActive"
-        FROM "Product"
-        WHERE id = ${dto.productId}
-        FOR UPDATE
-      `;
-
-      if (!lockedProducts || lockedProducts.length === 0) {
-        throw new NotFoundException(`Product with ID "${dto.productId}" not found`);
-      }
-      const product = lockedProducts[0];
-
-      // 2. If variant specified, lock and fetch ProductVariant
-      let variant: {
-        id: string;
-        productId: string;
-        name: string;
-        sku: string;
-        stockQuantity: number;
-        isActive: boolean;
-      } | null = null;
-
-      if (dto.variantId) {
-        const lockedVariants = await tx.$queryRaw<
-          Array<{
-            id: string;
-            productId: string;
-            name: string;
-            sku: string;
-            stockQuantity: number;
-            isActive: boolean;
-          }>
-        >`
-          SELECT id, "productId", name, sku, "stockQuantity", "isActive"
-          FROM "ProductVariant"
-          WHERE id = ${dto.variantId}
-          FOR UPDATE
-        `;
-
-        if (!lockedVariants || lockedVariants.length === 0) {
-          throw new NotFoundException(`Product variant with ID "${dto.variantId}" not found`);
-        }
-
-        variant = lockedVariants[0];
-        if (variant.productId !== dto.productId) {
-          throw new BadRequestException(
-            `Variant "${dto.variantId}" does not belong to product "${dto.productId}"`
-          );
-        }
-      }
-
-      // 3. Determine base previous quantity & calculate signed delta
-      const previousQuantity = variant ? variant.stockQuantity : product.stockQuantity;
-
-      let changeAmount: number;
-      if (dto.delta !== undefined) {
-        changeAmount = dto.delta;
-      } else if (dto.targetQuantity !== undefined) {
-        changeAmount = dto.targetQuantity - previousQuantity;
-      } else {
-        throw new BadRequestException('Either delta or targetQuantity must be provided');
-      }
-
-      if (changeAmount === 0) {
-        throw new BadRequestException(
-          'Target quantity matches current stock; adjustment delta cannot be 0'
-        );
-      }
-
-      const newQuantity = previousQuantity + changeAmount;
-      if (newQuantity < 0) {
-        throw new BadRequestException(
-          `Stock adjustment would result in negative stock: current ${previousQuantity}, requested change ${changeAmount}`
-        );
-      }
-
-      // Enforce fundamental invariant: Physical Stock >= Active Reserved Stock
-      const activeReservations = tx.stockReservationItem
-        ? await tx.stockReservationItem.findMany({
-            where: {
-              productId: dto.productId,
-              ...(dto.variantId ? { variantId: dto.variantId } : {}),
-              reservation: {
-                status: { in: ['ACTIVE', 'PAYMENT_PENDING'] },
-                expiresAt: { gt: new Date() },
-              },
-            },
-            select: { quantity: true },
-          })
-        : [];
-      const reservedStock = activeReservations.reduce((sum, item) => sum + item.quantity, 0);
-
-      if (newQuantity < reservedStock) {
-        throw new BadRequestException(
-          `Cannot reduce physical stock to ${newQuantity}: ${reservedStock} units are currently reserved by customer checkout sessions. Physical stock cannot fall below active reservations.`
-        );
-      }
-
-      // 4. Update stock atomically
-      let updatedVariant: {
-        id: string;
-        name: string;
-        sku: string;
-        stockQuantity: number;
-      } | null = null;
-
-      if (variant) {
-        updatedVariant = await tx.productVariant.update({
-          where: { id: variant.id },
-          data: { stockQuantity: { increment: changeAmount } },
-          select: { id: true, name: true, sku: true, stockQuantity: true },
-        });
-
-        // Keep parent product stock in lockstep with variant changes to represent aggregate available stock
-        const updatedProduct = await tx.product.update({
-          where: { id: product.id },
-          data: { stockQuantity: { increment: changeAmount } },
-          select: { id: true, name: true, sku: true, stockQuantity: true, lowStockThreshold: true },
-        });
-
-        const movement = await tx.inventoryMovement.create({
-          data: {
-            productId: dto.productId,
-            variantId: dto.variantId || null,
-            previousQuantity,
-            newQuantity,
-            changeAmount,
-            reason: dto.reason,
-            note: dto.note || null,
-            performedById: actor.id,
-          },
-        });
-
-        this.logger.log(
-          `Stock adjusted for variant "${variant.sku}" of product "${product.sku}": ` +
-          `previous=${previousQuantity}, delta=${changeAmount}, new=${newQuantity}, by=${actor.id}`
-        );
-
-        return {
-          movement,
-          product: updatedProduct,
-          variant: updatedVariant,
-        };
-      }
-
-      // Standalone product update
-      const updatedProduct = await tx.product.update({
-        where: { id: product.id },
-        data: { stockQuantity: { increment: changeAmount } },
-        select: { id: true, name: true, sku: true, stockQuantity: true, lowStockThreshold: true },
-      });
-
-      const movement = await tx.inventoryMovement.create({
-        data: {
-          productId: dto.productId,
-          variantId: null,
-          previousQuantity,
-          newQuantity,
-          changeAmount,
-          reason: dto.reason,
-          note: dto.note || null,
-          performedById: actor.id,
-        },
-      });
-
-      this.logger.log(
-        `Stock adjusted for product "${product.sku}": ` +
-        `previous=${previousQuantity}, delta=${changeAmount}, new=${newQuantity}, by=${actor.id}`
-      );
-
-      return {
-        movement,
-        product: updatedProduct,
-        variant: null,
-      };
+      return this.adjustStockWithTx(tx, dto, actor);
     });
 
     // Invariant: broadcast committed update strictly after transaction commits
@@ -310,6 +126,202 @@ export class InventoryService {
     }
 
     return result;
+  }
+
+  /**
+   * Transaction-safe stock adjustment callable within an overarching interactive chunk transaction.
+   * Enforces pessimistic locking, reservation checks, variant/parent aggregate sync, and movement tracking.
+   */
+  async adjustStockWithTx(
+    tx: Prisma.TransactionClient,
+    dto: AdjustInventoryDto,
+    actor: { id: string; email?: string; name?: string }
+  ): Promise<StockAdjustmentResult> {
+    // 1. Lock and fetch parent Product with pessimistic row lock
+    const lockedProducts = await tx.$queryRaw<
+      Array<{
+        id: string;
+        name: string;
+        sku: string;
+        stockQuantity: number;
+        lowStockThreshold: number;
+        isActive: boolean;
+      }>
+    >`
+      SELECT id, name, sku, "stockQuantity", "lowStockThreshold", "isActive"
+      FROM "Product"
+      WHERE id = ${dto.productId}
+      FOR UPDATE
+    `;
+
+    if (!lockedProducts || lockedProducts.length === 0) {
+      throw new NotFoundException(`Product with ID "${dto.productId}" not found`);
+    }
+    const product = lockedProducts[0];
+
+    // 2. If variant specified, lock and fetch ProductVariant
+    let variant: {
+      id: string;
+      productId: string;
+      name: string;
+      sku: string;
+      stockQuantity: number;
+      isActive: boolean;
+    } | null = null;
+
+    if (dto.variantId) {
+      const lockedVariants = await tx.$queryRaw<
+        Array<{
+          id: string;
+          productId: string;
+          name: string;
+          sku: string;
+          stockQuantity: number;
+          isActive: boolean;
+        }>
+      >`
+        SELECT id, "productId", name, sku, "stockQuantity", "isActive"
+        FROM "ProductVariant"
+        WHERE id = ${dto.variantId}
+        FOR UPDATE
+      `;
+
+      if (!lockedVariants || lockedVariants.length === 0) {
+        throw new NotFoundException(`Product variant with ID "${dto.variantId}" not found`);
+      }
+
+      variant = lockedVariants[0];
+      if (variant.productId !== dto.productId) {
+        throw new BadRequestException(
+          `Variant "${dto.variantId}" does not belong to product "${dto.productId}"`
+        );
+      }
+    }
+
+    // 3. Determine base previous quantity & calculate signed delta
+    const previousQuantity = variant ? variant.stockQuantity : product.stockQuantity;
+
+    let changeAmount: number;
+    if (dto.delta !== undefined) {
+      changeAmount = dto.delta;
+    } else if (dto.targetQuantity !== undefined) {
+      changeAmount = dto.targetQuantity - previousQuantity;
+    } else {
+      throw new BadRequestException('Either delta or targetQuantity must be provided');
+    }
+
+    if (changeAmount === 0) {
+      throw new BadRequestException(
+        'Target quantity matches current stock; adjustment delta cannot be 0'
+      );
+    }
+
+    const newQuantity = previousQuantity + changeAmount;
+    if (newQuantity < 0) {
+      throw new BadRequestException(
+        `Stock adjustment would result in negative stock: current ${previousQuantity}, requested change ${changeAmount}`
+      );
+    }
+
+    // Enforce fundamental invariant: Physical Stock >= Active Reserved Stock
+    const activeReservations = tx.stockReservationItem
+      ? await tx.stockReservationItem.findMany({
+          where: {
+            productId: dto.productId,
+            ...(dto.variantId ? { variantId: dto.variantId } : {}),
+            reservation: {
+              status: { in: ['ACTIVE', 'PAYMENT_PENDING'] },
+              expiresAt: { gt: new Date() },
+            },
+          },
+          select: { quantity: true },
+        })
+      : [];
+    const reservedStock = activeReservations.reduce((sum, item) => sum + item.quantity, 0);
+
+    if (newQuantity < reservedStock) {
+      throw new BadRequestException(
+        `Cannot reduce physical stock to ${newQuantity}: ${reservedStock} units are currently reserved by customer checkout sessions. Physical stock cannot fall below active reservations.`
+      );
+    }
+
+    // 4. Update stock atomically
+    let updatedVariant: {
+      id: string;
+      name: string;
+      sku: string;
+      stockQuantity: number;
+    } | null = null;
+
+    if (variant) {
+      updatedVariant = await tx.productVariant.update({
+        where: { id: variant.id },
+        data: { stockQuantity: { increment: changeAmount } },
+        select: { id: true, name: true, sku: true, stockQuantity: true },
+      });
+
+      // Keep parent product stock in lockstep with variant changes to represent aggregate available stock
+      const updatedProduct = await tx.product.update({
+        where: { id: product.id },
+        data: { stockQuantity: { increment: changeAmount } },
+        select: { id: true, name: true, sku: true, stockQuantity: true, lowStockThreshold: true },
+      });
+
+      const movement = await tx.inventoryMovement.create({
+        data: {
+          productId: dto.productId,
+          variantId: dto.variantId || null,
+          previousQuantity,
+          newQuantity,
+          changeAmount,
+          reason: dto.reason,
+          note: dto.note || null,
+          performedById: actor.id,
+        },
+      });
+
+      this.logger.log(
+        `Stock adjusted for variant "${variant.sku}" of product "${product.sku}": ` +
+        `previous=${previousQuantity}, delta=${changeAmount}, new=${newQuantity}, by=${actor.id}`
+      );
+
+      return {
+        movement,
+        product: updatedProduct,
+        variant: updatedVariant,
+      };
+    }
+
+    // Standalone product update
+    const updatedProduct = await tx.product.update({
+      where: { id: product.id },
+      data: { stockQuantity: { increment: changeAmount } },
+      select: { id: true, name: true, sku: true, stockQuantity: true, lowStockThreshold: true },
+    });
+
+    const movement = await tx.inventoryMovement.create({
+      data: {
+        productId: dto.productId,
+        variantId: null,
+        previousQuantity,
+        newQuantity,
+        changeAmount,
+        reason: dto.reason,
+        note: dto.note || null,
+        performedById: actor.id,
+      },
+    });
+
+    this.logger.log(
+      `Stock adjusted for product "${product.sku}": ` +
+      `previous=${previousQuantity}, delta=${changeAmount}, new=${newQuantity}, by=${actor.id}`
+    );
+
+    return {
+      movement,
+      product: updatedProduct,
+      variant: null,
+    };
   }
 
   /**

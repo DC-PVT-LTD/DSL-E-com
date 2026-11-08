@@ -11,6 +11,7 @@ import {
   Boxes,
   ShoppingCart,
   Users,
+  ShieldCheck,
   GraduationCap,
   Sparkles,
   Upload,
@@ -22,6 +23,7 @@ import {
   History,
   Store,
   LogOut,
+  KeyRound,
 } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { useUserStore } from '@/services/userStore';
@@ -47,6 +49,8 @@ export const AdminSidebar: React.FC = () => {
         { href: '/admin/inventory', label: 'Inventory & Stock', icon: Boxes },
         { href: '/admin/orders', label: 'Customer Orders', icon: ShoppingCart },
         { href: '/admin/customers', label: 'Customers', icon: Users },
+        { href: '/admin/admins', label: 'Admin Accounts', icon: ShieldCheck },
+        { href: '/admin/roles', label: 'Roles & Permissions', icon: KeyRound },
       ],
     },
     {

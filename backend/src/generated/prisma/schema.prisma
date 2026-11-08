@@ -50,6 +50,24 @@ enum PaymentMethod {
 enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
+  FREE_DELIVERY
+}
+
+enum PromotionType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_DELIVERY
+  PRODUCT_SPECIFIC
+  CATEGORY_SPECIFIC
+  ORDER_LEVEL
+}
+
+enum PromotionStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  EXPIRED
+  DISABLED
 }
 
 enum InventoryChangeReason {
@@ -126,6 +144,8 @@ model User {
   phone        String?
   name         String
   role         UserRole @default(CUSTOMER)
+  roleId       String?
+  assignedRole Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
   passwordHash String?
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
@@ -157,11 +177,16 @@ model User {
   cart                 Cart?
   reservations         StockReservation[]
   backInStockAlerts    BackInStockAlert[]
-  createdBanners       HomepageBanner[]      @relation("BannerCreatedBy")
-  updatedBanners       HomepageBanner[]      @relation("BannerUpdatedBy")
+  createdBanners       HomepageBanner[]       @relation("BannerCreatedBy")
+  updatedBanners       HomepageBanner[]       @relation("BannerUpdatedBy")
+  promotionRedemptions PromotionRedemption[]
+  invitationsSent      AdminInvitation[]      @relation("InvitedAdmins")
+  importPreviews       ProductImportPreview[] @relation("ImportPreviewsCreated")
+  importBatches        ProductImportBatch[]   @relation("ImportBatchesCreated")
 
   @@index([email])
   @@index([phone])
+  @@index([roleId])
 }
 
 model Address {
@@ -208,21 +233,27 @@ model RefreshToken {
 // ------------------------------------------------------------------------------
 
 model Category {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   name         String
-  slug         String   @unique
+  slug         String     @unique
   description  String
   iconName     String?
   image        String?
-  featured     Boolean  @default(false)
-  displayOrder Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  featured     Boolean    @default(false)
+  displayOrder Int        @default(0)
+  parentId     String?
+  parent       Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children     Category[] @relation("CategoryHierarchy")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
-  products Product[]
+  products    Product[]           @relation("ProductCategory")
+  subProducts Product[]           @relation("ProductSubcategory")
+  promotions  PromotionCategory[]
 
   @@index([slug])
   @@index([featured])
+  @@index([parentId])
 }
 
 model Brand {
@@ -242,35 +273,38 @@ model Brand {
 }
 
 model Product {
-  id                  String   @id @default(cuid())
+  id                  String    @id @default(cuid())
   name                String
-  slug                String   @unique
-  sku                 String   @unique
-  barcode             String?  @unique
+  slug                String    @unique
+  sku                 String    @unique
+  barcode             String?   @unique
   description         String
   shortDescription    String
   categoryId          String
-  category            Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  category            Category  @relation("ProductCategory", fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategoryId       String?
+  subcategory         Category? @relation("ProductSubcategory", fields: [subcategoryId], references: [id], onDelete: Restrict)
   brandId             String
-  brand               Brand    @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  brand               Brand     @relation(fields: [brandId], references: [id], onDelete: Restrict)
   priceCents          Int // Price in integer cents (e.g. 45000 = Rs. 450.00)
   compareAtPriceCents Int?
   costPriceCents      Int?
-  stockQuantity       Int      @default(0)
-  lowStockThreshold   Int      @default(5)
-  isActive            Boolean  @default(true)
-  isFeatured          Boolean  @default(false)
-  isNewArrival        Boolean  @default(false)
-  isBestSeller        Boolean  @default(false)
-  images              String[] @default([])
-  tags                String[] @default([]) // Keywords including Sinhala/Tamil
-  rating              Float    @default(5.0)
-  reviewCount         Int      @default(0)
-  specifications      Json     @default("{}")
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  stockQuantity       Int       @default(0)
+  lowStockThreshold   Int       @default(5)
+  isActive            Boolean   @default(true)
+  isFeatured          Boolean   @default(false)
+  isNewArrival        Boolean   @default(false)
+  isBestSeller        Boolean   @default(false)
+  images              String[]  @default([])
+  tags                String[]  @default([]) // Keywords including Sinhala/Tamil
+  rating              Float     @default(5.0)
+  reviewCount         Int       @default(0)
+  specifications      Json      @default("{}")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   variants           ProductVariant[]
+  globalSku          GlobalSku?
   movements          InventoryMovement[]
   orderItems         OrderItem[]
   packItems          SchoolPackItem[]
@@ -280,10 +314,12 @@ model Product {
   cartItems          CartItem[]
   reservationItems   StockReservationItem[]
   backInStockAlerts  BackInStockAlert[]
+  promotions         PromotionProduct[]
 
   @@index([slug])
   @@index([sku])
   @@index([categoryId])
+  @@index([subcategoryId])
   @@index([brandId])
   @@index([isActive])
   @@index([priceCents])
@@ -304,6 +340,7 @@ model ProductVariant {
   updatedAt           DateTime @updatedAt
 
   orderItems       OrderItem[]
+  globalSku        GlobalSku?
   movements        InventoryMovement[]
   cartItems        CartItem[]
   reservationItems StockReservationItem[]
@@ -373,27 +410,29 @@ model SchoolPackItem {
 // ------------------------------------------------------------------------------
 
 model Order {
-  id                    String        @id @default(cuid())
-  orderNumber           String        @unique // e.g. "DSL-2026-4891"
+  id                    String                @id @default(cuid())
+  orderNumber           String                @unique // e.g. "DSL-2026-4891"
   userId                String?
-  user                  User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user                  User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
   customerName          String
   customerEmail         String
   customerPhone         String
   subtotalCents         Int
-  discountCents         Int           @default(0)
-  deliveryCents         Int           @default(0)
+  discountCents         Int                   @default(0)
+  deliveryCents         Int                   @default(0)
   totalCents            Int
   paymentMethod         PaymentMethod
-  paymentStatus         PaymentStatus @default(PENDING)
-  orderStatus           OrderStatus   @default(PENDING)
+  paymentStatus         PaymentStatus         @default(PENDING)
+  orderStatus           OrderStatus           @default(PENDING)
   notes                 String?
   trackingNumber        String?
   estimatedDeliveryDate DateTime?
   promotionId           String?
-  promotion             Promotion?    @relation(fields: [promotionId], references: [id], onDelete: SetNull)
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
+  promotion             Promotion?            @relation(fields: [promotionId], references: [id], onDelete: SetNull)
+  promoCode             String?
+  promotionRedemptions  PromotionRedemption[]
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
 
   addressSnapshot OrderAddressSnapshot?
   items           OrderItem[]
@@ -626,26 +665,107 @@ model PaymentAttempt {
 // ------------------------------------------------------------------------------
 
 model Promotion {
-  id                  String       @id @default(cuid())
-  code                String       @unique
-  title               String
-  description         String
-  discountType        DiscountType
-  discountValue       Int // Percentage (e.g. 10) or Fixed Rupees
-  minOrderAmountCents Int?
-  maxDiscountCents    Int?
-  startDate           DateTime
-  endDate             DateTime
-  isActive            Boolean      @default(true)
-  usageLimit          Int?
-  usageCount          Int          @default(0)
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
+  id                         String          @id @default(cuid())
+  name                       String          @default("")
+  title                      String?
+  code                       String?         @unique
+  description                String?
+  promotionType              PromotionType   @default(PERCENTAGE)
+  discountType               DiscountType    @default(PERCENTAGE)
+  discountValue              Int // Percentage (e.g. 10) or Fixed Rupees/Cents
+  maximumDiscountAmount      Int? // Maximum cap in cents
+  maxDiscountCents           Int? // Legacy alias in cents
+  minimumOrderAmount         Int? // Minimum order in cents
+  minOrderAmountCents        Int? // Legacy alias in cents
+  status                     PromotionStatus @default(ACTIVE)
+  startDate                  DateTime
+  endDate                    DateTime
+  priority                   Int             @default(0)
+  isStackableWithSchoolPacks Boolean         @default(false)
+  isActive                   Boolean         @default(true)
+  usageLimit                 Int?
+  usageCount                 Int             @default(0)
+  createdBy                  String?
+  updatedBy                  String?
+  createdAt                  DateTime        @default(now())
+  updatedAt                  DateTime        @updatedAt
 
-  orders Order[]
+  codes              PromotionCode[]
+  eligibleProducts   PromotionProduct[]
+  eligibleCategories PromotionCategory[]
+  redemptions        PromotionRedemption[]
+  orders             Order[]
 
   @@index([code])
   @@index([isActive])
+  @@index([status])
+  @@index([startDate, endDate])
+}
+
+model PromotionCode {
+  id                      String    @id @default(cuid())
+  promotionId             String
+  promotion               Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  code                    String    @unique
+  isActive                Boolean   @default(true)
+  maximumTotalUsage       Int?
+  maximumUsagePerCustomer Int?
+  totalUsage              Int       @default(0)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  redemptions PromotionRedemption[]
+
+  @@index([promotionId])
+  @@index([code])
+}
+
+model PromotionProduct {
+  id          String    @id @default(cuid())
+  promotionId String
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([promotionId, productId])
+  @@index([promotionId])
+  @@index([productId])
+}
+
+model PromotionCategory {
+  id          String    @id @default(cuid())
+  promotionId String
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([promotionId, categoryId])
+  @@index([promotionId])
+  @@index([categoryId])
+}
+
+model PromotionRedemption {
+  id              String         @id @default(cuid())
+  promotionId     String
+  promotion       Promotion      @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  promotionCodeId String?
+  promotionCode   PromotionCode? @relation(fields: [promotionCodeId], references: [id], onDelete: SetNull)
+  customerId      String?
+  customer        User?          @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerEmail   String?
+  orderId         String?
+  order           Order?         @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  discountAmount  Int // in cents
+  redeemedAt      DateTime       @default(now())
+
+  @@unique([orderId, promotionId])
+  @@index([promotionId])
+  @@index([promotionCodeId])
+  @@index([customerId])
+  @@index([customerEmail])
+  @@index([orderId])
 }
 
 // ------------------------------------------------------------------------------
@@ -971,4 +1091,207 @@ model NewsletterConsentEvent {
   @@index([eventType])
   @@index([createdAt])
   @@map("newsletter_consent_events")
+}
+
+// ------------------------------------------------------------------------------
+// ADMINISTRATOR INVITATIONS (Phase 2)
+// ------------------------------------------------------------------------------
+
+model AdminInvitation {
+  id           String    @id @default(cuid())
+  email        String
+  tokenHash    String    @unique
+  name         String
+  phone        String?
+  role         UserRole  @default(STAFF)
+  roleId       String?
+  roleRelation Role?     @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  expiresAt    DateTime
+  usedAt       DateTime?
+  invitedById  String
+  invitedBy    User      @relation("InvitedAdmins", fields: [invitedById], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([email])
+  @@index([tokenHash])
+  @@index([invitedById])
+  @@index([roleId])
+  @@map("admin_invitations")
+}
+
+// ------------------------------------------------------------------------------
+// ROLES & GRANULAR PERMISSIONS (Phase 3)
+// ------------------------------------------------------------------------------
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  isSystem    Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  permissions RolePermission[]
+  invitations AdminInvitation[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  displayName String
+  description String?
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles RolePermission[]
+
+  @@index([category])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  assignedAt   DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+enum SkuOwnerType {
+  PRODUCT
+  VARIANT
+}
+
+model GlobalSku {
+  sku       String          @id
+  ownerType SkuOwnerType
+  productId String?         @unique
+  product   Product?        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId String?         @unique
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+
+  @@index([productId])
+  @@index([variantId])
+}
+
+model SkuSequence {
+  prefix       String   @id
+  lastSequence Int      @default(0)
+  updatedAt    DateTime @updatedAt
+}
+
+// ------------------------------------------------------------------------------
+// PRODUCT BULK IMPORT EXECUTION (Phase 4 – Stage 4)
+// ------------------------------------------------------------------------------
+
+enum ImportStockMode {
+  SET_STOCK
+  ADD_STOCK
+}
+
+enum ImportBatchStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  PARTIALLY_FAILED
+  FAILED
+}
+
+enum ImportRowStatus {
+  SUCCESS
+  FAILED
+  SKIPPED
+}
+
+model ProductImportPreview {
+  id              String   @id @default(cuid())
+  fileName        String
+  fileSize        Int
+  fileSha256      String
+  previewChecksum String
+  normalizedRows  Json
+  summary         Json
+  createdById     String
+  createdBy       User     @relation("ImportPreviewsCreated", fields: [createdById], references: [id])
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+
+  batches ProductImportBatch[]
+
+  @@index([createdById])
+  @@index([expiresAt])
+}
+
+model ImportExecutionLease {
+  id           String   @id @default("GLOBAL_IMPORT_LEASE")
+  batchId      String?
+  ownerId      String?
+  status       String   @default("IDLE") // IDLE, ACTIVE
+  currentChunk Int      @default(0)
+  heartbeatAt  DateTime @default(now())
+  expiresAt    DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ProductImportBatch {
+  id                 String            @id @default(cuid())
+  idempotencyKey     String            @unique
+  adminId            String
+  previewId          String
+  requestFingerprint String
+  stockMode          ImportStockMode   @default(SET_STOCK)
+  allowUpdates       Boolean           @default(true)
+  status             ImportBatchStatus @default(PENDING)
+  totalRows          Int               @default(0)
+  totalChunks        Int               @default(0)
+  committedChunk     Int               @default(0)
+  processedRows      Int               @default(0)
+  successfulRows     Int               @default(0)
+  failedRows         Int               @default(0)
+  startedAt          DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  admin   User                     @relation("ImportBatchesCreated", fields: [adminId], references: [id])
+  preview ProductImportPreview     @relation(fields: [previewId], references: [id])
+  results ProductImportRowResult[]
+
+  @@index([adminId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ProductImportRowResult {
+  id           String          @id @default(cuid())
+  batchId      String
+  rowNumber    Int
+  sku          String?
+  action       String
+  status       ImportRowStatus
+  productId    String?
+  variantId    String?
+  errorCode    String?
+  errorMessage String?
+  createdAt    DateTime        @default(now())
+
+  batch ProductImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([batchId, rowNumber])
+  @@index([batchId, status])
 }

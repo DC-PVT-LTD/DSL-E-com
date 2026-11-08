@@ -25,6 +25,7 @@ import {
   PaymentMethod,
   InventoryChangeReason,
 } from '../../generated/prisma';
+import { PromotionsService } from '../promotions/promotions.service';
 
 export interface SchoolPackSnapshotItem {
   packId: string;
@@ -59,8 +60,13 @@ export interface AuthoritativeTotals {
   isFreeDelivery: boolean;
   voucherApplied?: {
     code: string;
+    promotionId?: string;
+    promotionCodeId?: string | null;
+    promotionName?: string;
     discountType: string;
     discountValue: number;
+    isFreeDelivery?: boolean;
+    isStackableWithSchoolPacks?: boolean;
   };
   schoolPacksSnapshot?: SchoolPackSnapshotItem[];
 }
@@ -73,7 +79,8 @@ export class CheckoutService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(InventoryGateway) private readonly inventoryGateway: InventoryGateway,
     @Inject(CartService) private readonly cartService: CartService,
-    @Optional() @Inject(NotificationsService) private readonly notificationsService?: NotificationsService
+    @Optional() @Inject(NotificationsService) private readonly notificationsService?: NotificationsService,
+    @Optional() @Inject(PromotionsService) private readonly promotionsService?: PromotionsService
   ) {}
 
   /**
@@ -84,7 +91,9 @@ export class CheckoutService {
   async calculateAuthoritativeTotals(
     reservationItems: Array<{ productId: string; variantId: string | null; quantity: number }>,
     voucherCode?: string | null,
-    packSelections?: Array<{ productId: string; variantId?: string | null; packId: string }> | null
+    packSelections?: Array<{ productId: string; variantId?: string | null; packId: string }> | null,
+    userId?: string | null,
+    customerEmail?: string | null
   ): Promise<AuthoritativeTotals> {
     // 1. Fetch live product prices from database & build item detail map
     let subtotalCents = 0;
@@ -214,33 +223,75 @@ export class CheckoutService {
       }
     }
 
-    // 3. Voucher calculation applied on subtotal after bundle discounts
-    const subtotalEligibleForVoucher = Math.max(0, subtotalCents - totalBundleDiscountCents);
+    // 3. Voucher calculation applied using authoritative PromotionsService
     let voucherDiscountCents = 0;
     let voucherApplied: AuthoritativeTotals['voucherApplied'] | undefined = undefined;
+    let isPromoFreeDelivery = false;
 
-    if (voucherCode && subtotalEligibleForVoucher > 0) {
-      const promo = await this.prisma.promotion.findUnique({
-        where: { code: voucherCode.toUpperCase() },
-      });
+    if (voucherCode && voucherCode.trim()) {
+      if (this.promotionsService) {
+        try {
+          const promoResult = await this.promotionsService.calculateAuthoritativeDiscount(
+            voucherCode,
+            reservationItems,
+            packSelections,
+            userId,
+            customerEmail
+          );
 
-      if (promo && promo.isActive && promo.startDate <= new Date() && promo.endDate >= new Date()) {
-        if (!promo.minOrderAmountCents || subtotalEligibleForVoucher >= promo.minOrderAmountCents) {
-          if (promo.discountType === 'PERCENTAGE') {
-            voucherDiscountCents = Math.round((subtotalEligibleForVoucher * promo.discountValue) / 100);
-          } else {
-            voucherDiscountCents = promo.discountValue * 100;
+          if (promoResult.valid) {
+            voucherDiscountCents = promoResult.discountAmountCents;
+            isPromoFreeDelivery = promoResult.isFreeDelivery;
+            voucherApplied = {
+              code: promoResult.code,
+              promotionId: promoResult.promotionId,
+              promotionCodeId: promoResult.promotionCodeId,
+              promotionName: promoResult.promotionName,
+              discountType: promoResult.discountType,
+              discountValue: promoResult.discountValue,
+              isFreeDelivery: promoResult.isFreeDelivery,
+              isStackableWithSchoolPacks: promoResult.isStackableWithSchoolPacks,
+            };
           }
+        } catch (err: any) {
+          this.logger.warn(`Voucher ${voucherCode} not applied during totals calculation: ${err.message}`);
+        }
+      } else {
+        // Fallback to direct DB query if promotionsService is not available
+        const subtotalEligibleForVoucher = Math.max(0, subtotalCents - totalBundleDiscountCents);
+        const promo = await this.prisma.promotion.findUnique({
+          where: { code: voucherCode.toUpperCase() },
+        });
 
-          if (promo.maxDiscountCents) {
-            voucherDiscountCents = Math.min(voucherDiscountCents, promo.maxDiscountCents);
+        if (promo && promo.isActive && promo.startDate <= new Date() && promo.endDate >= new Date()) {
+          const hasSchoolPacks = totalBundleDiscountCents > 0;
+          const isStackable = promo.isStackableWithSchoolPacks ?? (promo.isStackableWithSchoolPacks === undefined);
+          if (!hasSchoolPacks || isStackable) {
+            if (!promo.minOrderAmountCents || subtotalEligibleForVoucher >= promo.minOrderAmountCents) {
+              if (promo.discountType === 'PERCENTAGE') {
+                voucherDiscountCents = Math.round((subtotalEligibleForVoucher * promo.discountValue) / 100);
+              } else if (promo.discountType === 'FREE_DELIVERY' || promo.promotionType === 'FREE_DELIVERY') {
+                isPromoFreeDelivery = true;
+                voucherDiscountCents = 0;
+              } else {
+                voucherDiscountCents = promo.discountValue > 10000 ? promo.discountValue : promo.discountValue * 100;
+              }
+
+              const maxDiscount = promo.maximumDiscountAmount || promo.maxDiscountCents;
+              if (maxDiscount) {
+                voucherDiscountCents = Math.min(voucherDiscountCents, maxDiscount);
+              }
+
+              voucherApplied = {
+                code: promo.code || voucherCode.toUpperCase(),
+                promotionId: promo.id,
+                discountType: promo.discountType,
+                discountValue: promo.discountValue,
+                isFreeDelivery: isPromoFreeDelivery,
+                isStackableWithSchoolPacks: promo.isStackableWithSchoolPacks,
+              };
+            }
           }
-
-          voucherApplied = {
-            code: promo.code,
-            discountType: promo.discountType,
-            discountValue: promo.discountValue,
-          };
         }
       }
     }
@@ -256,7 +307,7 @@ export class CheckoutService {
     const flatDeliveryFeeCents = settings?.flatDeliveryFeeCents ?? 35000; // Rs. 350.00
     const freeDeliveryThresholdCents = settings?.freeDeliveryThresholdCents ?? 500000; // Rs. 5,000.00
 
-    const isFreeDelivery = netSubtotalCents >= freeDeliveryThresholdCents;
+    const isFreeDelivery = (netSubtotalCents >= freeDeliveryThresholdCents) || isPromoFreeDelivery;
     const deliveryCents = isFreeDelivery ? 0 : flatDeliveryFeeCents;
 
     const totalCents = Math.max(0, netSubtotalCents + deliveryCents);
@@ -323,7 +374,9 @@ export class CheckoutService {
     const totals = await this.calculateAuthoritativeTotals(
       reservation.items.map((i) => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity })),
       dto.voucherCode,
-      dto.packSelections
+      dto.packSelections,
+      userId,
+      dto.deliveryAddress?.email || null
     );
 
     const isExpired =
@@ -587,7 +640,9 @@ export class CheckoutService {
     const totals = await this.calculateAuthoritativeTotals(
       reservation.items.map((i) => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity })),
       dto.voucherCode,
-      packSelections
+      packSelections,
+      userId,
+      dto.deliveryAddress.email
     );
 
     // Collision-free unique order number generation
@@ -727,6 +782,8 @@ export class CheckoutService {
           paymentStatus: isPaid ? PaymentStatus.PAID : PaymentStatus.PENDING,
           orderStatus: OrderStatus.CONFIRMED,
           notes: orderNotes,
+          promotionId: totals.voucherApplied?.promotionId || null,
+          promoCode: totals.voucherApplied?.code || null,
           reservation: {
             connect: { id: reservation.id },
           },
@@ -787,6 +844,23 @@ export class CheckoutService {
           },
         },
       });
+
+      // Record promotion redemption inside the same transaction
+      if (
+        totals.voucherApplied?.promotionId &&
+        (totals.voucherDiscountCents > 0 || totals.voucherApplied.isFreeDelivery)
+      ) {
+        if (this.promotionsService) {
+          await this.promotionsService.recordRedemptionInsideTx(tx, {
+            promotionId: totals.voucherApplied.promotionId,
+            promotionCodeId: totals.voucherApplied.promotionCodeId,
+            orderId: order.id,
+            customerId: userId || null,
+            customerEmail: dto.deliveryAddress.email,
+            discountAmountCents: totals.voucherDiscountCents,
+          });
+        }
+      }
 
       return order;
     });

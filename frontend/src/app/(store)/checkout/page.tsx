@@ -38,6 +38,7 @@ export default function CheckoutPage() {
 
   // Cart & User Stores
   const items = useCartStore((state) => state.items);
+  const appliedDiscount = useCartStore((state) => state.appliedDiscount);
   const removePurchasedItems = useCartStore((state) => state.removePurchasedItems);
   const currentUser = useUserStore((state) => state.currentUser);
   const fetchCurrentUser = useUserStore((state) => state.fetchCurrentUser);
@@ -274,6 +275,7 @@ export default function CheckoutPage() {
         reservationId: reservation.reservationId,
         deliveryAddress: formData,
         paymentMethod: selectedPaymentMethod,
+        voucherCode: appliedDiscount?.code || null,
       });
 
       setAuthoritativeTotals(prePayResult.totals);
@@ -290,6 +292,7 @@ export default function CheckoutPage() {
         reservationId: reservation.reservationId,
         deliveryAddress: formData,
         paymentMethod: selectedPaymentMethod,
+        voucherCode: appliedDiscount?.code || null,
         idempotencyKey,
       });
 
@@ -763,25 +766,44 @@ export default function CheckoutPage() {
                 <span className="font-medium text-[#292525]">{formatLKR(displaySubtotalCents)}</span>
               </div>
 
-              {displayDiscountCents > 0 && (
-                <div className="flex justify-between text-[#0066CC] font-medium">
-                  <span>Savings &amp; Bundle Discount</span>
-                  <span>- {formatLKR(displayDiscountCents)}</span>
+              {/* School Pack bundle savings breakdown */}
+              {(authoritativeTotals?.bundleDiscountCents ?? 0) > 0 && (
+                <div className="flex justify-between text-emerald-700 font-medium">
+                  <span>School Pack Bundle Savings</span>
+                  <span>- {formatLKR(authoritativeTotals?.bundleDiscountCents || 0)}</span>
                 </div>
               )}
 
+              {/* Voucher promo discount breakdown */}
+              {(authoritativeTotals?.voucherDiscountCents ?? 0) > 0 && (
+                <div className="flex justify-between text-[#0066CC] font-medium">
+                  <span>
+                    Promo Discount ({authoritativeTotals?.voucherApplied?.code || appliedDiscount?.code})
+                  </span>
+                  <span>- {formatLKR(authoritativeTotals?.voucherDiscountCents || 0)}</span>
+                </div>
+              )}
+
+              {/* Delivery Fee line with free delivery breakdown */}
               <div className="flex justify-between text-[#292525]/70">
                 <span>Islandwide Delivery</span>
                 <span>
                   {displayDeliveryCents === 0 ? (
-                    <span className="text-emerald-700 font-bold">FREE</span>
+                    <span className="text-emerald-700 font-bold inline-flex items-center gap-1">
+                      FREE
+                      {(authoritativeTotals?.voucherApplied?.isFreeDelivery || authoritativeTotals?.voucherApplied?.discountType === 'FREE_DELIVERY') && (
+                        <span className="text-[10px] text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded-full">
+                          Coupon
+                        </span>
+                      )}
+                    </span>
                   ) : (
                     formatLKR(displayDeliveryCents)
                   )}
                 </span>
               </div>
 
-              {displaySubtotalCents < 500000 && (
+              {displaySubtotalCents < 500000 && !authoritativeTotals?.voucherApplied?.isFreeDelivery && authoritativeTotals?.voucherApplied?.discountType !== 'FREE_DELIVERY' && (
                 <p className="text-[10px] text-amber-700">
                   Tip: Add {formatLKR(500000 - displaySubtotalCents)} more for FREE islandwide delivery!
                 </p>

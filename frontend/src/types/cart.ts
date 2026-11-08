@@ -26,9 +26,13 @@ export interface CartItem {
 export interface AppliedDiscount {
   code: string;
   description: string;
-  discountType: 'percentage' | 'fixed';
+  discountType: 'percentage' | 'fixed' | 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FREE_DELIVERY';
   discountValue: number;
   discountAmountCents: number;
+  promotionId?: string;
+  promotionName?: string;
+  isFreeDelivery?: boolean;
+  isStackableWithSchoolPacks?: boolean;
 }
 
 export interface CartSummary {
@@ -38,6 +42,8 @@ export interface CartSummary {
   selectedItemCount: number; // Selected item quantity for checkout
   subtotalCents: number; // Calculated across selected items
   discountCents: number; // Calculated across selected items
+  bundleDiscountCents?: number; // Specific bundle / school pack savings
+  voucherDiscountCents?: number; // Specific promo voucher savings
   deliveryCents: number; // Calculated across selected items
   totalCents: number; // Calculated across selected items
   appliedDiscount?: AppliedDiscount;

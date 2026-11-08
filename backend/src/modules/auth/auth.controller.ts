@@ -8,6 +8,7 @@ import {
   Req,
   Res,
   Param,
+  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -44,6 +45,12 @@ import {
   UpdateAddressDto,
   VerifyEmailDto,
   ResendVerificationOtpDto,
+  adminLoginSchema,
+  AdminLoginDto,
+  acceptInvitationSchema,
+  AcceptInvitationDto,
+  verifyInvitationQuerySchema,
+  VerifyInvitationQueryDto,
 } from './dto/auth.dto';
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -517,5 +524,72 @@ export class AuthController {
   async getMyOrders(@CurrentUser('id') userId: string) {
     return this.authService.getMyOrders(userId);
   }
-}
 
+  @ApiTags('Admin Authentication')
+  @Post('admin/login')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Administrator login',
+    description: 'Authenticates administrator (ADMIN, MANAGER, STAFF), checks active status and lockout, sets secure httpOnly cookies.',
+  })
+  @ApiBody({ type: AdminLoginDto })
+  @ApiResponse({ status: 200, description: 'Administrator logged in successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid administrative email or password, or account deactivated/locked' })
+  @ApiResponse({ status: 403, description: 'Access denied: administrative privileges required' })
+  async adminLogin(
+    @Body(createZodPipe(adminLoginSchema)) dto: AdminLoginDto,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    return this.authService.adminLogin(dto, res);
+  }
+
+  @ApiTags('Admin Authentication')
+  @Post('admin/logout')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Administrator logout',
+    description: 'Revokes active refresh token session and clears authentication cookies.',
+  })
+  @ApiResponse({ status: 200, description: 'Administrator logged out successfully' })
+  async adminLogout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const rawRefreshToken = req.cookies?.['dsl_refresh_token'];
+    const user = req.user as AuthenticatedUser | undefined;
+    return this.authService.logout(user?.id, rawRefreshToken, res);
+  }
+
+  @ApiTags('Admin Authentication')
+  @Get('admin/invite/verify')
+  @ApiOperation({
+    summary: 'Verify administrator invitation token',
+    description: 'Validates raw invitation token against hashed database record and ensures it has not expired or been used.',
+  })
+  @ApiResponse({ status: 200, description: 'Invitation details returned' })
+  @ApiResponse({ status: 400, description: 'Invitation expired or already used' })
+  @ApiResponse({ status: 404, description: 'Invalid or unknown invitation token' })
+  async verifyAdminInvitation(
+    @Query(createZodPipe(verifyInvitationQuerySchema)) query: VerifyInvitationQueryDto
+  ) {
+    return this.authService.verifyInvitation(query.token);
+  }
+
+  @ApiTags('Admin Authentication')
+  @Post('admin/invite/accept')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Accept administrator invitation',
+    description: 'Sets password for invited administrator, marks invitation used, activates account, and creates authenticated session.',
+  })
+  @ApiBody({ type: AcceptInvitationDto })
+  @ApiResponse({ status: 200, description: 'Invitation accepted and administrator session initialized' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired invitation token' })
+  async acceptAdminInvitation(
+    @Body(createZodPipe(acceptInvitationSchema)) dto: AcceptInvitationDto,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    return this.authService.acceptInvitation(dto, res);
+  }
+}

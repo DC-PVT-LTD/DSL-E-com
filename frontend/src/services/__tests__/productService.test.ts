@@ -242,5 +242,76 @@ describe('productService', () => {
       expect(ok).toBe(true);
       expect(productService.getById('prod-api-1')).toBeUndefined();
     });
+
+    it('uploads and previews Excel/CSV product import without mutating data', async () => {
+      const mockResult = {
+        summary: {
+          totalRows: 2,
+          validRows: 2,
+          invalidRows: 0,
+          warningRows: 0,
+          duplicateRows: 0,
+          existingRows: 0,
+          newProducts: 2,
+          newVariants: 0,
+        },
+        rows: [
+          {
+            rowNumber: 2,
+            sku: 'DSL-TEST-001',
+            proposedSku: 'DSL-TEST-001',
+            name: 'Test Product 1',
+            categoryName: 'Writing Instruments',
+            brandName: 'Atlas',
+            sellingPrice: 60,
+            stockQuantity: 100,
+            status: 'VALID',
+            isExisting: false,
+            errors: [],
+            warnings: [],
+          },
+        ],
+        fileName: 'test.csv',
+        fileSizeBytes: 200,
+        parsedAt: '2026-11-08T10:00:00.000Z',
+      };
+
+      vi.spyOn(apiClient, 'post').mockResolvedValueOnce({
+        success: true,
+        data: mockResult,
+      } as any);
+
+      const file = new File(['dummy content'], 'test.csv', { type: 'text/csv' });
+      const preview = await productService.uploadImportPreview(file);
+
+      expect(preview.summary.totalRows).toBe(2);
+      expect(preview.summary.validRows).toBe(2);
+      expect(preview.rows[0].status).toBe('VALID');
+      expect(apiClient.post).toHaveBeenCalledWith('products/import/preview', expect.any(FormData));
+    });
+
+    it('downloads import template for excel and csv', async () => {
+      const mockBlob = new Blob(['sample-template-content'], { type: 'text/csv' });
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        blob: vi.fn().mockResolvedValueOnce(mockBlob),
+      } as any);
+
+      const blob = await productService.downloadImportTemplate('csv');
+      expect(blob).toBeDefined();
+      expect(fetchSpy).toHaveBeenCalled();
+    });
+
+    it('downloads error report for invalid preview rows', async () => {
+      const mockBlob = new Blob(['error-report-content'], { type: 'text/csv' });
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        blob: vi.fn().mockResolvedValueOnce(mockBlob),
+      } as any);
+
+      const blob = await productService.downloadErrorReport([], 'csv');
+      expect(blob).toBeDefined();
+      expect(fetchSpy).toHaveBeenCalled();
+    });
   });
 });

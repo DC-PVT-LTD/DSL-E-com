@@ -4,15 +4,20 @@ import { createPaginationSchema } from '../../../common/pagination/pagination.ut
 
 export const categorySortFields = ['displayOrder', 'name', 'createdAt'] as const;
 
+const booleanQueryParam = z
+  .union([z.string(), z.boolean()])
+  .optional()
+  .transform((val) => {
+    if (val === undefined) return undefined;
+    if (typeof val === 'boolean') return val;
+    return val === 'true' || val === '1';
+  });
+
 export const categoryQuerySchema = createPaginationSchema(categorySortFields, 'displayOrder').extend({
-  featured: z
-    .union([z.string(), z.boolean()])
-    .optional()
-    .transform((val) => {
-      if (val === undefined) return undefined;
-      if (typeof val === 'boolean') return val;
-      return val === 'true' || val === '1';
-    }),
+  featured: booleanQueryParam,
+  rootOnly: booleanQueryParam,
+  includeChildren: booleanQueryParam,
+  parentId: z.string().optional(),
   search: z.string().optional(),
 });
 
@@ -35,6 +40,15 @@ export class CategoryQueryDto {
 
   @ApiPropertyOptional({ description: 'Filter only featured categories', example: true })
   featured?: boolean;
+
+  @ApiPropertyOptional({ description: 'Filter only root/top-level categories (parentId IS NULL)', example: true })
+  rootOnly?: boolean;
+
+  @ApiPropertyOptional({ description: 'Filter subcategories belonging to a specific parent category ID', example: 'cat-pens' })
+  parentId?: string;
+
+  @ApiPropertyOptional({ description: 'Include subcategories (children) in category objects', example: true })
+  includeChildren?: boolean;
 
   @ApiPropertyOptional({ description: 'Search keyword matching category name or description', example: 'writing' })
   search?: string;

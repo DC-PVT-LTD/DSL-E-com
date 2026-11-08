@@ -4,6 +4,8 @@ import {
   ConflictException,
   UnauthorizedException,
   BadRequestException,
+  ForbiddenException,
+  NotFoundException,
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -16,6 +18,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import {
   RegisterDto,
   LoginDto,
+  AdminLoginDto,
+  AcceptInvitationDto,
   ForgotPasswordDto,
   ResetPasswordDto,
   UpdateProfileDto,
@@ -113,6 +117,7 @@ export class AuthService {
 
       // Update password/info for unverified account and issue fresh OTP
       const passwordHash = await bcrypt.hash(dto.password, this.bcryptRounds);
+
       const otp = crypto.randomInt(100000, 1000000).toString();
       const otpHash = this.hashToken(otp);
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
@@ -154,6 +159,7 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(dto.password, this.bcryptRounds);
+
     const otp = crypto.randomInt(100000, 1000000).toString();
     const otpHash = this.hashToken(otp);
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
@@ -429,6 +435,271 @@ export class AuthService {
     };
   }
 
+  /**
+   * Phase 2: Dedicated Administrator Login.
+   * Restricts authentication strictly to administrative roles (ADMIN, MANAGER, STAFF).
+   * Verifies password, enforces brute-force lockout, ensures active status, and sets secure auth cookies.
+   */
+  async adminLogin(dto: AdminLoginDto, res: Response) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    // Equalize timing if user not found
+    if (!user || !user.passwordHash) {
+      await bcrypt.compare(dto.password, '$2b$12$e80iA4gqT3cRk7/2E8tq7uB7iR/g5zG6e3P3q7G8p9y1z2w3e4r5t');
+      throw new UnauthorizedException('Invalid administrative email or password');
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account has been deactivated. Please contact an administrator.');
+    }
+
+    // Role check: Only administrative roles permitted
+    const adminRoles: UserRole[] = [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF];
+    if (!adminRoles.includes(user.role)) {
+      throw new ForbiddenException('Access denied: administrative privileges required');
+    }
+
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      throw new UnauthorizedException('Administrator account is temporarily locked due to multiple failed login attempts.');
+    }
+
+    const passwordMatches = await bcrypt.compare(dto.password, user.passwordHash);
+    if (!passwordMatches) {
+      const failedAttempts = (user.failedLoginAttempts || 0) + 1;
+      const lockedUntil = failedAttempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null;
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: failedAttempts,
+          lockedUntil,
+        },
+      });
+
+      throw new UnauthorizedException('Invalid administrative email or password');
+    }
+
+    // Reset failed counter on successful login
+    if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+        },
+      });
+    }
+
+    const accessToken = await this.generateAccessToken(user.id, user.email, user.role);
+    const rawRefreshToken = await this.createRefreshTokenSession(user.id);
+    this.setAuthCookies(res, accessToken, rawRefreshToken);
+
+    this.logger.log(`Admin logged in successfully: ${user.email} (${user.role})`);
+
+    return {
+      success: true,
+      message: 'Administrator logged in successfully',
+      data: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+        role: user.role,
+        isActive: user.isActive,
+      },
+    };
+  }
+
+  /**
+   * Phase 2: Verify an administrator invitation token.
+   */
+  async verifyInvitation(token: string) {
+    if (!token) {
+      throw new BadRequestException('Invitation token is required');
+    }
+    const tokenHash = this.hashToken(token.trim());
+    const invitation = await this.prisma.adminInvitation.findUnique({
+      where: { tokenHash },
+      include: {
+        invitedBy: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    if (!invitation) {
+      throw new NotFoundException('Invitation not found or invalid token');
+    }
+
+    if (invitation.usedAt) {
+      throw new BadRequestException('This invitation has already been used and activated');
+    }
+
+    if (invitation.expiresAt < new Date()) {
+      throw new BadRequestException('This invitation has expired. Please request a new invitation from an administrator.');
+    }
+
+    return {
+      success: true,
+      data: {
+        email: invitation.email,
+        name: invitation.name,
+        role: invitation.role,
+        expiresAt: invitation.expiresAt,
+        invitedBy: invitation.invitedBy?.name || 'Administrator',
+      },
+    };
+  }
+
+  /**
+   * Phase 3: Accept administrator invitation and establish secure password.
+   * Acquires the advisory lock FIRST, re-fetches invitation & dynamic role,
+   * preserves atomic updateMany conditional protection, and issues cookies only after commit.
+   */
+  async acceptInvitation(dto: AcceptInvitationDto, res: Response) {
+    const tokenHash = this.hashToken(dto.token.trim());
+    const passwordHash = await bcrypt.hash(dto.password, this.bcryptRounds);
+
+    // Pre-generate raw refresh token and its SHA-256 hash
+    const rawRefreshToken = crypto.randomBytes(64).toString('hex');
+    const refreshTokenHash = this.hashToken(rawRefreshToken);
+    const refreshExpiresAt = new Date(Date.now() + this.refreshExpiresDays * 24 * 60 * 60 * 1000);
+
+    const user = await this.prisma.$transaction(async (tx) => {
+      // 1. FIRST STATEMENT: Acquire mutual exclusion lock unconditionally
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('dsl_super_admin_mutex'))`;
+
+      // 2. Re-fetch invitation and its assigned role AFTER acquiring lock
+      const invitation = await tx.adminInvitation.findUnique({
+        where: { tokenHash },
+        include: { roleRelation: true },
+      });
+
+      if (!invitation) {
+        throw new NotFoundException('Invitation not found or invalid token');
+      }
+
+      if (invitation.usedAt) {
+        throw new ConflictException('This invitation has already been used');
+      }
+
+      if (invitation.expiresAt < new Date()) {
+        throw new BadRequestException('This invitation has expired. Please request a new invitation from an administrator.');
+      }
+
+      // Verify assigned dynamic role is active if present
+      if (invitation.roleRelation && !invitation.roleRelation.isActive) {
+        throw new BadRequestException('The role assigned to this invitation has been deactivated.');
+      }
+
+      // 3. Atomic conditional consumption: guarantees exactly one concurrent request can consume the invitation
+      const updateResult = await tx.adminInvitation.updateMany({
+        where: {
+          id: invitation.id,
+          usedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        data: {
+          usedAt: new Date(),
+        },
+      });
+
+      if (updateResult.count === 0) {
+        throw new ConflictException('This invitation has already been accepted or has expired.');
+      }
+
+      // 4. Find or create user account with authoritative ADMIN role and assigned dynamic roleId
+      const existingUser = await tx.user.findUnique({
+        where: { email: invitation.email },
+      });
+
+      let updatedOrCreatedUser;
+      if (existingUser) {
+        updatedOrCreatedUser = await tx.user.update({
+          where: { id: existingUser.id },
+          data: {
+            name: invitation.name,
+            phone: invitation.phone || existingUser.phone,
+            role: UserRole.ADMIN,
+            roleId: invitation.roleId,
+            passwordHash,
+            isActive: true,
+            isEmailVerified: true,
+            failedLoginAttempts: 0,
+            lockedUntil: null,
+          },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            phone: true,
+            role: true,
+            roleId: true,
+            isActive: true,
+          },
+        });
+      } else {
+        updatedOrCreatedUser = await tx.user.create({
+          data: {
+            email: invitation.email,
+            name: invitation.name,
+            phone: invitation.phone,
+            role: UserRole.ADMIN,
+            roleId: invitation.roleId,
+            passwordHash,
+            isActive: true,
+            isEmailVerified: true,
+          },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            phone: true,
+            role: true,
+            roleId: true,
+            isActive: true,
+          },
+        });
+      }
+
+      // 5. Persist hashed refresh-token record inside the same transaction
+      await tx.refreshToken.create({
+        data: {
+          userId: updatedOrCreatedUser.id,
+          tokenHash: refreshTokenHash,
+          expiresAt: refreshExpiresAt,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          action: 'ADMIN_INVITATION_ACCEPTED',
+          entityType: 'user',
+          entityId: updatedOrCreatedUser.id,
+          description: `Administrator invitation accepted for ${invitation.email} with dynamic role ${invitation.roleRelation?.name || invitation.role}`,
+          userId: updatedOrCreatedUser.id,
+        },
+      });
+
+      return updatedOrCreatedUser;
+    });
+
+    // 6. Generate access token and issue cookies strictly AFTER transaction commit
+    const accessToken = await this.generateAccessToken(user.id, user.email, user.role);
+    this.setAuthCookies(res, accessToken, rawRefreshToken);
+
+    this.logger.log(`Administrator account activated via invitation: ${user.email} (${user.role})`);
+
+    return {
+      success: true,
+      message: 'Administrator account successfully activated',
+      data: user,
+    };
+  }
+
   async refreshTokens(rawRefreshToken: string | undefined, res: Response) {
     if (!rawRefreshToken) {
       this.clearAuthCookies(res);
@@ -523,6 +794,27 @@ export class AuthService {
         name: true,
         phone: true,
         role: true,
+        roleId: true,
+        assignedRole: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            isSystem: true,
+            isActive: true,
+            permissions: {
+              select: {
+                permission: {
+                  select: {
+                    key: true,
+                    displayName: true,
+                    category: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         isActive: true,
         createdAt: true,
       },

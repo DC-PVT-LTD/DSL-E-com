@@ -89,4 +89,36 @@ describe('categoryService', () => {
     expect(deleted).toBe(true);
     expect(categoryService.getCategoryById('cat-new-art')).toBeUndefined();
   });
+
+  it('fetches category tree with nested subcategories', async () => {
+    const treeData = [
+      {
+        id: 'cat-pens',
+        name: 'Pens',
+        slug: 'pens',
+        description: 'All pens',
+        parentId: null,
+        children: [
+          {
+            id: 'cat-fountain-pens',
+            name: 'Fountain Pens',
+            slug: 'fountain-pens',
+            description: 'Fountain pens',
+            parentId: 'cat-pens',
+            itemCount: 4,
+          },
+        ],
+      },
+    ];
+
+    vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
+      success: true,
+      data: treeData,
+    } as any);
+
+    const result = await categoryService.fetchCategoryTree();
+    expect(result.length).toBe(1);
+    expect(result[0].children?.length).toBe(1);
+    expect(result[0].children?.[0].slug).toBe('fountain-pens');
+  });
 });

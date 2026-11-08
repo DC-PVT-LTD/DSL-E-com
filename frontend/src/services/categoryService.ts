@@ -13,6 +13,9 @@ const CAT_STORAGE_KEY = 'dsl_categories_data_v1';
 export interface CategoryQueryOptions {
   search?: string;
   featured?: boolean;
+  parentId?: string;
+  rootOnly?: boolean;
+  includeChildren?: boolean;
   page?: number;
   limit?: number;
 }
@@ -71,6 +74,9 @@ class CategoryService {
         params: {
           search: options?.search,
           featured: options?.featured,
+          parentId: options?.parentId,
+          rootOnly: options?.rootOnly,
+          includeChildren: options?.includeChildren,
           page: options?.page || 1,
           limit: options?.limit || 100,
         },
@@ -85,6 +91,27 @@ class CategoryService {
       console.warn('Could not fetch categories from backend API, using local fallback:', err);
     }
     return [...this.categories];
+  }
+
+  /**
+   * Fetch hierarchical category tree with nested subcategories.
+   */
+  public async fetchCategoryTree(): Promise<ProductCategory[]> {
+    try {
+      const res = await apiClient.get<BackendApiResponse<ProductCategory[]>>('categories/tree');
+      if (res.success && Array.isArray(res.data)) {
+        return res.data;
+      }
+    } catch (err) {
+      console.warn('Could not fetch category tree from backend API, falling back to client-side tree build:', err);
+    }
+
+    const all = await this.fetchCategories({ limit: 100 });
+    const roots = all.filter((c) => !c.parentId);
+    return roots.map((root) => ({
+      ...root,
+      children: all.filter((c) => c.parentId === root.id),
+    }));
   }
 
   /**
@@ -179,6 +206,7 @@ class CategoryService {
     image?: string;
     featured?: boolean;
     displayOrder?: number;
+    parentId?: string | null;
   }): Promise<ProductCategory> {
     const res = await apiClient.post<BackendApiResponse<ProductCategory>>('categories', data);
     if (res.success && res.data) {
@@ -207,6 +235,7 @@ class CategoryService {
       image?: string;
       featured?: boolean;
       displayOrder?: number;
+      parentId?: string | null;
     }>
   ): Promise<ProductCategory> {
     const res = await apiClient.patch<BackendApiResponse<ProductCategory>>(

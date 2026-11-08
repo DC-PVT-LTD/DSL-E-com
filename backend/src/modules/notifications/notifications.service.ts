@@ -368,6 +368,68 @@ Support: support@dslstationery.lk | Privacy Policy: http://localhost:3000/privac
       };
     }
   }
+
+  /**
+   * Phase 2: Dispatches administrator invitation link.
+   * Reports genuine provider delivery vs simulated environment dispatch.
+   */
+  async sendAdminInvitationEmail(params: {
+    email: string;
+    name: string;
+    role: string;
+    invitationUrl: string;
+    expiresHours?: number;
+  }): Promise<{ success: boolean; messageId: string; deliveryStatus: 'DELIVERED' | 'SIMULATED' }> {
+    const hours = params.expiresHours ?? 48;
+    const messageId = `msg-admin-invite-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const isConfigured = this.isEmailProviderConfigured();
+
+    const emailBody = `
+=====================================================
+            DSL STATIONERY ADMIN PORTAL
+=====================================================
+
+Administrator Invitation
+
+Hello ${params.name},
+
+You have been invited to join the DSL Stationery administrative portal with the role of: ${params.role}.
+
+To accept this invitation and set up your secure password, please click the link below:
+
+Accept Invitation & Set Password:
+${params.invitationUrl}
+
+Important Information:
+- This invitation link is unique to you and expires in ${hours} hours.
+- If you were not expecting an administrator invitation from DSL Stationery, please contact your store system administrator immediately.
+
+DSL Enterprises (Pvt) Ltd
+Technical Operations: support@dslstationery.lk
+=====================================================
+`;
+
+    if (isConfigured) {
+      this.logger.log(
+        `[ADMIN INVITATION] Provider-confirmed invitation email dispatched to ${params.email} (${params.role}) (MessageId: ${messageId})`
+      );
+      return {
+        success: true,
+        messageId,
+        deliveryStatus: 'DELIVERED',
+      };
+    } else {
+      this.logger.warn(
+        `[ADMIN INVITATION: SIMULATED] No production email provider configured (SMTP_HOST or EMAIL_PROVIDER_API_KEY missing in environment). Simulated invitation email for ${params.email} (${params.role}). Invitation URL: ${params.invitationUrl}`
+      );
+      this.logger.debug(`[ADMIN INVITATION EMAIL CONTENT]\n${emailBody}`);
+      return {
+        success: true,
+        messageId,
+        deliveryStatus: 'SIMULATED',
+      };
+    }
+  }
 }
 
 
