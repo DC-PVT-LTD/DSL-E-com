@@ -120,8 +120,9 @@ describe('Pagination Utilities', () => {
       expect(() => basePaginationSchema.parse({ limit: 'xyz' })).toThrow();
     });
 
-    it('fails when limit exceeds maximum limit (100)', () => {
-      expect(() => basePaginationSchema.parse({ limit: '101' })).toThrow();
+    it('fails when limit exceeds maximum limit (200)', () => {
+      expect(basePaginationSchema.parse({ limit: '200' }).limit).toBe(200);
+      expect(() => basePaginationSchema.parse({ limit: '201' })).toThrow();
     });
 
     it('fails on unsafe integers', () => {

@@ -1,4 +1,11 @@
-import { Product, ImportPreviewResult, ImportPreviewRow } from '@/types/product';
+import {
+  Product,
+  ImportPreviewResult,
+  ImportPreviewRow,
+  ExecuteImportPayload,
+  ImportBatchResponse,
+  ImportHistoryResponse,
+} from '@/types/product';
 import { FilterParams, PaginatedResult, SortOption } from '@/types/common';
 import {
   apiClient,
@@ -137,6 +144,28 @@ class ProductService {
       params.isFeatured = true;
     }
 
+    if (filters.categoryId) {
+      params.categoryId = filters.categoryId;
+    }
+    if (filters.brandId) {
+      params.brandId = filters.brandId;
+    }
+    if (filters.subcategoryId) {
+      params.subcategoryId = filters.subcategoryId;
+    }
+    if (filters.sku) {
+      params.sku = filters.sku;
+    }
+    if (filters.productId) {
+      params.productId = filters.productId;
+    }
+    if (filters.status) {
+      params.status = filters.status;
+    }
+    if (filters.stockStatus) {
+      params.stockStatus = filters.stockStatus;
+    }
+
     try {
       const res = await apiClient.get<BackendPaginatedResponse<Product>>('products', { params });
 
@@ -220,6 +249,69 @@ class ProductService {
     return result.items;
   }
 
+  /**
+   * Fetches real database metrics and distribution charts for products.
+   */
+  public async fetchProductAnalytics(): Promise<{
+    totalProducts: number;
+    activeProducts: number;
+    inactiveProducts: number;
+    outOfStock: number;
+    lowStock: number;
+    healthyStock: number;
+    byBrand: Array<{ id: string; name: string; count: number }>;
+    byCategory: Array<{ id: string; name: string; count: number }>;
+  }> {
+    const res = await apiClient.get<BackendApiResponse<any>>('products/admin/analytics');
+    return res.data;
+  }
+
+  /**
+   * Exports matching products directly from backend streaming endpoint.
+   */
+  public async exportProducts(
+    format: 'csv' | 'xlsx' = 'xlsx',
+    filters: FilterParams = {},
+    selectedIds?: string[]
+  ): Promise<Blob> {
+    const params: Record<string, string | number | boolean | undefined> = { format };
+    if (selectedIds && selectedIds.length > 0) {
+      params.selectedIds = selectedIds.join(',');
+    } else {
+      if (filters.query?.trim()) params.search = filters.query.trim();
+      if (filters.sku?.trim()) params.sku = filters.sku.trim();
+      if (filters.productId?.trim()) params.productId = filters.productId.trim();
+      if (filters.category && filters.category !== 'all') params.categoryId = filters.category;
+      if (filters.brand && filters.brand !== 'all') params.brandId = filters.brand;
+      if (filters.subcategoryId) params.subcategoryId = filters.subcategoryId;
+      if (filters.status && filters.status !== 'all') params.status = filters.status;
+      if (filters.stockStatus && filters.stockStatus !== 'all') params.stockStatus = filters.stockStatus;
+      if (filters.minPrice !== undefined) params.minPrice = filters.minPrice;
+      if (filters.maxPrice !== undefined) params.maxPrice = filters.maxPrice;
+    }
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('dsl_admin_token') : null;
+    const queryString = new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, v]) => v !== undefined)
+        .map(([k, v]) => [k, String(v)])
+    ).toString();
+
+    const response = await fetch(`http://localhost:4000/api/v1/products/export?${queryString}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Export failed with status ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.blob();
+  }
+
   public getAll(includeInactive = false): Product[] {
     if (includeInactive) return [...this.products];
     return this.products.filter((p) => p.isActive);
@@ -258,26 +350,55 @@ class ProductService {
   ): PaginatedResult<Product> {
     let result = includeInactive ? [...this.products] : this.products.filter((p) => p.isActive);
 
-    // Filter by query (search in name, description, SKU, tags)
+    // Filter by query (search in name, description, SKU, tags, categoryName, brandName) - 100% case-insensitive
     if (params.query?.trim()) {
       const q = params.query.toLowerCase().trim();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.shortDescription.toLowerCase().includes(q) ||
-          p.sku.toLowerCase().includes(q) ||
-          p.tags.some((t) => t.toLowerCase().includes(q))
-      );
+      const terms = q.split(/\s+/).filter(Boolean);
+      result = result.filter((p) => {
+        const name = (p.name || '').toLowerCase();
+        const shortDesc = (p.shortDescription || '').toLowerCase();
+        const desc = (p.description || '').toLowerCase();
+        const sku = (p.sku || '').toLowerCase();
+        const catName = (p.categoryName || '').toLowerCase();
+        const brand = (p.brandName || '').toLowerCase();
+        const tags = Array.isArray(p.tags) ? p.tags.map((t) => t.toLowerCase()) : [];
+
+        // Match all or any term across all product attributes
+        return terms.every(
+          (term) =>
+            name.includes(term) ||
+            shortDesc.includes(term) ||
+            desc.includes(term) ||
+            sku.includes(term) ||
+            catName.includes(term) ||
+            brand.includes(term) ||
+            tags.some((t) => t.includes(term) || term.includes(t))
+        );
+      });
     }
 
     // Filter by category
     if (params.category && params.category !== 'all') {
-      result = result.filter(
-        (p) =>
-          p.categoryId === params.category ||
-          p.categoryName?.toLowerCase() === params.category?.toLowerCase() ||
-          (p as any).category?.slug === params.category
-      );
+      const catTarget = params.category.toLowerCase().trim();
+      const catNormalized = catTarget.replace(/^cat-/, '');
+      result = result.filter((p) => {
+        const pCatId = (p.categoryId || '').toLowerCase();
+        const pCatNorm = pCatId.replace(/^cat-/, '');
+        const pCatName = (p.categoryName || '').toLowerCase();
+        const pSlug = ((p as any).category?.slug || '').toLowerCase();
+        const pTags = Array.isArray(p.tags) ? p.tags.map((t) => t.toLowerCase()) : [];
+
+        return (
+          pCatId === catTarget ||
+          pCatId === `cat-${catNormalized}` ||
+          pCatNorm === catNormalized ||
+          pCatName === catNormalized ||
+          pCatName.includes(catNormalized) ||
+          catNormalized.includes(pCatNorm) ||
+          pSlug === catNormalized ||
+          pTags.includes(catNormalized)
+        );
+      });
     }
 
     // Filter by brand
@@ -635,6 +756,62 @@ class ProductService {
       throw new Error(`Failed to generate error report: HTTP ${res.status}`);
     }
     return res.blob();
+  }
+
+  /**
+   * Execute an import batch for a validated preview.
+   */
+  public async executeImport(payload: ExecuteImportPayload): Promise<ImportBatchResponse> {
+    const res = await apiClient.post<BackendApiResponse<ImportBatchResponse>>(
+      'products/import/execute',
+      payload
+    );
+    if (res.success && res.data) {
+      return res.data;
+    }
+    throw new Error(res.message || 'Import execution failed');
+  }
+
+  /**
+   * Get the current execution status and progress of an import batch.
+   */
+  public async getBatchStatus(batchId: string): Promise<ImportBatchResponse> {
+    const res = await apiClient.get<BackendApiResponse<ImportBatchResponse>>(
+      `products/import/batch/${batchId}`
+    );
+    if (res.success && res.data) {
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to fetch batch status');
+  }
+
+  /**
+   * Download CSV or Excel error report for an executed batch.
+   */
+  public async downloadBatchErrorReport(batchId: string, format: 'csv' | 'xlsx' = 'csv'): Promise<Blob> {
+    const endpoint = `products/import/batch/${batchId}/error-report?format=${format}`;
+    const url = apiClient.buildUrl(endpoint);
+    const res = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to download batch error report: HTTP ${res.status}`);
+    }
+    return res.blob();
+  }
+
+  /**
+   * Retrieve paginated import history.
+   */
+  public async getImportHistory(page: number = 1, limit: number = 20): Promise<ImportHistoryResponse> {
+    const res = await apiClient.get<BackendApiResponse<ImportHistoryResponse>>(
+      `products/import/history?page=${page}&limit=${limit}`
+    );
+    if (res.success && res.data) {
+      return res.data;
+    }
+    throw new Error(res.message || 'Failed to fetch import history');
   }
 }
 

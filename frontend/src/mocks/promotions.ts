@@ -57,16 +57,4 @@ export const INITIAL_BANNERS: StoreBanner[] = [
     isActive: true,
     displayOrder: 1,
   },
-  {
-    id: 'banner-upload-list',
-    title: 'Got a Handwritten Booklist from School?',
-    subtitle: 'Simply snap a photo or upload your PDF. Our smart stationery matcher selects your required books in seconds!',
-    ctaText: 'Upload Your List Now',
-    ctaLink: '/upload-list',
-    badgeText: 'Smart Shopping Demo',
-    backgroundColor: '#FFD21C',
-    textColor: '#08275E',
-    isActive: true,
-    displayOrder: 2,
-  },
 ];

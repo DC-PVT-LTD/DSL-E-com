@@ -128,27 +128,27 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen py-10 sm:py-16 bg-[#FFFDF0]">
+    <div className="min-h-screen py-8 sm:py-14 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#C6E7FF]/60">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl sm:text-4xl font-black text-[#292525] tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-black text-[#09285C] tracking-tight">
                 My Wishlist
               </h1>
-              <span className="bg-[#FF6B91]/15 text-[#FF6B91] text-xs font-bold px-2.5 py-0.5 rounded-full">
+              <span className="bg-rose-50 text-rose-500 text-xs font-bold px-2.5 py-0.5 rounded-full">
                 {itemCount} {itemCount === 1 ? 'item' : 'items'}
               </span>
             </div>
-            <p className="text-xs text-[#292525]/60 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Your saved stationery essentials, exercise books, and fine writing instruments
             </p>
           </div>
 
           <Link
             href="/shop"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0066CC] hover:underline self-start sm:self-auto"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0866E8] hover:underline self-start sm:self-auto"
           >
             <span>Continue Shopping</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -173,32 +173,32 @@ export default function WishlistPage() {
 
         {/* Empty State */}
         {items.length === 0 ? (
-          <div className="max-w-md mx-auto py-16 text-center bg-white rounded-3xl border border-[#C6E7FF] p-10 shadow-xs">
-            <div className="w-16 h-16 rounded-full bg-[#FF6B91]/10 flex items-center justify-center mx-auto text-[#FF6B91] mb-4">
+          <div className="max-w-md mx-auto py-16 text-center bg-white rounded-3xl border border-slate-100 p-8 sm:p-10 shadow-xs">
+            <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center mx-auto text-rose-500 mb-4">
               <Heart className="w-8 h-8" />
             </div>
-            <h2 className="text-lg font-bold text-[#292525]">Your Wishlist is Empty</h2>
-            <p className="text-xs text-[#292525]/60 mt-2 leading-relaxed">
+            <h2 className="text-lg font-bold text-[#09285C]">Your Wishlist is Empty</h2>
+            <p className="text-xs text-slate-500 mt-2 leading-relaxed">
               Explore our catalogue of CR books, fine gel pens, geometry instruments, and school packs. Click the heart icon on any item to save it here.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-2.5 justify-center">
               <Link
                 href="/shop"
-                className="bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold px-6 py-3 rounded-full transition-colors shadow-xs"
+                className="bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold px-6 py-3 rounded-full transition-colors shadow-xs"
               >
                 Browse Stationery Catalogue
               </Link>
               <Link
                 href="/school-packs"
-                className="bg-[#FFFDF0] hover:bg-[#FAF7EE] border border-[#C6E7FF] text-[#292525] text-xs font-bold px-6 py-3 rounded-full transition-colors"
+                className="bg-[#F7FAFF] hover:bg-blue-50 border border-blue-100 text-[#09285C] text-xs font-bold px-6 py-3 rounded-full transition-colors"
               >
                 School Packs
               </Link>
             </div>
           </div>
         ) : (
-          /* Wishlist Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          /* Wishlist Grid - 2 columns on mobile */
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
             {items.map((item) => {
               const product = item.product;
               const isOutOfStock = product.stockQuantity <= 0 || !product.isActive;
@@ -209,12 +209,12 @@ export default function WishlistPage() {
               return (
                 <div
                   key={item.id}
-                  className="group relative bg-white rounded-2xl border border-[#C6E7FF]/70 hover:border-[#0066CC] hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden"
+                  className="group relative bg-white rounded-2xl border border-slate-100 hover:border-[#0866E8] hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden"
                 >
                   {/* Top Badges & Remove Button */}
-                  <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 items-start pointer-events-none">
+                  <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start pointer-events-none">
                     {product.categoryName && (
-                      <span className="bg-[#FFFDF0] text-[#0066CC] border border-[#C6E7FF] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      <span className="bg-white/95 text-[#0866E8] border border-blue-100 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider backdrop-blur-xs">
                         {product.categoryName}
                       </span>
                     )}
@@ -222,17 +222,17 @@ export default function WishlistPage() {
 
                   <button
                     onClick={() => handleRemove(item.productId)}
-                    className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs text-[#292525]/50 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all shadow-xs"
+                    className="absolute top-2 right-2 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-xs text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all shadow-xs"
                     title="Remove from wishlist"
                     aria-label={`Remove ${product.name} from wishlist`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
 
                   {/* Product Image */}
                   <Link
                     href={`/products/${product.slug}`}
-                    className="block relative bg-[#FAF7EE] aspect-square overflow-hidden p-6"
+                    className="block relative bg-[#F7FAFF] aspect-square overflow-hidden p-4 sm:p-6"
                   >
                     <div className="w-full h-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                       {product.images && product.images.length > 0 && typeof product.images[0] === 'string' && (product.images[0].startsWith('http') || !product.images[0].includes('.png')) ? (
@@ -242,7 +242,7 @@ export default function WishlistPage() {
                           className="w-full h-full object-contain object-center"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-2xl bg-white border border-[#C6E7FF] flex items-center justify-center text-[#0066CC] font-black text-2xl font-heylowitch">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white border border-blue-100 flex items-center justify-center text-[#0866E8] font-black text-xl sm:text-2xl">
                           {product.name.charAt(0)}
                         </div>
                       )}
@@ -250,34 +250,34 @@ export default function WishlistPage() {
                   </Link>
 
                   {/* Body Details */}
-                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                  <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2.5">
                     <div>
                       {product.brandName && (
-                        <span className="text-[10px] font-bold text-[#0066CC] uppercase tracking-wider">
+                        <span className="text-[10px] font-bold text-[#0866E8] uppercase tracking-wider">
                           {product.brandName}
                         </span>
                       )}
                       <Link
                         href={`/products/${product.slug}`}
-                        className="block text-xs font-bold text-[#292525] hover:text-[#0066CC] line-clamp-2 mt-0.5"
+                        className="block text-xs font-bold text-[#09285C] hover:text-[#0866E8] line-clamp-2 mt-0.5"
                       >
                         {product.name}
                       </Link>
 
                       {/* Price */}
-                      <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-sm font-black text-[#292525]">
+                      <div className="mt-1.5 flex items-baseline gap-1.5 flex-wrap">
+                        <span className="text-xs sm:text-sm font-black text-[#09285C]">
                           {formatLKR(product.priceCents)}
                         </span>
                         {product.compareAtPriceCents && product.compareAtPriceCents > product.priceCents && (
-                          <span className="text-[11px] text-[#292525]/40 line-through">
+                          <span className="text-[10px] text-slate-400 line-through">
                             {formatLKR(product.compareAtPriceCents)}
                           </span>
                         )}
                       </div>
 
                       {/* Stock Status */}
-                      <div className="mt-2">
+                      <div className="mt-1.5">
                         {isOutOfStock ? (
                           <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full inline-block">
                             Out of Stock
@@ -296,16 +296,16 @@ export default function WishlistPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="pt-2 border-t border-[#C6E7FF]/40">
+                    <div className="pt-2 border-t border-slate-100">
                       <button
                         onClick={() => handleAddToCart(item)}
                         disabled={isOutOfStock || isAdding}
-                        className={`w-full py-2 px-3 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs ${
+                        className={`w-full py-2 px-2.5 sm:px-3 rounded-full text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs touch-target ${
                           isOutOfStock
                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
                             : isAdded
                             ? 'bg-emerald-600 text-white'
-                            : 'bg-[#0066CC] hover:bg-[#0052a3] text-white hover:scale-101'
+                            : 'bg-[#0866E8] hover:bg-[#09285C] text-white hover:scale-101'
                         }`}
                       >
                         {isAdding ? (
@@ -316,7 +316,7 @@ export default function WishlistPage() {
                         ) : isAdded ? (
                           <>
                             <Check className="w-3.5 h-3.5" />
-                            <span>Added to Cart!</span>
+                            <span>Added!</span>
                           </>
                         ) : (
                           <>

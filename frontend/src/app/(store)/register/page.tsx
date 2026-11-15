@@ -117,28 +117,28 @@ export default function RegisterPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-16 sm:py-24">
-      <div className="bg-white rounded-3xl border border-[#C6E7FF]/70 p-8 sm:p-10 shadow-sm space-y-6">
+      <div className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-10 shadow-xs space-y-6">
         {/* Step 1: Registration Form */}
         {!isVerifying ? (
           <>
             <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-full bg-[#FFFDF0] border-2 border-[#0066CC] text-[#0066CC] flex items-center justify-center mx-auto shadow-xs">
+              <div className="w-14 h-14 rounded-full bg-blue-50 border-2 border-[#0866E8] text-[#0866E8] flex items-center justify-center mx-auto shadow-xs">
                 <UserPlus className="w-7 h-7" />
               </div>
-              <h1 className="text-2xl font-black text-[#292525] tracking-tight">Create Customer Account</h1>
-              <p className="text-xs text-[#292525]/70">Save your addresses and manage your stationery orders</p>
+              <h1 className="text-2xl font-black text-[#09285C] tracking-tight">Create Customer Account</h1>
+              <p className="text-xs text-slate-500">Save your addresses and manage your stationery orders</p>
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-3.5 text-xs text-red-700 flex items-start gap-2 shadow-2xs">
-                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+              <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3.5 text-xs text-rose-700 flex items-start gap-2 shadow-2xs">
+                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="font-bold text-[#292525] block mb-1.5">Full Name</label>
+                <label className="font-bold text-[#09285C] block mb-1.5">Full Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Nimesha Perera"
@@ -146,12 +146,12 @@ export default function RegisterPage() {
                   onChange={(e) => setName(e.target.value)}
                   required
                   disabled={isSubmitting}
-                  className="w-full px-4 py-3 rounded-2xl border border-stone-200 focus:outline-none focus:border-[#0066CC] focus:ring-2 focus:ring-[#C6E7FF]/40 transition-all text-[#292525] bg-[#FFFDF0]/50"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0866E8] focus:ring-2 focus:ring-blue-100 transition-all text-slate-800 bg-[#F7FAFF]/50"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-[#292525] block mb-1.5">Email Address</label>
+                <label className="font-bold text-[#09285C] block mb-1.5">Email Address</label>
                 <input
                   type="email"
                   placeholder="nimesha@example.lk"
@@ -159,24 +159,24 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isSubmitting}
-                  className="w-full px-4 py-3 rounded-2xl border border-stone-200 focus:outline-none focus:border-[#0066CC] focus:ring-2 focus:ring-[#C6E7FF]/40 transition-all text-[#292525] bg-[#FFFDF0]/50"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0866E8] focus:ring-2 focus:ring-blue-100 transition-all text-slate-800 bg-[#F7FAFF]/50"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-[#292525] block mb-1.5">Phone Number (Sri Lanka)</label>
+                <label className="font-bold text-[#09285C] block mb-1.5">Phone Number (Sri Lanka)</label>
                 <input
                   type="tel"
                   placeholder="+94 77 123 4567"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full px-4 py-3 rounded-2xl border border-stone-200 focus:outline-none focus:border-[#0066CC] focus:ring-2 focus:ring-[#C6E7FF]/40 transition-all text-[#292525] bg-[#FFFDF0]/50"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0866E8] focus:ring-2 focus:ring-blue-100 transition-all text-slate-800 bg-[#F7FAFF]/50"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-[#292525] block mb-1.5">Password</label>
+                <label className="font-bold text-[#09285C] block mb-1.5">Password</label>
                 <input
                   type="password"
                   placeholder="•••••••• (min 8 characters)"
@@ -184,14 +184,14 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isSubmitting}
-                  className="w-full px-4 py-3 rounded-2xl border border-stone-200 focus:outline-none focus:border-[#0066CC] focus:ring-2 focus:ring-[#C6E7FF]/40 transition-all text-[#292525] bg-[#FFFDF0]/50"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0866E8] focus:ring-2 focus:ring-blue-100 transition-all text-slate-800 bg-[#F7FAFF]/50"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] disabled:opacity-60 text-white py-3.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg transition-all mt-3 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 bg-[#0866E8] hover:bg-[#09285C] disabled:opacity-60 text-white py-3.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg transition-all mt-3 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -207,9 +207,9 @@ export default function RegisterPage() {
               </button>
             </form>
 
-            <div className="text-center text-xs text-[#292525]/70 pt-3 border-t border-[#C6E7FF]/30">
+            <div className="text-center text-xs text-slate-500 pt-3 border-t border-slate-100">
               Already registered?{' '}
-              <Link href="/login" className="font-bold text-[#0066CC] hover:underline">
+              <Link href="/login" className="font-bold text-[#0866E8] hover:underline">
                 Sign in here
               </Link>
             </div>
@@ -218,19 +218,19 @@ export default function RegisterPage() {
           /* Step 2: Email OTP Verification Screen */
           <div className="space-y-6">
             <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-full bg-[#EBF5FF] border-2 border-[#0066CC] text-[#0066CC] flex items-center justify-center mx-auto shadow-xs">
+              <div className="w-14 h-14 rounded-full bg-blue-50 border-2 border-[#0866E8] text-[#0866E8] flex items-center justify-center mx-auto shadow-xs">
                 <Mail className="w-7 h-7" />
               </div>
-              <h1 className="text-2xl font-black text-[#292525] tracking-tight">Verify Your Email</h1>
-              <p className="text-xs text-[#292525]/70">
+              <h1 className="text-2xl font-black text-[#09285C] tracking-tight">Verify Your Email</h1>
+              <p className="text-xs text-slate-500">
                 We sent a 6-digit confirmation code to{' '}
-                <span className="font-bold text-[#0066CC]">{email}</span>.
+                <span className="font-bold text-[#0866E8]">{email}</span>.
               </p>
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-3.5 text-xs text-red-700 flex items-start gap-2 shadow-2xs">
-                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+              <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3.5 text-xs text-rose-700 flex items-start gap-2 shadow-2xs">
+                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
@@ -244,7 +244,7 @@ export default function RegisterPage() {
 
             <form onSubmit={handleVerifyOtp} className="space-y-4 text-xs">
               <div>
-                <label className="font-bold text-[#292525] block mb-1.5 text-center">
+                <label className="font-bold text-[#09285C] block mb-1.5 text-center">
                   6-Digit Verification Code
                 </label>
                 <div className="relative">
@@ -257,11 +257,11 @@ export default function RegisterPage() {
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                     required
                     disabled={isSubmitting}
-                    className="w-full text-center tracking-[0.5em] font-mono text-xl py-3 rounded-2xl border border-stone-300 focus:outline-none focus:border-[#0066CC] focus:ring-2 focus:ring-[#C6E7FF]/50 bg-stone-50 font-bold"
+                    className="w-full text-center tracking-[0.5em] font-mono text-xl py-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#0866E8] focus:ring-2 focus:ring-blue-100 bg-[#F7FAFF] font-bold"
                   />
-                  <KeyRound className="w-4 h-4 text-stone-400 absolute left-4 top-3.5" />
+                  <KeyRound className="w-4 h-4 text-slate-400 absolute left-4 top-3.5" />
                 </div>
-                <p className="text-[11px] text-[#292525]/60 text-center mt-2">
+                <p className="text-[11px] text-slate-400 text-center mt-2">
                   Code expires in 10 minutes. Check your spam folder if you do not see it.
                 </p>
               </div>
@@ -269,7 +269,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || otp.length !== 6}
-                className="w-full flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] disabled:opacity-60 text-white py-3.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg transition-all mt-3 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 bg-[#0866E8] hover:bg-[#09285C] disabled:opacity-60 text-white py-3.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg transition-all mt-3 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -288,7 +288,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setIsVerifying(false)}
-                  className="text-stone-500 hover:text-stone-800 underline"
+                  className="text-slate-500 hover:text-slate-800 underline p-1"
                 >
                   Edit details
                 </button>
@@ -297,7 +297,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={handleResendOtp}
                   disabled={resendCooldown > 0 || isResending}
-                  className="font-bold text-[#0066CC] disabled:text-stone-400 hover:underline flex items-center gap-1"
+                  className="font-bold text-[#0866E8] disabled:text-slate-400 hover:underline flex items-center gap-1 p-1"
                 >
                   {isResending ? (
                     <RefreshCw className="w-3 h-3 animate-spin" />

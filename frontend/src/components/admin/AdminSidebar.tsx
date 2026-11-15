@@ -14,7 +14,6 @@ import {
   ShieldCheck,
   GraduationCap,
   Sparkles,
-  Upload,
   Tag,
   Image,
   Mail,
@@ -24,6 +23,9 @@ import {
   Store,
   LogOut,
   KeyRound,
+  Scale,
+  CreditCard,
+  FileCheck,
 } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { useUserStore } from '@/services/userStore';
@@ -48,6 +50,9 @@ export const AdminSidebar: React.FC = () => {
         { href: '/admin/brands', label: 'Brands', icon: Award },
         { href: '/admin/inventory', label: 'Inventory & Stock', icon: Boxes },
         { href: '/admin/orders', label: 'Customer Orders', icon: ShoppingCart },
+        { href: '/admin/payments', label: 'Payments Dashboard', icon: CreditCard },
+        { href: '/admin/payments/bank-transfers', label: 'Bank Transfers Queue', icon: FileCheck },
+        { href: '/admin/reconciliation', label: 'Financial Reconciliation', icon: Scale },
         { href: '/admin/customers', label: 'Customers', icon: Users },
         { href: '/admin/admins', label: 'Admin Accounts', icon: ShieldCheck },
         { href: '/admin/roles', label: 'Roles & Permissions', icon: KeyRound },
@@ -58,14 +63,13 @@ export const AdminSidebar: React.FC = () => {
       items: [
         { href: '/admin/school-packs', label: 'School Packs', icon: GraduationCap },
         { href: '/admin/find-my-stationery', label: 'Find My Stationery', icon: Sparkles },
-        { href: '/admin/upload-reviews', label: 'Upload Reviews Queue', icon: Upload },
       ],
     },
     {
       title: 'Marketing & Configuration',
       items: [
         { href: '/admin/promotions', label: 'Promotions & Vouchers', icon: Tag },
-        { href: '/admin/banners', label: 'Store Banners', icon: Image },
+        { href: '/admin/banners', label: 'Banners & Blue Line Ads', icon: Image },
         { href: '/admin/newsletter', label: 'Newsletter & Consent', icon: Mail },
         { href: '/admin/reports', label: 'Sales Reports', icon: BarChart3 },
         { href: '/admin/audit-logs', label: 'Audit Logs', icon: History },
@@ -95,7 +99,10 @@ export const AdminSidebar: React.FC = () => {
               </span>
               {group.items.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
+                const isActive =
+                  item.href === '/admin/payments'
+                    ? pathname === '/admin/payments'
+                    : pathname === item.href || (item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
                 return (
                   <Link
                     key={item.href}

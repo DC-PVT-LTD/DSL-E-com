@@ -22,7 +22,7 @@ export class BannersService {
   constructor(
     @Inject(PrismaService)
     private readonly prisma: PrismaService
-  ) {}
+  ) { }
 
   /**
    * Pure calculation of banner's effective status on read.
@@ -58,27 +58,33 @@ export class BannersService {
   /**
    * Public: Fetch all active homepage banners ordered by sortOrder ASC, createdAt DESC.
    */
-  public async getHomepageBanners(now: Date = new Date()): Promise<BannerWithEffectiveStatus[]> {
-    const banners = await this.prisma.homepageBanner.findMany({
-      where: {
-        status: {
-          in: [BannerStatus.PUBLISHED, BannerStatus.SCHEDULED],
-        },
-        AND: [
-          {
-            OR: [
-              { startAt: null },
-              { startAt: { lte: now } },
-            ],
-          },
-          {
-            OR: [
-              { endAt: null },
-              { endAt: { gt: now } },
-            ],
-          },
-        ],
+  public async getHomepageBanners(
+    placement?: string,
+    now: Date = new Date()
+  ): Promise<BannerWithEffectiveStatus[]> {
+    const where: any = {
+      status: {
+        in: [BannerStatus.PUBLISHED, BannerStatus.SCHEDULED],
       },
+      ...(placement ? { placement } : {}),
+      AND: [
+        {
+          OR: [
+            { startAt: null },
+            { startAt: { lte: now } },
+          ],
+        },
+        {
+          OR: [
+            { endAt: null },
+            { endAt: { gt: now } },
+          ],
+        },
+      ],
+    };
+
+    const banners = await this.prisma.homepageBanner.findMany({
+      where,
       orderBy: [
         { sortOrder: 'asc' },
         { createdAt: 'desc' },
@@ -98,10 +104,14 @@ export class BannersService {
     query?: QueryBannersDto,
     now: Date = new Date()
   ): Promise<BannerWithEffectiveStatus[]> {
-    const where: Prisma.HomepageBannerWhereInput = {};
+    const where: any = {};
 
     if (query?.status) {
       where.status = query.status;
+    }
+
+    if (query?.placement) {
+      where.placement = query.placement;
     }
 
     if (query?.search && query.search.trim()) {
@@ -170,23 +180,26 @@ export class BannersService {
       sortOrder = (maxOrder._max.sortOrder ?? -1) + 1;
     }
 
+    const data: any = {
+      title: dto.title,
+      subtitle: dto.subtitle ?? null,
+      description: dto.description ?? null,
+      desktopImage: dto.desktopImage,
+      mobileImage: dto.mobileImage ?? null,
+      imageAltText: dto.imageAltText,
+      buttonText: dto.buttonText ?? null,
+      buttonLink: dto.buttonLink ?? null,
+      placement: dto.placement ?? 'HERO',
+      sortOrder,
+      status: dto.status ?? BannerStatus.DRAFT,
+      startAt: dto.startAt ? new Date(dto.startAt) : null,
+      endAt: dto.endAt ? new Date(dto.endAt) : null,
+      createdById: userId ?? null,
+      updatedById: userId ?? null,
+    };
+
     const banner = await this.prisma.homepageBanner.create({
-      data: {
-        title: dto.title,
-        subtitle: dto.subtitle ?? null,
-        description: dto.description ?? null,
-        desktopImage: dto.desktopImage,
-        mobileImage: dto.mobileImage ?? null,
-        imageAltText: dto.imageAltText,
-        buttonText: dto.buttonText ?? null,
-        buttonLink: dto.buttonLink ?? null,
-        sortOrder,
-        status: dto.status ?? BannerStatus.DRAFT,
-        startAt: dto.startAt ? new Date(dto.startAt) : null,
-        endAt: dto.endAt ? new Date(dto.endAt) : null,
-        createdById: userId ?? null,
-        updatedById: userId ?? null,
-      },
+      data,
       include: {
         createdBy: { select: { id: true, name: true, email: true } },
         updatedBy: { select: { id: true, name: true, email: true } },
@@ -212,7 +225,7 @@ export class BannersService {
       throw new NotFoundException(`Banner with ID "${id}" was not found`);
     }
 
-    const data: Prisma.HomepageBannerUpdateInput = {
+    const data: any = {
       ...(dto.title !== undefined ? { title: dto.title } : {}),
       ...(dto.subtitle !== undefined ? { subtitle: dto.subtitle } : {}),
       ...(dto.description !== undefined ? { description: dto.description } : {}),
@@ -221,6 +234,7 @@ export class BannersService {
       ...(dto.imageAltText !== undefined ? { imageAltText: dto.imageAltText } : {}),
       ...(dto.buttonText !== undefined ? { buttonText: dto.buttonText } : {}),
       ...(dto.buttonLink !== undefined ? { buttonLink: dto.buttonLink } : {}),
+      ...(dto.placement !== undefined ? { placement: dto.placement ?? 'HERO' } : {}),
       ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
       ...(dto.status !== undefined ? { status: dto.status } : {}),
       ...(dto.startAt !== undefined ? { startAt: dto.startAt ? new Date(dto.startAt) : null } : {}),

@@ -102,7 +102,9 @@ describe('NewsletterService (Phase 15.6)', () => {
       await expect(
         service.subscribe({
           email: 'test@example.com',
-          consent: false as any,
+          consent: false as boolean,
+          source: 'WEBSITE_FOOTER',
+          consentTextVersion: 'v1.0',
         })
       ).rejects.toThrow(BadRequestException);
     });
@@ -119,6 +121,7 @@ describe('NewsletterService (Phase 15.6)', () => {
         email: 'NewBie@Example.COM ',
         consent: true,
         source: 'WEBSITE_FOOTER',
+        consentTextVersion: 'v1.0',
       });
 
       expect(res.success).toBe(true);
@@ -165,6 +168,8 @@ describe('NewsletterService (Phase 15.6)', () => {
       const res = await service.subscribe({
         email: 'already@example.com',
         consent: true,
+        source: 'WEBSITE_FOOTER',
+        consentTextVersion: 'v1.0',
       });
 
       expect(res.success).toBe(true);
@@ -183,6 +188,7 @@ describe('NewsletterService (Phase 15.6)', () => {
         email: 'resubscribe@example.com',
         consent: true,
         source: 'HOMEPAGE',
+        consentTextVersion: 'v1.0',
       });
 
       expect(res.success).toBe(true);
@@ -218,6 +224,8 @@ describe('NewsletterService (Phase 15.6)', () => {
       const res = await service.subscribe({
         email: 'err@example.com',
         consent: true,
+        source: 'WEBSITE_FOOTER',
+        consentTextVersion: 'v1.0',
       });
 
       expect(res.success).toBe(true);
@@ -423,6 +431,8 @@ describe('NewsletterService (Phase 15.6)', () => {
         limit: 10,
         status: 'ALL',
         search: 'dsl.lk',
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
       });
 
       expect(res.items.length).toBe(1);

@@ -45,6 +45,23 @@ export const addSchoolPackToCartSchema = z.object({
     .min(1, 'At least one item must be included from the school pack'),
 });
 
+export const bulkCartItemSchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  variantId: z.string().min(1).optional().nullable(),
+  quantity: z
+    .number({ invalid_type_error: 'Quantity must be a number' })
+    .int('Quantity must be an integer')
+    .min(1, 'Quantity must be at least 1')
+    .max(50000, 'Quantity cannot exceed 50000'),
+});
+
+export const addBulkItemsToCartSchema = z.object({
+  items: z
+    .array(bulkCartItemSchema)
+    .min(1, 'At least one item must be provided')
+    .max(500, 'Cannot exceed 500 items per bulk submission'),
+});
+
 // -----------------------------------------------------------------------------
 // TypeScript DTO Types & Swagger Decorators
 // -----------------------------------------------------------------------------
@@ -87,6 +104,40 @@ export class AddSchoolPackToCartDto {
 
   @ApiProperty({ description: 'Customized items from the pack', type: [SchoolPackItemCustomizationDto] })
   items!: SchoolPackItemCustomizationDto[];
+}
+
+export class BulkCartItemDto {
+  @ApiProperty({ description: 'Product ID', example: 'cuid_prod_123' })
+  productId!: string;
+
+  @ApiPropertyOptional({ description: 'Optional variant ID', example: 'cuid_var_456', nullable: true })
+  variantId?: string | null;
+
+  @ApiProperty({ description: 'Quantity (>= 1)', example: 25 })
+  quantity!: number;
+}
+
+export class AddBulkItemsToCartDto {
+  @ApiProperty({ description: 'Array of items to add in bulk', type: [BulkCartItemDto] })
+  items!: BulkCartItemDto[];
+}
+
+export interface BulkCartItemResult {
+  productId: string;
+  variantId?: string | null;
+  sku?: string;
+  name?: string;
+  requestedQuantity: number;
+  addedQuantity: number;
+  success: boolean;
+  error?: string;
+}
+
+export interface BulkCartResponse {
+  cart: CartResponse;
+  results: BulkCartItemResult[];
+  addedCount: number;
+  failedCount: number;
 }
 
 // -----------------------------------------------------------------------------

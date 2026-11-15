@@ -6,6 +6,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
+import * as ExcelJS from 'exceljs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SkuGeneratorService } from './sku-generator.service';
 import { AuditService } from '../audit/audit.service';
@@ -33,20 +34,43 @@ export class ProductsService {
   ) { }
 
   async findAll(query: ProductQueryDto): Promise<PaginatedResponse<any>> {
-    const where: any = {
-      isActive: true, // Public storefront rule: published/active products only
-    };
+    const where: any = {};
 
-    // Text search in name, description, shortDescription, SKU, or tags
+    // Active status filter: defaults to true for public storefront when undefined
+    if (query.status === 'active') {
+      where.isActive = true;
+    } else if (query.status === 'inactive') {
+      where.isActive = false;
+    } else if (query.status === 'all') {
+      // Return all active and inactive products
+    } else {
+      where.isActive = true; // Public storefront default
+    }
+
+    // Text search in name, description, shortDescription, SKU, ID, or tags
     const search = (query.search || query.q)?.trim();
     if (search) {
-      where.OR = [
+      const searchConditions: any[] = [
         { name: { contains: search, mode: 'insensitive' } },
         { shortDescription: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
         { sku: { contains: search, mode: 'insensitive' } },
         { tags: { has: search.toLowerCase() } },
       ];
+      if (search.length >= 8) {
+        searchConditions.push({ id: { contains: search, mode: 'insensitive' } });
+      }
+      where.OR = searchConditions;
+    }
+
+    // Filter by specific SKU
+    if (query.sku?.trim()) {
+      where.sku = { contains: query.sku.trim(), mode: 'insensitive' };
+    }
+
+    // Filter by specific Product ID
+    if (query.productId?.trim()) {
+      where.id = query.productId.trim();
     }
 
     // Category filter by ID or Slug
@@ -94,6 +118,23 @@ export class ProductsService {
       where.stockQuantity = { gt: 0 };
     }
 
+    // Stock health status filter: HEALTHY | LOW_STOCK | OUT_OF_STOCK
+    if (query.stockStatus && query.stockStatus !== 'all') {
+      if (query.stockStatus === 'OUT_OF_STOCK') {
+        where.stockQuantity = 0;
+      } else if (query.stockStatus === 'LOW_STOCK') {
+        const lowStockRows = await this.prisma.$queryRaw<Array<{ id: string }>>`
+          SELECT id FROM "Product" WHERE "stockQuantity" > 0 AND "stockQuantity" <= "lowStockThreshold"
+        `;
+        where.id = { in: lowStockRows.map((r) => r.id) };
+      } else if (query.stockStatus === 'HEALTHY') {
+        const healthyRows = await this.prisma.$queryRaw<Array<{ id: string }>>`
+          SELECT id FROM "Product" WHERE "stockQuantity" > "lowStockThreshold"
+        `;
+        where.id = { in: healthyRows.map((r) => r.id) };
+      }
+    }
+
     // Merchandising flags
     if (query.isFeatured !== undefined) {
       where.isFeatured = query.isFeatured;
@@ -135,6 +176,221 @@ export class ProductsService {
 
     const meta = createPaginationMeta(totalItems, query.page, query.limit);
     return createPaginatedResponse(items, meta);
+  }
+
+  /**
+   * Retrieves accurate catalog analytics directly from PostgreSQL database.
+   */
+  async getAdminAnalytics() {
+    const [counts, brandDistribution, categoryDistribution] = await Promise.all([
+      this.prisma.$queryRaw<Array<{
+        total: number;
+        active: number;
+        inactive: number;
+        outOfStock: number;
+        lowStock: number;
+        healthy: number;
+      }>>`
+        SELECT
+          COUNT(*)::int AS "total",
+          COUNT(*) FILTER (WHERE "isActive" = true)::int AS "active",
+          COUNT(*) FILTER (WHERE "isActive" = false)::int AS "inactive",
+          COUNT(*) FILTER (WHERE "stockQuantity" = 0)::int AS "outOfStock",
+          COUNT(*) FILTER (WHERE "stockQuantity" > 0 AND "stockQuantity" <= "lowStockThreshold")::int AS "lowStock",
+          COUNT(*) FILTER (WHERE "stockQuantity" > "lowStockThreshold")::int AS "healthy"
+        FROM "Product"
+      `,
+      this.prisma.$queryRaw<Array<{ id: string; name: string; count: number }>>`
+        SELECT b.id, b.name, COUNT(p.id)::int AS count
+        FROM "Brand" b
+        LEFT JOIN "Product" p ON p."brandId" = b.id
+        GROUP BY b.id, b.name
+        ORDER BY count DESC
+        LIMIT 10
+      `,
+      this.prisma.$queryRaw<Array<{ id: string; name: string; count: number }>>`
+        SELECT c.id, c.name, COUNT(p.id)::int AS count
+        FROM "Category" c
+        LEFT JOIN "Product" p ON p."categoryId" = c.id
+        WHERE c."parentId" IS NULL
+        GROUP BY c.id, c.name
+        ORDER BY count DESC
+        LIMIT 10
+      `,
+    ]);
+
+    const stat = counts[0] || {
+      total: 0,
+      active: 0,
+      inactive: 0,
+      outOfStock: 0,
+      lowStock: 0,
+      healthy: 0,
+    };
+
+    return {
+      totalProducts: Number(stat.total),
+      activeProducts: Number(stat.active),
+      inactiveProducts: Number(stat.inactive),
+      outOfStock: Number(stat.outOfStock),
+      lowStock: Number(stat.lowStock),
+      healthyStock: Number(stat.healthy),
+      byBrand: brandDistribution.map((b) => ({ id: b.id, name: b.name, count: Number(b.count) })),
+      byCategory: categoryDistribution.map((c) => ({ id: c.id, name: c.name, count: Number(c.count) })),
+    };
+  }
+
+  /**
+   * Generates a streaming CSV or XLSX export of products matching active filters or selected IDs.
+   */
+  async exportProducts(
+    query: ProductQueryDto,
+    format: 'csv' | 'xlsx' = 'xlsx',
+    selectedIds?: string[],
+    selectedColumns?: string[]
+  ): Promise<{ buffer: Buffer; filename: string; mimeType: string }> {
+    const where: any = {};
+    if (selectedIds && selectedIds.length > 0) {
+      where.id = { in: selectedIds };
+    } else {
+      if (query.status === 'active') {
+        where.isActive = true;
+      } else if (query.status === 'inactive') {
+        where.isActive = false;
+      } else if (query.status === 'all') {
+        // all products
+      } else {
+        where.isActive = true;
+      }
+
+      const search = (query.search || query.q)?.trim();
+      if (search) {
+        const searchConditions: any[] = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { shortDescription: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { sku: { contains: search, mode: 'insensitive' } },
+          { tags: { has: search.toLowerCase() } },
+        ];
+        if (search.length >= 8) {
+          searchConditions.push({ id: { contains: search, mode: 'insensitive' } });
+        }
+        where.OR = searchConditions;
+      }
+
+      if (query.sku?.trim()) {
+        where.sku = { contains: query.sku.trim(), mode: 'insensitive' };
+      }
+      if (query.productId?.trim()) {
+        where.id = query.productId.trim();
+      }
+      if (query.categoryId) {
+        where.categoryId = query.categoryId;
+      } else if (query.categorySlug) {
+        where.category = { slug: query.categorySlug };
+      }
+      if (query.subcategoryId) {
+        where.subcategoryId = query.subcategoryId;
+      }
+      if (query.brandId) {
+        where.brandId = query.brandId;
+      } else if (query.brandSlug) {
+        where.brand = { slug: query.brandSlug };
+      }
+      if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+        where.priceCents = {};
+        if (query.minPrice !== undefined) where.priceCents.gte = Math.ceil(query.minPrice);
+        if (query.maxPrice !== undefined) where.priceCents.lte = Math.floor(query.maxPrice);
+      }
+      if (query.inStockOnly) {
+        where.stockQuantity = { gt: 0 };
+      }
+      if (query.stockStatus && query.stockStatus !== 'all') {
+        if (query.stockStatus === 'OUT_OF_STOCK') {
+          where.stockQuantity = 0;
+        } else if (query.stockStatus === 'LOW_STOCK') {
+          const lowStockRows = await this.prisma.$queryRaw<Array<{ id: string }>>`
+            SELECT id FROM "Product" WHERE "stockQuantity" > 0 AND "stockQuantity" <= "lowStockThreshold"
+          `;
+          where.id = { in: lowStockRows.map((r) => r.id) };
+        } else if (query.stockStatus === 'HEALTHY') {
+          const healthyRows = await this.prisma.$queryRaw<Array<{ id: string }>>`
+            SELECT id FROM "Product" WHERE "stockQuantity" > "lowStockThreshold"
+          `;
+          where.id = { in: healthyRows.map((r) => r.id) };
+        }
+      }
+    }
+
+    const products = await this.prisma.product.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        category: { select: { name: true } },
+        subcategory: { select: { name: true } },
+        brand: { select: { name: true } },
+      },
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'DSL Stationery Admin';
+    workbook.created = new Date();
+
+    const worksheet = workbook.addWorksheet('Products');
+    worksheet.columns = [
+      { header: 'Product ID', key: 'id', width: 28 },
+      { header: 'Product Name', key: 'name', width: 35 },
+      { header: 'SKU', key: 'sku', width: 22 },
+      { header: 'Brand', key: 'brand', width: 20 },
+      { header: 'Category', key: 'category', width: 22 },
+      { header: 'Subcategory', key: 'subcategory', width: 22 },
+      { header: 'Price (LKR)', key: 'price', width: 16 },
+      { header: 'Stock', key: 'stockQuantity', width: 14 },
+      { header: 'Low Stock Threshold', key: 'lowStockThreshold', width: 18 },
+      { header: 'Status', key: 'status', width: 14 },
+      { header: 'Created Date', key: 'createdAt', width: 22 },
+    ];
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF1E3A8A' },
+    };
+
+    products.forEach((p) => {
+      worksheet.addRow({
+        id: p.id,
+        name: p.name,
+        sku: p.sku,
+        brand: p.brand?.name || '',
+        category: p.category?.name || '',
+        subcategory: p.subcategory?.name || '',
+        price: (p.priceCents / 100).toFixed(2),
+        stockQuantity: p.stockQuantity,
+        lowStockThreshold: p.lowStockThreshold,
+        status: p.isActive ? 'Active' : 'Inactive',
+        createdAt: p.createdAt ? p.createdAt.toISOString() : '',
+      });
+    });
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    if (format === 'csv') {
+      const csvBuffer = await workbook.csv.writeBuffer();
+      return {
+        buffer: Buffer.from(csvBuffer),
+        filename: `dsl-products-${timestamp}.csv`,
+        mimeType: 'text/csv; charset=utf-8',
+      };
+    } else {
+      const xlsxBuffer = await workbook.xlsx.writeBuffer();
+      return {
+        buffer: Buffer.from(xlsxBuffer),
+        filename: `dsl-products-${timestamp}.xlsx`,
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      };
+    }
   }
 
   async findById(id: string, includeInactive = false) {

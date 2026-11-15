@@ -37,6 +37,7 @@ enum PaymentStatus {
   PENDING
   PAID
   FAILED
+  PARTIALLY_REFUNDED
   REFUNDED
 }
 
@@ -78,37 +79,11 @@ enum InventoryChangeReason {
   DEMO_RESET
 }
 
-enum DocumentStatus {
-  UPLOADED
-  PROCESSING
-  REVIEW_REQUIRED
-  READY_FOR_CONFIRMATION
-  CONFIRMED
-  FAILED
-  PROCESSED
-  REVIEWED
-  CONVERTED_TO_CART
-}
-
-enum ItemConfidence {
-  HIGH
-  MEDIUM
-  LOW
-}
-
 enum BackInStockAlertStatus {
   PENDING
   PROCESSING
   SENT
   CANCELLED
-}
-
-enum MatchStatus {
-  MATCHED
-  UNMATCHED
-  CUSTOM_SELECTED
-  SKIPPED
-  CONFIRMED
 }
 
 enum ReservationStatus {
@@ -125,6 +100,12 @@ enum PaymentAttemptStatus {
   SUCCEEDED
   FAILED
   EXPIRED
+}
+
+enum BankDepositStatus {
+  PENDING
+  VERIFIED
+  REJECTED
 }
 
 enum BannerStatus {
@@ -171,18 +152,18 @@ model User {
   wishlist             WishlistItem[]
   savedLists           SavedList[]
   savedStationeryLists SavedStationeryList[]
-  documents            UploadedDocument[]
   auditLogs            AuditLog[]
   refreshTokens        RefreshToken[]
   cart                 Cart?
   reservations         StockReservation[]
   backInStockAlerts    BackInStockAlert[]
-  createdBanners       HomepageBanner[]       @relation("BannerCreatedBy")
-  updatedBanners       HomepageBanner[]       @relation("BannerUpdatedBy")
+  createdBanners       HomepageBanner[]        @relation("BannerCreatedBy")
+  updatedBanners       HomepageBanner[]        @relation("BannerUpdatedBy")
   promotionRedemptions PromotionRedemption[]
-  invitationsSent      AdminInvitation[]      @relation("InvitedAdmins")
-  importPreviews       ProductImportPreview[] @relation("ImportPreviewsCreated")
-  importBatches        ProductImportBatch[]   @relation("ImportBatchesCreated")
+  invitationsSent      AdminInvitation[]       @relation("InvitedAdmins")
+  importPreviews       ProductImportPreview[]  @relation("ImportPreviewsCreated")
+  importBatches        ProductImportBatch[]    @relation("ImportBatchesCreated")
+  reviewedBankDeposits BankDepositSubmission[] @relation("ReviewedBankDeposits")
 
   @@index([email])
   @@index([phone])
@@ -303,18 +284,17 @@ model Product {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
-  variants           ProductVariant[]
-  globalSku          GlobalSku?
-  movements          InventoryMovement[]
-  orderItems         OrderItem[]
-  packItems          SchoolPackItem[]
-  matchedUploadItems ExtractedStationeryItem[]
-  wishlistItems      WishlistItem[]
-  savedListItems     SavedListItem[]
-  cartItems          CartItem[]
-  reservationItems   StockReservationItem[]
-  backInStockAlerts  BackInStockAlert[]
-  promotions         PromotionProduct[]
+  variants          ProductVariant[]
+  globalSku         GlobalSku?
+  movements         InventoryMovement[]
+  orderItems        OrderItem[]
+  packItems         SchoolPackItem[]
+  wishlistItems     WishlistItem[]
+  savedListItems    SavedListItem[]
+  cartItems         CartItem[]
+  reservationItems  StockReservationItem[]
+  backInStockAlerts BackInStockAlert[]
+  promotions        PromotionProduct[]
 
   @@index([slug])
   @@index([sku])
@@ -434,14 +414,15 @@ model Order {
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
 
-  addressSnapshot OrderAddressSnapshot?
-  items           OrderItem[]
-  reservation     StockReservation?
-  paymentAttempts PaymentAttempt[]
-  auditLogs       OrderAuditLog[]
-  orderNotes      OrderNote[]
-  returnRequests  OrderReturnRequest[]
-  refundRecords   RefundRecord[]
+  addressSnapshot        OrderAddressSnapshot?
+  items                  OrderItem[]
+  reservation            StockReservation?
+  paymentAttempts        PaymentAttempt[]
+  auditLogs              OrderAuditLog[]
+  orderNotes             OrderNote[]
+  returnRequests         OrderReturnRequest[]
+  refundRecords          RefundRecord[]
+  bankDepositSubmissions BankDepositSubmission[]
 
   // Guest order tracking security (Phase B.1 — stores only a SHA-256 hash of OTP)
   trackingOtpHash       String?
@@ -518,6 +499,15 @@ enum ReturnItemStatus {
   REFUNDED
 }
 
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  PROCESSING
+  COMPLETED
+  FAILED
+  REJECTED
+}
+
 model OrderAuditLog {
   id            String   @id @default(cuid())
   orderId       String
@@ -557,6 +547,7 @@ model OrderReturnRequest {
   reason          String
   rejectionReason String?
   items           OrderReturnItem[]
+  refundRecords   RefundRecord[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
@@ -582,17 +573,38 @@ model OrderReturnItem {
 }
 
 model RefundRecord {
-  id          String   @id @default(cuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  amountCents Int
-  method      String // e.g. "MANUAL_BANK_TRANSFER", "PAYHERE_OFFLINE", "STORE_CREDIT"
-  reference   String?
-  reason      String
-  processedBy String? // Admin ID/name
-  createdAt   DateTime @default(now())
+  id                   String              @id @default(cuid())
+  orderId              String
+  order                Order               @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  amountCents          Int
+  currency             String              @default("LKR")
+  method               String // e.g. "BANK_TRANSFER", "CARD_PAYHERE", "KOKO_BNPL", "CASH", "STORE_CREDIT"
+  status               RefundStatus        @default(REQUESTED)
+  reference            String?
+  externalReference    String?
+  idempotencyKey       String?
+  payloadHash          String?
+  reason               String
+  failureReason        String?
+  maskedAccountNumber  String?
+  encryptedBankDetails String?
+  processedBy          String?
+  processedById        String?
+  requestedById        String? // Explicit ID of admin who requested refund/cancellation
+  approvedById         String?
+  approvedAt           DateTime?
+  completedById        String? // Explicit ID of independent admin who verified execution and completed refund
+  completedAt          DateTime?
+  orderReturnRequestId String?
+  orderReturnRequest   OrderReturnRequest? @relation(fields: [orderReturnRequestId], references: [id], onDelete: Restrict)
+  metadata             Json?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
 
+  @@unique([orderId, idempotencyKey])
   @@index([orderId])
+  @@index([status])
+  @@index([orderReturnRequestId])
 }
 
 // ------------------------------------------------------------------------------
@@ -655,9 +667,51 @@ model PaymentAttempt {
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
 
+  bankDepositSubmissions BankDepositSubmission[]
+
   @@index([reservationId])
   @@index([orderId])
   @@index([status])
+}
+
+// ------------------------------------------------------------------------------
+// BANK DEPOSIT SUBMISSIONS (Stage 3.2)
+// ------------------------------------------------------------------------------
+
+model BankDepositSubmission {
+  id               String          @id @default(cuid())
+  orderId          String
+  order            Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  paymentAttemptId String?
+  paymentAttempt   PaymentAttempt? @relation(fields: [paymentAttemptId], references: [id], onDelete: SetNull)
+
+  // Storage & file metadata
+  receiptStorageKey String
+  originalFilename  String
+  fileSizeBytes     Int
+  mimeType          String
+  fileHashSha256    String?
+
+  // Customer claimed deposit data
+  referenceNumber String
+  depositDate     DateTime
+  amountCents     Int
+  customerNotes   String?
+
+  // Verification Lifecycle
+  status          BankDepositStatus @default(PENDING)
+  rejectionReason String?
+  reviewedById    String?
+  reviewedBy      User?             @relation("ReviewedBankDeposits", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+  @@index([referenceNumber])
+  @@index([paymentAttemptId])
 }
 
 // ------------------------------------------------------------------------------
@@ -769,68 +823,6 @@ model PromotionRedemption {
 }
 
 // ------------------------------------------------------------------------------
-// UPLOADED BOOKLIST DOCUMENTS & OCR EXTRACTIONS
-// ------------------------------------------------------------------------------
-
-model UploadedDocument {
-  id              String         @id @default(cuid())
-  userId          String?
-  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-  sessionId       String?
-  fileName        String
-  fileUrl         String
-  storagePath     String?
-  fileSizeBytes   Int
-  fileType        String
-  pageCount       Int            @default(1)
-  status          DocumentStatus @default(UPLOADED)
-  isSimulatedOCR  Boolean        @default(false)
-  ocrProvider     String?
-  customerNotes   String?
-  processingError String?
-  attempts        Int            @default(0)
-  processedAt     DateTime?
-  confirmedAt     DateTime?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-
-  extractedItems ExtractedStationeryItem[]
-
-  @@index([userId])
-  @@index([sessionId])
-  @@index([status])
-}
-
-model ExtractedStationeryItem {
-  id                   String           @id @default(cuid())
-  documentId           String
-  document             UploadedDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  rawText              String
-  itemDescription      String
-  quantity             Int              @default(1)
-  unit                 String?
-  confidence           ItemConfidence   @default(MEDIUM)
-  confidenceScore      Float            @default(0.8)
-  extractionConfidence Float            @default(0.8)
-  matchConfidence      Float            @default(0.8)
-  matchReason          String?
-  matchedProductId     String?
-  matchedProduct       Product?         @relation(fields: [matchedProductId], references: [id], onDelete: SetNull)
-  matchedVariantId     String?
-  candidateProductIds  String[]         @default([])
-  status               MatchStatus      @default(MATCHED)
-  isConfirmed          Boolean          @default(false)
-  confirmedProductId   String?
-  confirmedVariantId   String?
-  confirmedQuantity    Int?
-  isSubstituted        Boolean          @default(false)
-  createdAt            DateTime         @default(now())
-
-  @@index([documentId])
-  @@index([matchedProductId])
-}
-
-// ------------------------------------------------------------------------------
 // WISHLIST & SAVED LISTS
 // ------------------------------------------------------------------------------
 
@@ -918,6 +910,7 @@ model HomepageBanner {
   imageAltText String
   buttonText   String?
   buttonLink   String?
+  placement    String?      @default("HERO")
   sortOrder    Int          @default(0)
   status       BannerStatus @default(DRAFT)
   startAt      DateTime?
@@ -948,16 +941,28 @@ model AuditLog {
 }
 
 model StoreSettings {
-  id                         String   @id @default("default")
-  flatDeliveryFeeCents       Int      @default(35000) // Rs. 350.00
-  freeDeliveryThresholdCents Int      @default(500000) // Rs. 5,000.00
-  hotlinePhone               String   @default("+94 11 200 9000")
-  whatsappNumber             String   @default("+94 77 123 4567")
-  contactEmail               String   @default("support@dslstationery.lk")
-  codEnabled                 Boolean  @default(true)
-  bankTransferEnabled        Boolean  @default(true)
-  onlineCardEnabled          Boolean  @default(false)
-  updatedAt                  DateTime @updatedAt
+  id                         String  @id @default("default")
+  flatDeliveryFeeCents       Int     @default(35000) // Rs. 350.00
+  freeDeliveryThresholdCents Int     @default(500000) // Rs. 5,000.00
+  hotlinePhone               String  @default("+94 11 200 9000")
+  whatsappNumber             String  @default("+94 77 123 4567")
+  contactEmail               String  @default("support@dslstationery.lk")
+  codEnabled                 Boolean @default(true)
+  bankTransferEnabled        Boolean @default(false)
+  onlineCardEnabled          Boolean @default(false)
+
+  // Bank Transfer Configuration (Stage 3.1) - All default to NULL
+  bankName              String?
+  accountHolderName     String?
+  accountNumber         String?
+  branchName            String?
+  branchCode            String?
+  bankCode              String?
+  paymentInstructions   String?
+  referenceInstructions String?
+  bankLogoUrl           String?
+
+  updatedAt DateTime @updatedAt
 }
 
 // ------------------------------------------------------------------------------

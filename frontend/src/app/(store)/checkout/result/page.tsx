@@ -119,12 +119,39 @@ function CheckoutResultContent() {
     }
   }, [orderId, effectiveEmail, tokenParam]);
 
+  // Determine authoritative payment status from backend
+  const paymentStatus =
+    order?.paymentStatus ||
+    reconciledStatus?.paymentStatus ||
+    (paymentQueryParam === 'cancelled' ? 'FAILED' : 'PENDING');
+  const isPaid = paymentStatus === 'PAID' || paymentStatus === 'succeeded' || paymentStatus === 'SUCCEEDED';
+  const isPending =
+    paymentStatus === 'PENDING' || paymentStatus === 'processing' || paymentStatus === 'PROCESSING';
+  const isFailed =
+    paymentStatus === 'FAILED' || paymentStatus === 'failed' || paymentStatus === 'CANCELLED';
+
   useEffect(() => {
     fetchAuthoritativeStatus();
   }, [fetchAuthoritativeStatus]);
 
+  // State for polling attempts
+  const [pollCount, setPollCount] = useState(0);
+  const MAX_POLLS = 5;
+
+  // For pending online payments, automatically recheck every 3 seconds (up to 5 attempts / 15s max) to catch incoming webhooks
+  useEffect(() => {
+    if (paymentQueryParam === 'pending' && !isPaid && !isFailed && !isLoading && pollCount < MAX_POLLS) {
+      const timer = setTimeout(() => {
+        setPollCount((prev) => prev + 1);
+        fetchAuthoritativeStatus();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [paymentQueryParam, isPaid, isFailed, isLoading, pollCount, fetchAuthoritativeStatus]);
+
   const handleManualRecheck = () => {
     setIsRechecking(true);
+    setPollCount(0);
     fetchAuthoritativeStatus();
   };
 
@@ -252,17 +279,6 @@ function CheckoutResultContent() {
     }
   };
 
-  // Determine authoritative payment status from backend
-  const paymentStatus =
-    order?.paymentStatus ||
-    reconciledStatus?.paymentStatus ||
-    (paymentQueryParam === 'cancelled' ? 'FAILED' : 'PENDING');
-  const isPaid = paymentStatus === 'PAID' || paymentStatus === 'succeeded' || paymentStatus === 'SUCCEEDED';
-  const isPending =
-    paymentStatus === 'PENDING' || paymentStatus === 'processing' || paymentStatus === 'PROCESSING';
-  const isFailed =
-    paymentStatus === 'FAILED' || paymentStatus === 'failed' || paymentStatus === 'CANCELLED';
-
   if (isLoading) {
     return (
       <div className="max-w-md mx-auto my-24 p-8 bg-white rounded-3xl border border-[#C6E7FF]/60 text-center space-y-4 shadow-sm">
@@ -310,14 +326,15 @@ function CheckoutResultContent() {
               Order Placed Successfully!
             </h1>
             <p className="text-sm text-[#292525]/70 max-w-md mx-auto">
-              We received your order. If you selected Cash on Delivery, our team will dispatch your
-              stationery soon. For bank transfers, verification takes up to 24 hours.
+              {paymentQueryParam === 'pending' || order?.paymentMethod === 'CARD_PAYHERE'
+                ? 'Your card payment has been submitted through PayHere. Our servers are verifying the transaction callback. Click below to refresh status.'
+                : 'We received your order. If you selected Cash on Delivery, our team will dispatch your stationery soon. For bank transfers, verification takes up to 24 hours.'}
             </p>
             <div>
               <button
                 onClick={handleManualRecheck}
                 disabled={isRechecking}
-                className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold px-5 py-2.5 rounded-full transition-all shadow-sm disabled:opacity-50"
+                className="inline-flex items-center gap-2 bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold px-5 py-2.5 rounded-full transition-all shadow-sm disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isRechecking ? 'animate-spin' : ''}`} />
                 <span>{isRechecking ? 'Checking Status...' : 'Re-check Order Status'}</span>
@@ -329,23 +346,23 @@ function CheckoutResultContent() {
 
       {isFailed && (
         <>
-          <div className="w-20 h-20 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto shadow-sm border border-red-200">
+          <div className="w-20 h-20 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto shadow-sm border border-rose-200">
             <XCircle className="w-10 h-10" />
           </div>
           <div className="space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-red-700 bg-red-100 px-4 py-1.5 rounded-full inline-flex items-center gap-1.5 border border-red-200">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-700 bg-rose-100 px-4 py-1.5 rounded-full inline-flex items-center gap-1.5 border border-rose-200">
               Payment Not Completed
             </span>
-            <h1 className="text-3xl sm:text-4xl font-black text-[#292525] tracking-tight">
+            <h1 className="text-2xl sm:text-4xl font-black text-[#09285C] tracking-tight">
               Payment Was Cancelled or Declined
             </h1>
-            <p className="text-sm text-[#292525]/70 max-w-md mx-auto">
+            <p className="text-sm text-slate-600 max-w-md mx-auto">
               Your payment was not completed. If your 10-minute reservation has not expired, you can return to checkout to retry or select Cash on Delivery.
             </p>
             <div className="pt-2">
               <Link
                 href="/checkout"
-                className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold px-6 py-3 rounded-full transition-all shadow-sm"
+                className="inline-flex items-center gap-2 bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold px-6 py-3 rounded-full transition-all shadow-sm"
               >
                 <span>Return to Checkout</span> <ArrowRight className="w-4 h-4" />
               </Link>
@@ -356,15 +373,15 @@ function CheckoutResultContent() {
 
       {/* Order Details Card */}
       {order && (
-        <div className="bg-white rounded-3xl border border-[#C6E7FF]/60 p-6 sm:p-8 text-left space-y-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between pb-4 border-b border-[#C6E7FF]/30 gap-2">
+        <div className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-8 text-left space-y-6 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between pb-4 border-b border-slate-100 gap-2">
             <div>
-              <span className="text-[10px] text-[#292525]/50 block uppercase font-mono">Order Number</span>
-              <span className="text-lg font-black text-[#0066CC] font-mono">{order.orderNumber}</span>
+              <span className="text-[10px] text-slate-400 block uppercase font-mono">Order Number</span>
+              <span className="text-lg font-black text-[#0866E8] font-mono">{order.orderNumber}</span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] text-[#292525]/50 block uppercase">Authoritative Status</span>
-              <span className="text-xs font-bold font-mono bg-[#FFFDF0] px-2.5 py-1 rounded-full border border-[#C6E7FF]/40 text-[#292525]">
+              <span className="text-[10px] text-slate-400 block uppercase">Authoritative Status</span>
+              <span className="text-xs font-bold font-mono bg-[#F7FAFF] px-2.5 py-1 rounded-full border border-blue-100 text-[#09285C]">
                 {order.orderStatus || 'CONFIRMED'} &bull; {order.paymentStatus || 'PAID'}
               </span>
             </div>
@@ -372,15 +389,15 @@ function CheckoutResultContent() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <strong className="block text-[#292525]/50 uppercase text-[10px] mb-1">Customer Details</strong>
-              <div className="font-bold text-[#292525]">{order.customerName}</div>
-              <div className="text-[#292525]/70">{order.customerEmail}</div>
-              <div className="text-[#292525]/70">{order.customerPhone}</div>
+              <strong className="block text-slate-400 uppercase text-[10px] mb-1">Customer Details</strong>
+              <div className="font-bold text-[#09285C]">{order.customerName}</div>
+              <div className="text-slate-600">{order.customerEmail}</div>
+              <div className="text-slate-600">{order.customerPhone}</div>
             </div>
 
             <div>
-              <strong className="block text-[#292525]/50 uppercase text-[10px] mb-1">Shipping Destination</strong>
-              <div className="text-[#292525] font-medium">
+              <strong className="block text-slate-400 uppercase text-[10px] mb-1">Shipping Destination</strong>
+              <div className="text-slate-700 font-medium">
                 {order.addressSnapshot?.addressLine1 || order.shippingAddress?.addressLine1},{' '}
                 {order.addressSnapshot?.city || order.shippingAddress?.city},{' '}
                 {order.addressSnapshot?.district || order.shippingAddress?.district}
@@ -389,16 +406,16 @@ function CheckoutResultContent() {
           </div>
 
           {/* Ordered items breakdown */}
-          <div className="pt-4 border-t border-[#C6E7FF]/30">
-            <h3 className="text-xs font-bold text-[#292525] mb-3">Order Items</h3>
+          <div className="pt-4 border-t border-slate-100">
+            <h3 className="text-xs font-bold text-[#09285C] mb-3">Order Items</h3>
             <div className="space-y-2">
               {order.items?.map((i: any) => (
-                <div key={i.id} className="flex justify-between text-xs py-1.5 border-b border-stone-100">
-                  <span className="text-[#292525]/80">
+                <div key={i.id} className="flex justify-between text-xs py-1.5 border-b border-slate-100">
+                  <span className="text-slate-700">
                     {i.quantity}x {i.productName || i.product?.name}
                     {i.variantName ? ` (${i.variantName})` : ''}
                   </span>
-                  <span className="font-bold text-[#292525]">
+                  <span className="font-bold text-[#09285C]">
                     {formatLKR(i.totalPriceCents || i.unitPriceCents * i.quantity)}
                   </span>
                 </div>
@@ -413,9 +430,9 @@ function CheckoutResultContent() {
                 <span>-{formatLKR(order.discountCents)}</span>
               </div>
             )}
-            <div className="flex justify-between text-sm font-bold text-[#292525] pt-1">
+            <div className="flex justify-between text-sm font-bold text-[#09285C] pt-1">
               <span>Total Payable Amount</span>
-              <span className="text-lg font-black text-[#0066CC]">{formatLKR(order.totalCents)}</span>
+              <span className="text-lg font-black text-[#0866E8]">{formatLKR(order.totalCents)}</span>
             </div>
           </div>
         </div>

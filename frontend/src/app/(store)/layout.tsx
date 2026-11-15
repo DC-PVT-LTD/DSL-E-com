@@ -6,6 +6,7 @@ import { DemoBanner } from '@/components/common/DemoBanner';
 import { Navbar } from '@/components/common/Navbar';
 import { Footer } from '@/components/common/Footer';
 import { CartDrawer } from '@/components/common/CartDrawer';
+import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 
 export default function StoreLayout({
   children,
@@ -13,20 +14,19 @@ export default function StoreLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  // Standalone landing cover (/ and /welcome) hides common store chrome
-  const isCoverPage = pathname === '/' || pathname === '/welcome';
-  // Home page uses the native hero banner with integrated white-wave header
-  const isHomePage = pathname === '/home';
+  // Only isolated welcome splash screen hides common store chrome
+  const isSplashPage = pathname === '/welcome';
 
   return (
-    <div className="min-h-screen flex flex-col text-[#10285D] bg-[#FFF8ED]">
-      {!isCoverPage && !isHomePage && <DemoBanner />}
-      {!isCoverPage && <Navbar />}
+    <div className="min-h-screen flex flex-col text-[#09285C] bg-white antialiased selection:bg-[#EAF4FF] selection:text-[#0866E8]">
+      {!isSplashPage && <Navbar />}
+      {!isSplashPage && <DemoBanner />}
       <CartDrawer />
-      <main className="flex-1">
+      <main className="flex-1 pb-16 lg:pb-0">
         {children}
       </main>
-      {!isCoverPage && <Footer />}
+      {!isSplashPage && <Footer />}
+      {!isSplashPage && <MobileBottomNav />}
     </div>
   );
 }

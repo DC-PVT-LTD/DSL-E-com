@@ -119,8 +119,9 @@ describe('ProductQueryDto Validation', () => {
       expect(() => productQuerySchema.parse({ page: '-1', limit: '5' })).toThrow();
     });
 
-    it('rejects limit exceeding 100', () => {
-      expect(() => productQuerySchema.parse({ page: '1', limit: '101' })).toThrow();
+    it('rejects limit exceeding 200', () => {
+      expect(productQuerySchema.parse({ page: '1', limit: '200' }).limit).toBe(200);
+      expect(() => productQuerySchema.parse({ page: '1', limit: '201' })).toThrow();
     });
   });
 });

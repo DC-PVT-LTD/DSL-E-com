@@ -148,6 +148,18 @@ describe('BannersService (Phase 15.5)', () => {
       const result = await service.getHomepageBanners();
       expect(result).toEqual([]);
     });
+
+    it('filters by placement when provided', async () => {
+      prismaMock.homepageBanner.findMany.mockResolvedValue([]);
+      await service.getHomepageBanners('MID_PAGE_PROMO');
+      expect(prismaMock.homepageBanner.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            placement: 'MID_PAGE_PROMO',
+          }),
+        })
+      );
+    });
   });
 
   describe('getAdminBanners', () => {

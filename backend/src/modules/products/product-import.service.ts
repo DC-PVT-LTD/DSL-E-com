@@ -71,7 +71,7 @@ export class ProductImportService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(SkuGeneratorService) private readonly skuGenerator: SkuGeneratorService,
     @Optional() @Inject(InventoryService) private readonly inventoryService?: InventoryService,
-  ) {}
+  ) { }
 
   /**
    * Generates a downloadable Excel or CSV import template with sample rows and guidelines.
@@ -673,8 +673,10 @@ export class ProductImportService {
 
     const brandBySlug = new Map<string, (typeof brands)[0]>();
     const brandByName = new Map<string, (typeof brands)[0]>();
+    const brandById = new Map<string, (typeof brands)[0]>();
 
     for (const brd of brands) {
+      brandById.set(brd.id, brd);
       brandBySlug.set(brd.slug.toLowerCase(), brd);
       brandByName.set(brd.name.toLowerCase(), brd);
     }
@@ -714,34 +716,33 @@ export class ProductImportService {
         }),
         this.prisma.product?.findMany
           ? this.prisma.product.findMany({
-              where: { sku: { in: skuList } },
-              select: {
-                id: true,
-                sku: true,
-                name: true,
-                priceCents: true,
-                costPriceCents: true,
-                categoryId: true,
-                subcategoryId: true,
-                brandId: true,
-                updatedAt: true,
-              },
-            })
+            where: { sku: { in: skuList } },
+            select: {
+              id: true,
+              sku: true,
+              name: true,
+              priceCents: true,
+              costPriceCents: true,
+              categoryId: true,
+              subcategoryId: true,
+              brandId: true,
+              updatedAt: true,
+            },
+          })
           : Promise.resolve([]),
         this.prisma.productVariant?.findMany
           ? this.prisma.productVariant.findMany({
-              where: { sku: { in: skuList } },
-              select: {
-                id: true,
-                sku: true,
-                productId: true,
-                name: true,
-                priceCents: true,
-                costPriceCents: true,
-                attributes: true,
-                updatedAt: true,
-              },
-            })
+            where: { sku: { in: skuList } },
+            select: {
+              id: true,
+              sku: true,
+              productId: true,
+              name: true,
+              priceCents: true,
+              attributes: true,
+              updatedAt: true,
+            },
+          })
           : Promise.resolve([]),
       ]);
 
@@ -795,7 +796,7 @@ export class ProductImportService {
         errors.push('Category is required');
       } else {
         const catKey = r.category.toLowerCase();
-        matchedCategory = categoryBySlug.get(catKey) || categoryByName.get(catKey);
+        matchedCategory = categoryById.get(r.category) || categoryBySlug.get(catKey) || categoryByName.get(catKey);
         if (!matchedCategory) {
           errors.push(`Category "${r.category}" not found in database`);
         }
@@ -804,7 +805,7 @@ export class ProductImportService {
       // (c) Subcategory validation (if provided)
       if (r.subcategory && matchedCategory) {
         const subKey = r.subcategory.toLowerCase();
-        matchedSubcategory = categoryBySlug.get(subKey) || categoryByName.get(subKey);
+        matchedSubcategory = categoryById.get(r.subcategory) || categoryBySlug.get(subKey) || categoryByName.get(subKey);
 
         if (!matchedSubcategory) {
           errors.push(`Subcategory "${r.subcategory}" not found in database`);
@@ -821,7 +822,7 @@ export class ProductImportService {
         errors.push('Brand is required');
       } else {
         const brdKey = r.brand.toLowerCase();
-        matchedBrand = brandBySlug.get(brdKey) || brandByName.get(brdKey);
+        matchedBrand = brandById.get(r.brand) || brandBySlug.get(brdKey) || brandByName.get(brdKey);
         if (!matchedBrand) {
           errors.push(`Brand "${r.brand}" not found in database`);
         }
@@ -958,9 +959,9 @@ export class ProductImportService {
       // Tags array extraction
       const tagsList = r.tags
         ? r.tags
-            .split(',')
-            .map((t) => t.trim())
-            .filter(Boolean)
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean)
         : [];
 
       // Concurrency snapshot extraction for existing items
@@ -979,7 +980,7 @@ export class ProductImportService {
           fields: {
             name: v.name,
             priceCents: v.priceCents,
-            costPriceCents: v.costPriceCents,
+            costPriceCents: null,
             attributes: (v.attributes as Record<string, string>) || {},
           },
         };
@@ -1076,9 +1077,10 @@ export class ProductImportService {
       newVariants: newVariantsCount,
     };
 
+    const sanitizedRows = JSON.parse(JSON.stringify(normalizedRows));
     const previewChecksum = crypto
       .createHash('sha256')
-      .update(this.canonicalJson(normalizedRows))
+      .update(this.canonicalJson(sanitizedRows))
       .digest('hex');
 
     let previewId = `preview_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
@@ -1181,7 +1183,7 @@ export class ProductImportService {
     if (Array.isArray(obj)) {
       return '[' + obj.map((item) => this.canonicalJson(item)).join(',') + ']';
     }
-    const keys = Object.keys(obj).sort();
+    const keys = Object.keys(obj).filter((k) => obj[k] !== undefined).sort();
     const pairs = keys.map((key) => JSON.stringify(key) + ':' + this.canonicalJson(obj[key]));
     return '{' + pairs.join(',') + '}';
   }
@@ -1217,7 +1219,8 @@ export class ProductImportService {
     }
 
     const isSuperAdmin =
-      user.role === 'ADMIN' && (!user.roleId || user.assignedRole?.slug === 'super-admin');
+      user.role === 'ADMIN' &&
+      (!user.roleId || user.assignedRole?.slug === 'super_admin' || user.assignedRole?.slug === 'super-admin');
     const grantedKeys = new Set<string>(
       user.assignedRole?.permissions.map((rp) => rp.permission.key) || []
     );
@@ -1728,7 +1731,7 @@ export class ProductImportService {
         // Create variant with auto-generated SKU
         const generatedVariantSku = await this.skuGenerator.generateVariantSku(
           parent.sku,
-          { color: row.color },
+          { color: row.color ?? undefined },
           tx
         );
 
@@ -1785,10 +1788,10 @@ export class ProductImportService {
       }
 
       // Verify category, subcategory, brand under locks
-      const lockedCats = await tx.$queryRaw<Array<{ id: string; isActive: boolean }>>`
-        SELECT id, "isActive" FROM "Category" WHERE id = ${row.categoryId} FOR UPDATE
+      const lockedCats = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM "Category" WHERE id = ${row.categoryId} FOR UPDATE
       `;
-      if (!lockedCats.length || !lockedCats[0].isActive) {
+      if (!lockedCats.length) {
         throw new BusinessValidationException(
           'ERR_CATEGORY_INACTIVE_OR_DELETED',
           `Category "${row.categoryName}" is inactive or deleted`
@@ -1797,13 +1800,12 @@ export class ProductImportService {
 
       if (row.subcategoryId) {
         const lockedSubs = await tx.$queryRaw<
-          Array<{ id: string; isActive: boolean; parentId: string | null }>
+          Array<{ id: string; parentId: string | null }>
         >`
-          SELECT id, "isActive", "parentId" FROM "Category" WHERE id = ${row.subcategoryId} FOR UPDATE
+          SELECT id, "parentId" FROM "Category" WHERE id = ${row.subcategoryId} FOR UPDATE
         `;
         if (
           !lockedSubs.length ||
-          !lockedSubs[0].isActive ||
           lockedSubs[0].parentId !== row.categoryId
         ) {
           throw new BusinessValidationException(
@@ -1813,10 +1815,10 @@ export class ProductImportService {
         }
       }
 
-      const lockedBrands = await tx.$queryRaw<Array<{ id: string; isActive: boolean }>>`
-        SELECT id, "isActive" FROM "Brand" WHERE id = ${row.brandId} FOR UPDATE
+      const lockedBrands = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM "Brand" WHERE id = ${row.brandId} FOR UPDATE
       `;
-      if (!lockedBrands.length || !lockedBrands[0].isActive) {
+      if (!lockedBrands.length) {
         throw new BusinessValidationException(
           'ERR_BRAND_INACTIVE_OR_DELETED',
           `Brand "${row.brandName}" is inactive or deleted`

@@ -36,6 +36,7 @@ describe('ProductsService', () => {
       globalSku: {
         findUnique: vi.fn().mockResolvedValue(null),
       },
+      $queryRaw: vi.fn(),
       $transaction: vi.fn(async (cb) => cb(mockPrisma)),
     };
 
@@ -291,6 +292,78 @@ describe('ProductsService', () => {
         where: { id: 'var-1' },
         data: { isActive: false },
       });
+    });
+  });
+
+  describe('getAdminAnalytics', () => {
+    it('returns calculated metrics and breakdowns from database', async () => {
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([
+          { total: 94, active: 90, inactive: 4, outOfStock: 10, lowStock: 5, healthy: 79 },
+        ])
+        .mockResolvedValueOnce([
+          { id: 'b1', name: 'Speed', count: 40 },
+        ])
+        .mockResolvedValueOnce([
+          { id: 'c1', name: 'Pens', count: 16 },
+        ]);
+
+      const analytics = await service.getAdminAnalytics();
+      expect(analytics.totalProducts).toBe(94);
+      expect(analytics.activeProducts).toBe(90);
+      expect(analytics.inactiveProducts).toBe(4);
+      expect(analytics.outOfStock).toBe(10);
+      expect(analytics.lowStock).toBe(5);
+      expect(analytics.healthyStock).toBe(79);
+      expect(analytics.byBrand[0].name).toBe('Speed');
+      expect(analytics.byCategory[0].name).toBe('Pens');
+    });
+  });
+
+  describe('exportProducts', () => {
+    it('generates CSV and XLSX buffers with accurate headers and rows', async () => {
+      mockPrisma.product.findMany.mockResolvedValueOnce([
+        {
+          id: 'prod-1',
+          name: 'Atlas Pen',
+          sku: 'ATL-PEN-01',
+          priceCents: 5000,
+          stockQuantity: 20,
+          lowStockThreshold: 5,
+          isActive: true,
+          createdAt: new Date('2026-01-01'),
+          brand: { name: 'Atlas' },
+          category: { name: 'Pens' },
+          subcategory: null,
+        },
+      ]);
+
+      const xlsxResult = await service.exportProducts({ page: 1, limit: 20 }, 'xlsx');
+      expect(xlsxResult.filename).toContain('dsl-products-');
+      expect(xlsxResult.filename).toContain('.xlsx');
+      expect(xlsxResult.buffer).toBeInstanceOf(Buffer);
+      expect(xlsxResult.buffer.length).toBeGreaterThan(0);
+
+      mockPrisma.product.findMany.mockResolvedValueOnce([
+        {
+          id: 'prod-1',
+          name: 'Atlas Pen',
+          sku: 'ATL-PEN-01',
+          priceCents: 5000,
+          stockQuantity: 20,
+          lowStockThreshold: 5,
+          isActive: true,
+          createdAt: new Date('2026-01-01'),
+          brand: { name: 'Atlas' },
+          category: { name: 'Pens' },
+          subcategory: null,
+        },
+      ]);
+
+      const csvResult = await service.exportProducts({ page: 1, limit: 20 }, 'csv');
+      expect(csvResult.filename).toContain('.csv');
+      expect(csvResult.buffer.toString()).toContain('Atlas Pen');
+      expect(csvResult.buffer.toString()).toContain('ATL-PEN-01');
     });
   });
 });

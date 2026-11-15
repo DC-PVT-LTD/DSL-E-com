@@ -845,11 +845,26 @@ export class AuthService {
         },
       });
 
+      const frontendUrl =
+        this.configService?.get<string>('FRONTEND_URL', 'http://localhost:3000') ||
+        'http://localhost:3000';
+      const resetUrl = `${frontendUrl.replace(/\/+$/, '')}/reset-password?token=${rawToken}`;
+
+      try {
+        await this.notificationsService.sendPasswordResetEmail({
+          email: user.email,
+          name: user.name,
+          resetUrl,
+          expiresHours: 1,
+        });
+      } catch (err: any) {
+        this.logger.error(`Failed to send password reset email to ${dto.email}: ${err?.message || err}`);
+      }
+
       if (!this.isProduction && process.env.NODE_ENV === 'development') {
         const masked = dto.email.replace(/^(.)(.*)(@.*)$/, (_, a, b, c) => `${a}***${c}`);
         this.logger.warn(
-          `[DEV ONLY — NEVER IN PRODUCTION] Password reset link for ${masked}:\n` +
-          `http://localhost:3000/reset-password?token=${rawToken}`
+          `[DEV ONLY — NEVER IN PRODUCTION] Password reset link for ${masked}:\n${resetUrl}`
         );
       }
     }

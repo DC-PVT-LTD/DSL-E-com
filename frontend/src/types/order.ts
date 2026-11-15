@@ -109,6 +109,15 @@ export interface OrderItemSnapshot {
   createdAt?: string;
 }
 
+export interface BankDepositSubmissionSummary {
+  id: string;
+  status: 'PENDING' | 'VERIFIED' | 'REJECTED';
+  referenceNumber?: string | null;
+  depositDate?: string | null;
+  rejectionReason?: string | null;
+  createdAt: string;
+}
+
 export interface PaymentAttempt {
   id: string;
   status: string;
@@ -143,6 +152,10 @@ export interface Order {
   trackingNumber?: string | null;
   estimatedDeliveryDate?: string | null;
   paymentAttempts?: PaymentAttempt[];
+  bankDepositSubmissions?: BankDepositSubmissionSummary[];
+  refundRecords?: RefundRecord[];
+  returnRequests?: OrderReturnRequest[];
+  financialSummary?: OrderFinancialSummary;
   createdAt: string;
   updatedAt: string;
 }
@@ -269,4 +282,131 @@ export interface BuyAgainResponse {
     totalAddedQuantity: number;
     estimatedTotalCents: number;
   };
+}
+
+export type RefundStatus =
+  | 'REQUESTED'
+  | 'APPROVED'
+  | 'PROCESSING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'REJECTED';
+
+export interface RefundRecord {
+  id: string;
+  orderId: string;
+  amountCents: number;
+  currency: string;
+  method: string;
+  status: RefundStatus;
+  reference?: string | null;
+  externalReference?: string | null;
+  idempotencyKey?: string | null;
+  reason: string;
+  failureReason?: string | null;
+  maskedAccountNumber?: string | null;
+  processedBy?: string | null;
+  processedById?: string | null;
+  requestedById?: string | null;
+  approvedById?: string | null;
+  approvedAt?: string | null;
+  completedById?: string | null;
+  completedAt?: string | null;
+  orderReturnRequestId?: string | null;
+  orderReturnRequest?: {
+    id: string;
+    returnNumber: string;
+    status: string;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderFinancialSummary {
+  verifiedCollectedCents: number;
+  refundCeilingCents: number;
+  completedRefundsCents: number;
+  reservedRefundsCents: number;
+  availableRefundBalanceCents: number;
+}
+
+export interface OrderRefundsResponse extends OrderFinancialSummary {
+  orderId: string;
+  orderNumber: string;
+  orderTotalCents: number;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  refundRecords: RefundRecord[];
+}
+
+export interface ReconciliationItem {
+  orderId: string;
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  createdAt: string;
+  totalCents: number;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  verifiedCollectedCents: number;
+  completedRefundsCents: number;
+  reservedRefundsCents: number;
+  availableRefundBalanceCents: number;
+  paymentReferences: string[];
+  refundReferences: string[];
+  refundRecords: Array<{
+    id: string;
+    amountCents: number;
+    method: string;
+    status: RefundStatus;
+    reference?: string | null;
+    externalReference?: string | null;
+    requestedById?: string | null;
+    approvedById?: string | null;
+    completedById?: string | null;
+    processedBy?: string | null;
+    reason: string;
+    failureReason?: string | null;
+    createdAt: string;
+    orderReturnRequestId?: string | null;
+    returnNumber?: string | null;
+  }>;
+  returnRequestsCount: number;
+  hasDiscrepancy: boolean;
+  discrepancies: string[];
+}
+
+export interface ReconciliationSummary {
+  totalOrders: number;
+  totalOrderAmountCents: number;
+  totalVerifiedCollectedCents: number;
+  totalCompletedRefundsCents: number;
+  totalReservedRefundsCents: number;
+  totalOutstandingRefundableCents: number;
+  discrepancyCount: number;
+}
+
+export interface ReconciliationQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  refundStatus?: string;
+  hasDiscrepancy?: boolean;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface ReconciliationListResult {
+  items: ReconciliationItem[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+  summary: ReconciliationSummary;
 }

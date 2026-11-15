@@ -119,6 +119,11 @@ export type StockReservationItem = $Result.DefaultSelection<Prisma.$StockReserva
  */
 export type PaymentAttempt = $Result.DefaultSelection<Prisma.$PaymentAttemptPayload>
 /**
+ * Model BankDepositSubmission
+ * 
+ */
+export type BankDepositSubmission = $Result.DefaultSelection<Prisma.$BankDepositSubmissionPayload>
+/**
  * Model Promotion
  * 
  */
@@ -143,16 +148,6 @@ export type PromotionCategory = $Result.DefaultSelection<Prisma.$PromotionCatego
  * 
  */
 export type PromotionRedemption = $Result.DefaultSelection<Prisma.$PromotionRedemptionPayload>
-/**
- * Model UploadedDocument
- * 
- */
-export type UploadedDocument = $Result.DefaultSelection<Prisma.$UploadedDocumentPayload>
-/**
- * Model ExtractedStationeryItem
- * 
- */
-export type ExtractedStationeryItem = $Result.DefaultSelection<Prisma.$ExtractedStationeryItemPayload>
 /**
  * Model WishlistItem
  * 
@@ -305,6 +300,7 @@ export const PaymentStatus: {
   PENDING: 'PENDING',
   PAID: 'PAID',
   FAILED: 'FAILED',
+  PARTIALLY_REFUNDED: 'PARTIALLY_REFUNDED',
   REFUNDED: 'REFUNDED'
 };
 
@@ -364,30 +360,6 @@ export const InventoryChangeReason: {
 export type InventoryChangeReason = (typeof InventoryChangeReason)[keyof typeof InventoryChangeReason]
 
 
-export const DocumentStatus: {
-  UPLOADED: 'UPLOADED',
-  PROCESSING: 'PROCESSING',
-  REVIEW_REQUIRED: 'REVIEW_REQUIRED',
-  READY_FOR_CONFIRMATION: 'READY_FOR_CONFIRMATION',
-  CONFIRMED: 'CONFIRMED',
-  FAILED: 'FAILED',
-  PROCESSED: 'PROCESSED',
-  REVIEWED: 'REVIEWED',
-  CONVERTED_TO_CART: 'CONVERTED_TO_CART'
-};
-
-export type DocumentStatus = (typeof DocumentStatus)[keyof typeof DocumentStatus]
-
-
-export const ItemConfidence: {
-  HIGH: 'HIGH',
-  MEDIUM: 'MEDIUM',
-  LOW: 'LOW'
-};
-
-export type ItemConfidence = (typeof ItemConfidence)[keyof typeof ItemConfidence]
-
-
 export const BackInStockAlertStatus: {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
@@ -396,17 +368,6 @@ export const BackInStockAlertStatus: {
 };
 
 export type BackInStockAlertStatus = (typeof BackInStockAlertStatus)[keyof typeof BackInStockAlertStatus]
-
-
-export const MatchStatus: {
-  MATCHED: 'MATCHED',
-  UNMATCHED: 'UNMATCHED',
-  CUSTOM_SELECTED: 'CUSTOM_SELECTED',
-  SKIPPED: 'SKIPPED',
-  CONFIRMED: 'CONFIRMED'
-};
-
-export type MatchStatus = (typeof MatchStatus)[keyof typeof MatchStatus]
 
 
 export const ReservationStatus: {
@@ -429,6 +390,15 @@ export const PaymentAttemptStatus: {
 };
 
 export type PaymentAttemptStatus = (typeof PaymentAttemptStatus)[keyof typeof PaymentAttemptStatus]
+
+
+export const BankDepositStatus: {
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  REJECTED: 'REJECTED'
+};
+
+export type BankDepositStatus = (typeof BankDepositStatus)[keyof typeof BankDepositStatus]
 
 
 export const BannerStatus: {
@@ -460,6 +430,18 @@ export const ReturnItemStatus: {
 };
 
 export type ReturnItemStatus = (typeof ReturnItemStatus)[keyof typeof ReturnItemStatus]
+
+
+export const RefundStatus: {
+  REQUESTED: 'REQUESTED',
+  APPROVED: 'APPROVED',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  REJECTED: 'REJECTED'
+};
+
+export type RefundStatus = (typeof RefundStatus)[keyof typeof RefundStatus]
 
 
 export const NewsletterSubscriberStatus: {
@@ -550,21 +532,9 @@ export type InventoryChangeReason = $Enums.InventoryChangeReason
 
 export const InventoryChangeReason: typeof $Enums.InventoryChangeReason
 
-export type DocumentStatus = $Enums.DocumentStatus
-
-export const DocumentStatus: typeof $Enums.DocumentStatus
-
-export type ItemConfidence = $Enums.ItemConfidence
-
-export const ItemConfidence: typeof $Enums.ItemConfidence
-
 export type BackInStockAlertStatus = $Enums.BackInStockAlertStatus
 
 export const BackInStockAlertStatus: typeof $Enums.BackInStockAlertStatus
-
-export type MatchStatus = $Enums.MatchStatus
-
-export const MatchStatus: typeof $Enums.MatchStatus
 
 export type ReservationStatus = $Enums.ReservationStatus
 
@@ -573,6 +543,10 @@ export const ReservationStatus: typeof $Enums.ReservationStatus
 export type PaymentAttemptStatus = $Enums.PaymentAttemptStatus
 
 export const PaymentAttemptStatus: typeof $Enums.PaymentAttemptStatus
+
+export type BankDepositStatus = $Enums.BankDepositStatus
+
+export const BankDepositStatus: typeof $Enums.BankDepositStatus
 
 export type BannerStatus = $Enums.BannerStatus
 
@@ -585,6 +559,10 @@ export const ReturnStatus: typeof $Enums.ReturnStatus
 export type ReturnItemStatus = $Enums.ReturnItemStatus
 
 export const ReturnItemStatus: typeof $Enums.ReturnItemStatus
+
+export type RefundStatus = $Enums.RefundStatus
+
+export const RefundStatus: typeof $Enums.RefundStatus
 
 export type NewsletterSubscriberStatus = $Enums.NewsletterSubscriberStatus
 
@@ -942,6 +920,16 @@ export class PrismaClient<
   get paymentAttempt(): Prisma.PaymentAttemptDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.bankDepositSubmission`: Exposes CRUD operations for the **BankDepositSubmission** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more BankDepositSubmissions
+    * const bankDepositSubmissions = await prisma.bankDepositSubmission.findMany()
+    * ```
+    */
+  get bankDepositSubmission(): Prisma.BankDepositSubmissionDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.promotion`: Exposes CRUD operations for the **Promotion** model.
     * Example usage:
     * ```ts
@@ -990,26 +978,6 @@ export class PrismaClient<
     * ```
     */
   get promotionRedemption(): Prisma.PromotionRedemptionDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.uploadedDocument`: Exposes CRUD operations for the **UploadedDocument** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more UploadedDocuments
-    * const uploadedDocuments = await prisma.uploadedDocument.findMany()
-    * ```
-    */
-  get uploadedDocument(): Prisma.UploadedDocumentDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.extractedStationeryItem`: Exposes CRUD operations for the **ExtractedStationeryItem** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more ExtractedStationeryItems
-    * const extractedStationeryItems = await prisma.extractedStationeryItem.findMany()
-    * ```
-    */
-  get extractedStationeryItem(): Prisma.ExtractedStationeryItemDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.wishlistItem`: Exposes CRUD operations for the **WishlistItem** model.
@@ -1718,13 +1686,12 @@ export namespace Prisma {
     StockReservation: 'StockReservation',
     StockReservationItem: 'StockReservationItem',
     PaymentAttempt: 'PaymentAttempt',
+    BankDepositSubmission: 'BankDepositSubmission',
     Promotion: 'Promotion',
     PromotionCode: 'PromotionCode',
     PromotionProduct: 'PromotionProduct',
     PromotionCategory: 'PromotionCategory',
     PromotionRedemption: 'PromotionRedemption',
-    UploadedDocument: 'UploadedDocument',
-    ExtractedStationeryItem: 'ExtractedStationeryItem',
     WishlistItem: 'WishlistItem',
     SavedStationeryList: 'SavedStationeryList',
     SavedList: 'SavedList',
@@ -1764,7 +1731,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "address" | "refreshToken" | "category" | "brand" | "product" | "productVariant" | "inventoryMovement" | "schoolPack" | "schoolPackItem" | "order" | "orderAddressSnapshot" | "orderItem" | "orderAuditLog" | "orderNote" | "orderReturnRequest" | "orderReturnItem" | "refundRecord" | "stockReservation" | "stockReservationItem" | "paymentAttempt" | "promotion" | "promotionCode" | "promotionProduct" | "promotionCategory" | "promotionRedemption" | "uploadedDocument" | "extractedStationeryItem" | "wishlistItem" | "savedStationeryList" | "savedList" | "savedListItem" | "storeBanner" | "homepageBanner" | "auditLog" | "storeSettings" | "cart" | "cartItem" | "backInStockAlert" | "newsletterSubscriber" | "newsletterVerificationToken" | "newsletterConsentEvent" | "adminInvitation" | "role" | "permission" | "rolePermission" | "globalSku" | "skuSequence" | "productImportPreview" | "importExecutionLease" | "productImportBatch" | "productImportRowResult"
+      modelProps: "user" | "address" | "refreshToken" | "category" | "brand" | "product" | "productVariant" | "inventoryMovement" | "schoolPack" | "schoolPackItem" | "order" | "orderAddressSnapshot" | "orderItem" | "orderAuditLog" | "orderNote" | "orderReturnRequest" | "orderReturnItem" | "refundRecord" | "stockReservation" | "stockReservationItem" | "paymentAttempt" | "bankDepositSubmission" | "promotion" | "promotionCode" | "promotionProduct" | "promotionCategory" | "promotionRedemption" | "wishlistItem" | "savedStationeryList" | "savedList" | "savedListItem" | "storeBanner" | "homepageBanner" | "auditLog" | "storeSettings" | "cart" | "cartItem" | "backInStockAlert" | "newsletterSubscriber" | "newsletterVerificationToken" | "newsletterConsentEvent" | "adminInvitation" | "role" | "permission" | "rolePermission" | "globalSku" | "skuSequence" | "productImportPreview" | "importExecutionLease" | "productImportBatch" | "productImportRowResult"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3322,6 +3289,80 @@ export namespace Prisma {
           }
         }
       }
+      BankDepositSubmission: {
+        payload: Prisma.$BankDepositSubmissionPayload<ExtArgs>
+        fields: Prisma.BankDepositSubmissionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BankDepositSubmissionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankDepositSubmissionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BankDepositSubmissionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankDepositSubmissionPayload>
+          }
+          findFirst: {
+            args: Prisma.BankDepositSubmissionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankDepositSubmissionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BankDepositSubmissionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankDepositSubmissionPayload>
+          }
+          findMany: {
+            args: Prisma.BankDepositSubmissionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankDepositSubmissionPayload>[]
+          }
+          create: {
+            args: Prisma.BankDepositSubmissionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankDepositSubmissionPayload>
+          }
+          createMany: {
+            args: Prisma.BankDepositSubmissionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BankDepositSubmissionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankDepositSubmissionPayload>[]
+          }
+          delete: {
+            args: Prisma.BankDepositSubmissionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankDepositSubmissionPayload>
+          }
+          update: {
+            args: Prisma.BankDepositSubmissionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankDepositSubmissionPayload>
+          }
+          deleteMany: {
+            args: Prisma.BankDepositSubmissionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BankDepositSubmissionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.BankDepositSubmissionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankDepositSubmissionPayload>[]
+          }
+          upsert: {
+            args: Prisma.BankDepositSubmissionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankDepositSubmissionPayload>
+          }
+          aggregate: {
+            args: Prisma.BankDepositSubmissionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBankDepositSubmission>
+          }
+          groupBy: {
+            args: Prisma.BankDepositSubmissionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BankDepositSubmissionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BankDepositSubmissionCountArgs<ExtArgs>
+            result: $Utils.Optional<BankDepositSubmissionCountAggregateOutputType> | number
+          }
+        }
+      }
       Promotion: {
         payload: Prisma.$PromotionPayload<ExtArgs>
         fields: Prisma.PromotionFieldRefs
@@ -3689,154 +3730,6 @@ export namespace Prisma {
           count: {
             args: Prisma.PromotionRedemptionCountArgs<ExtArgs>
             result: $Utils.Optional<PromotionRedemptionCountAggregateOutputType> | number
-          }
-        }
-      }
-      UploadedDocument: {
-        payload: Prisma.$UploadedDocumentPayload<ExtArgs>
-        fields: Prisma.UploadedDocumentFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.UploadedDocumentFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UploadedDocumentPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.UploadedDocumentFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UploadedDocumentPayload>
-          }
-          findFirst: {
-            args: Prisma.UploadedDocumentFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UploadedDocumentPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.UploadedDocumentFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UploadedDocumentPayload>
-          }
-          findMany: {
-            args: Prisma.UploadedDocumentFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UploadedDocumentPayload>[]
-          }
-          create: {
-            args: Prisma.UploadedDocumentCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UploadedDocumentPayload>
-          }
-          createMany: {
-            args: Prisma.UploadedDocumentCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.UploadedDocumentCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UploadedDocumentPayload>[]
-          }
-          delete: {
-            args: Prisma.UploadedDocumentDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UploadedDocumentPayload>
-          }
-          update: {
-            args: Prisma.UploadedDocumentUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UploadedDocumentPayload>
-          }
-          deleteMany: {
-            args: Prisma.UploadedDocumentDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.UploadedDocumentUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.UploadedDocumentUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UploadedDocumentPayload>[]
-          }
-          upsert: {
-            args: Prisma.UploadedDocumentUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UploadedDocumentPayload>
-          }
-          aggregate: {
-            args: Prisma.UploadedDocumentAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateUploadedDocument>
-          }
-          groupBy: {
-            args: Prisma.UploadedDocumentGroupByArgs<ExtArgs>
-            result: $Utils.Optional<UploadedDocumentGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.UploadedDocumentCountArgs<ExtArgs>
-            result: $Utils.Optional<UploadedDocumentCountAggregateOutputType> | number
-          }
-        }
-      }
-      ExtractedStationeryItem: {
-        payload: Prisma.$ExtractedStationeryItemPayload<ExtArgs>
-        fields: Prisma.ExtractedStationeryItemFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.ExtractedStationeryItemFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ExtractedStationeryItemPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.ExtractedStationeryItemFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ExtractedStationeryItemPayload>
-          }
-          findFirst: {
-            args: Prisma.ExtractedStationeryItemFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ExtractedStationeryItemPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.ExtractedStationeryItemFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ExtractedStationeryItemPayload>
-          }
-          findMany: {
-            args: Prisma.ExtractedStationeryItemFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ExtractedStationeryItemPayload>[]
-          }
-          create: {
-            args: Prisma.ExtractedStationeryItemCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ExtractedStationeryItemPayload>
-          }
-          createMany: {
-            args: Prisma.ExtractedStationeryItemCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.ExtractedStationeryItemCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ExtractedStationeryItemPayload>[]
-          }
-          delete: {
-            args: Prisma.ExtractedStationeryItemDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ExtractedStationeryItemPayload>
-          }
-          update: {
-            args: Prisma.ExtractedStationeryItemUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ExtractedStationeryItemPayload>
-          }
-          deleteMany: {
-            args: Prisma.ExtractedStationeryItemDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.ExtractedStationeryItemUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.ExtractedStationeryItemUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ExtractedStationeryItemPayload>[]
-          }
-          upsert: {
-            args: Prisma.ExtractedStationeryItemUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ExtractedStationeryItemPayload>
-          }
-          aggregate: {
-            args: Prisma.ExtractedStationeryItemAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateExtractedStationeryItem>
-          }
-          groupBy: {
-            args: Prisma.ExtractedStationeryItemGroupByArgs<ExtArgs>
-            result: $Utils.Optional<ExtractedStationeryItemGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.ExtractedStationeryItemCountArgs<ExtArgs>
-            result: $Utils.Optional<ExtractedStationeryItemCountAggregateOutputType> | number
           }
         }
       }
@@ -5760,13 +5653,12 @@ export namespace Prisma {
     stockReservation?: StockReservationOmit
     stockReservationItem?: StockReservationItemOmit
     paymentAttempt?: PaymentAttemptOmit
+    bankDepositSubmission?: BankDepositSubmissionOmit
     promotion?: PromotionOmit
     promotionCode?: PromotionCodeOmit
     promotionProduct?: PromotionProductOmit
     promotionCategory?: PromotionCategoryOmit
     promotionRedemption?: PromotionRedemptionOmit
-    uploadedDocument?: UploadedDocumentOmit
-    extractedStationeryItem?: ExtractedStationeryItemOmit
     wishlistItem?: WishlistItemOmit
     savedStationeryList?: SavedStationeryListOmit
     savedList?: SavedListOmit
@@ -5876,7 +5768,6 @@ export namespace Prisma {
     wishlist: number
     savedLists: number
     savedStationeryLists: number
-    documents: number
     auditLogs: number
     refreshTokens: number
     reservations: number
@@ -5887,6 +5778,7 @@ export namespace Prisma {
     invitationsSent: number
     importPreviews: number
     importBatches: number
+    reviewedBankDeposits: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5895,7 +5787,6 @@ export namespace Prisma {
     wishlist?: boolean | UserCountOutputTypeCountWishlistArgs
     savedLists?: boolean | UserCountOutputTypeCountSavedListsArgs
     savedStationeryLists?: boolean | UserCountOutputTypeCountSavedStationeryListsArgs
-    documents?: boolean | UserCountOutputTypeCountDocumentsArgs
     auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
     refreshTokens?: boolean | UserCountOutputTypeCountRefreshTokensArgs
     reservations?: boolean | UserCountOutputTypeCountReservationsArgs
@@ -5906,6 +5797,7 @@ export namespace Prisma {
     invitationsSent?: boolean | UserCountOutputTypeCountInvitationsSentArgs
     importPreviews?: boolean | UserCountOutputTypeCountImportPreviewsArgs
     importBatches?: boolean | UserCountOutputTypeCountImportBatchesArgs
+    reviewedBankDeposits?: boolean | UserCountOutputTypeCountReviewedBankDepositsArgs
   }
 
   // Custom InputTypes
@@ -5952,13 +5844,6 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountSavedStationeryListsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SavedStationeryListWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountDocumentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: UploadedDocumentWhereInput
   }
 
   /**
@@ -6029,6 +5914,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountImportBatchesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProductImportBatchWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountReviewedBankDepositsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BankDepositSubmissionWhereInput
   }
 
 
@@ -6130,7 +6022,6 @@ export namespace Prisma {
     movements: number
     orderItems: number
     packItems: number
-    matchedUploadItems: number
     wishlistItems: number
     savedListItems: number
     cartItems: number
@@ -6144,7 +6035,6 @@ export namespace Prisma {
     movements?: boolean | ProductCountOutputTypeCountMovementsArgs
     orderItems?: boolean | ProductCountOutputTypeCountOrderItemsArgs
     packItems?: boolean | ProductCountOutputTypeCountPackItemsArgs
-    matchedUploadItems?: boolean | ProductCountOutputTypeCountMatchedUploadItemsArgs
     wishlistItems?: boolean | ProductCountOutputTypeCountWishlistItemsArgs
     savedListItems?: boolean | ProductCountOutputTypeCountSavedListItemsArgs
     cartItems?: boolean | ProductCountOutputTypeCountCartItemsArgs
@@ -6190,13 +6080,6 @@ export namespace Prisma {
    */
   export type ProductCountOutputTypeCountPackItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SchoolPackItemWhereInput
-  }
-
-  /**
-   * ProductCountOutputType without action
-   */
-  export type ProductCountOutputTypeCountMatchedUploadItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ExtractedStationeryItemWhereInput
   }
 
   /**
@@ -6343,6 +6226,7 @@ export namespace Prisma {
     orderNotes: number
     returnRequests: number
     refundRecords: number
+    bankDepositSubmissions: number
   }
 
   export type OrderCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6353,6 +6237,7 @@ export namespace Prisma {
     orderNotes?: boolean | OrderCountOutputTypeCountOrderNotesArgs
     returnRequests?: boolean | OrderCountOutputTypeCountReturnRequestsArgs
     refundRecords?: boolean | OrderCountOutputTypeCountRefundRecordsArgs
+    bankDepositSubmissions?: boolean | OrderCountOutputTypeCountBankDepositSubmissionsArgs
   }
 
   // Custom InputTypes
@@ -6415,6 +6300,13 @@ export namespace Prisma {
     where?: RefundRecordWhereInput
   }
 
+  /**
+   * OrderCountOutputType without action
+   */
+  export type OrderCountOutputTypeCountBankDepositSubmissionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BankDepositSubmissionWhereInput
+  }
+
 
   /**
    * Count Type OrderItemCountOutputType
@@ -6453,10 +6345,12 @@ export namespace Prisma {
 
   export type OrderReturnRequestCountOutputType = {
     items: number
+    refundRecords: number
   }
 
   export type OrderReturnRequestCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     items?: boolean | OrderReturnRequestCountOutputTypeCountItemsArgs
+    refundRecords?: boolean | OrderReturnRequestCountOutputTypeCountRefundRecordsArgs
   }
 
   // Custom InputTypes
@@ -6475,6 +6369,13 @@ export namespace Prisma {
    */
   export type OrderReturnRequestCountOutputTypeCountItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: OrderReturnItemWhereInput
+  }
+
+  /**
+   * OrderReturnRequestCountOutputType without action
+   */
+  export type OrderReturnRequestCountOutputTypeCountRefundRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RefundRecordWhereInput
   }
 
 
@@ -6515,6 +6416,37 @@ export namespace Prisma {
    */
   export type StockReservationCountOutputTypeCountPaymentAttemptsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PaymentAttemptWhereInput
+  }
+
+
+  /**
+   * Count Type PaymentAttemptCountOutputType
+   */
+
+  export type PaymentAttemptCountOutputType = {
+    bankDepositSubmissions: number
+  }
+
+  export type PaymentAttemptCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    bankDepositSubmissions?: boolean | PaymentAttemptCountOutputTypeCountBankDepositSubmissionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PaymentAttemptCountOutputType without action
+   */
+  export type PaymentAttemptCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentAttemptCountOutputType
+     */
+    select?: PaymentAttemptCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PaymentAttemptCountOutputType without action
+   */
+  export type PaymentAttemptCountOutputTypeCountBankDepositSubmissionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BankDepositSubmissionWhereInput
   }
 
 
@@ -6613,37 +6545,6 @@ export namespace Prisma {
    */
   export type PromotionCodeCountOutputTypeCountRedemptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PromotionRedemptionWhereInput
-  }
-
-
-  /**
-   * Count Type UploadedDocumentCountOutputType
-   */
-
-  export type UploadedDocumentCountOutputType = {
-    extractedItems: number
-  }
-
-  export type UploadedDocumentCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    extractedItems?: boolean | UploadedDocumentCountOutputTypeCountExtractedItemsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * UploadedDocumentCountOutputType without action
-   */
-  export type UploadedDocumentCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocumentCountOutputType
-     */
-    select?: UploadedDocumentCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * UploadedDocumentCountOutputType without action
-   */
-  export type UploadedDocumentCountOutputTypeCountExtractedItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ExtractedStationeryItemWhereInput
   }
 
 
@@ -7215,7 +7116,6 @@ export namespace Prisma {
     wishlist?: boolean | User$wishlistArgs<ExtArgs>
     savedLists?: boolean | User$savedListsArgs<ExtArgs>
     savedStationeryLists?: boolean | User$savedStationeryListsArgs<ExtArgs>
-    documents?: boolean | User$documentsArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
     refreshTokens?: boolean | User$refreshTokensArgs<ExtArgs>
     cart?: boolean | User$cartArgs<ExtArgs>
@@ -7227,6 +7127,7 @@ export namespace Prisma {
     invitationsSent?: boolean | User$invitationsSentArgs<ExtArgs>
     importPreviews?: boolean | User$importPreviewsArgs<ExtArgs>
     importBatches?: boolean | User$importBatchesArgs<ExtArgs>
+    reviewedBankDeposits?: boolean | User$reviewedBankDepositsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -7306,7 +7207,6 @@ export namespace Prisma {
     wishlist?: boolean | User$wishlistArgs<ExtArgs>
     savedLists?: boolean | User$savedListsArgs<ExtArgs>
     savedStationeryLists?: boolean | User$savedStationeryListsArgs<ExtArgs>
-    documents?: boolean | User$documentsArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
     refreshTokens?: boolean | User$refreshTokensArgs<ExtArgs>
     cart?: boolean | User$cartArgs<ExtArgs>
@@ -7318,6 +7218,7 @@ export namespace Prisma {
     invitationsSent?: boolean | User$invitationsSentArgs<ExtArgs>
     importPreviews?: boolean | User$importPreviewsArgs<ExtArgs>
     importBatches?: boolean | User$importBatchesArgs<ExtArgs>
+    reviewedBankDeposits?: boolean | User$reviewedBankDepositsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7336,7 +7237,6 @@ export namespace Prisma {
       wishlist: Prisma.$WishlistItemPayload<ExtArgs>[]
       savedLists: Prisma.$SavedListPayload<ExtArgs>[]
       savedStationeryLists: Prisma.$SavedStationeryListPayload<ExtArgs>[]
-      documents: Prisma.$UploadedDocumentPayload<ExtArgs>[]
       auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
       refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs>[]
       cart: Prisma.$CartPayload<ExtArgs> | null
@@ -7348,6 +7248,7 @@ export namespace Prisma {
       invitationsSent: Prisma.$AdminInvitationPayload<ExtArgs>[]
       importPreviews: Prisma.$ProductImportPreviewPayload<ExtArgs>[]
       importBatches: Prisma.$ProductImportBatchPayload<ExtArgs>[]
+      reviewedBankDeposits: Prisma.$BankDepositSubmissionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7769,7 +7670,6 @@ export namespace Prisma {
     wishlist<T extends User$wishlistArgs<ExtArgs> = {}>(args?: Subset<T, User$wishlistArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WishlistItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     savedLists<T extends User$savedListsArgs<ExtArgs> = {}>(args?: Subset<T, User$savedListsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SavedListPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     savedStationeryLists<T extends User$savedStationeryListsArgs<ExtArgs> = {}>(args?: Subset<T, User$savedStationeryListsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SavedStationeryListPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    documents<T extends User$documentsArgs<ExtArgs> = {}>(args?: Subset<T, User$documentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     auditLogs<T extends User$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     refreshTokens<T extends User$refreshTokensArgs<ExtArgs> = {}>(args?: Subset<T, User$refreshTokensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     cart<T extends User$cartArgs<ExtArgs> = {}>(args?: Subset<T, User$cartArgs<ExtArgs>>): Prisma__CartClient<$Result.GetResult<Prisma.$CartPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -7781,6 +7681,7 @@ export namespace Prisma {
     invitationsSent<T extends User$invitationsSentArgs<ExtArgs> = {}>(args?: Subset<T, User$invitationsSentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdminInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     importPreviews<T extends User$importPreviewsArgs<ExtArgs> = {}>(args?: Subset<T, User$importPreviewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductImportPreviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     importBatches<T extends User$importBatchesArgs<ExtArgs> = {}>(args?: Subset<T, User$importBatchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductImportBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    reviewedBankDeposits<T extends User$reviewedBankDepositsArgs<ExtArgs> = {}>(args?: Subset<T, User$reviewedBankDepositsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8369,30 +8270,6 @@ export namespace Prisma {
   }
 
   /**
-   * User.documents
-   */
-  export type User$documentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentInclude<ExtArgs> | null
-    where?: UploadedDocumentWhereInput
-    orderBy?: UploadedDocumentOrderByWithRelationInput | UploadedDocumentOrderByWithRelationInput[]
-    cursor?: UploadedDocumentWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: UploadedDocumentScalarFieldEnum | UploadedDocumentScalarFieldEnum[]
-  }
-
-  /**
    * User.auditLogs
    */
   export type User$auditLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8649,6 +8526,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProductImportBatchScalarFieldEnum | ProductImportBatchScalarFieldEnum[]
+  }
+
+  /**
+   * User.reviewedBankDeposits
+   */
+  export type User$reviewedBankDepositsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    where?: BankDepositSubmissionWhereInput
+    orderBy?: BankDepositSubmissionOrderByWithRelationInput | BankDepositSubmissionOrderByWithRelationInput[]
+    cursor?: BankDepositSubmissionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BankDepositSubmissionScalarFieldEnum | BankDepositSubmissionScalarFieldEnum[]
   }
 
   /**
@@ -13734,7 +13635,6 @@ export namespace Prisma {
     movements?: boolean | Product$movementsArgs<ExtArgs>
     orderItems?: boolean | Product$orderItemsArgs<ExtArgs>
     packItems?: boolean | Product$packItemsArgs<ExtArgs>
-    matchedUploadItems?: boolean | Product$matchedUploadItemsArgs<ExtArgs>
     wishlistItems?: boolean | Product$wishlistItemsArgs<ExtArgs>
     savedListItems?: boolean | Product$savedListItemsArgs<ExtArgs>
     cartItems?: boolean | Product$cartItemsArgs<ExtArgs>
@@ -13847,7 +13747,6 @@ export namespace Prisma {
     movements?: boolean | Product$movementsArgs<ExtArgs>
     orderItems?: boolean | Product$orderItemsArgs<ExtArgs>
     packItems?: boolean | Product$packItemsArgs<ExtArgs>
-    matchedUploadItems?: boolean | Product$matchedUploadItemsArgs<ExtArgs>
     wishlistItems?: boolean | Product$wishlistItemsArgs<ExtArgs>
     savedListItems?: boolean | Product$savedListItemsArgs<ExtArgs>
     cartItems?: boolean | Product$cartItemsArgs<ExtArgs>
@@ -13878,7 +13777,6 @@ export namespace Prisma {
       movements: Prisma.$InventoryMovementPayload<ExtArgs>[]
       orderItems: Prisma.$OrderItemPayload<ExtArgs>[]
       packItems: Prisma.$SchoolPackItemPayload<ExtArgs>[]
-      matchedUploadItems: Prisma.$ExtractedStationeryItemPayload<ExtArgs>[]
       wishlistItems: Prisma.$WishlistItemPayload<ExtArgs>[]
       savedListItems: Prisma.$SavedListItemPayload<ExtArgs>[]
       cartItems: Prisma.$CartItemPayload<ExtArgs>[]
@@ -14315,7 +14213,6 @@ export namespace Prisma {
     movements<T extends Product$movementsArgs<ExtArgs> = {}>(args?: Subset<T, Product$movementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventoryMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     orderItems<T extends Product$orderItemsArgs<ExtArgs> = {}>(args?: Subset<T, Product$orderItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     packItems<T extends Product$packItemsArgs<ExtArgs> = {}>(args?: Subset<T, Product$packItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SchoolPackItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    matchedUploadItems<T extends Product$matchedUploadItemsArgs<ExtArgs> = {}>(args?: Subset<T, Product$matchedUploadItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     wishlistItems<T extends Product$wishlistItemsArgs<ExtArgs> = {}>(args?: Subset<T, Product$wishlistItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WishlistItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     savedListItems<T extends Product$savedListItemsArgs<ExtArgs> = {}>(args?: Subset<T, Product$savedListItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SavedListItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     cartItems<T extends Product$cartItemsArgs<ExtArgs> = {}>(args?: Subset<T, Product$cartItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CartItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -14909,30 +14806,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SchoolPackItemScalarFieldEnum | SchoolPackItemScalarFieldEnum[]
-  }
-
-  /**
-   * Product.matchedUploadItems
-   */
-  export type Product$matchedUploadItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-    where?: ExtractedStationeryItemWhereInput
-    orderBy?: ExtractedStationeryItemOrderByWithRelationInput | ExtractedStationeryItemOrderByWithRelationInput[]
-    cursor?: ExtractedStationeryItemWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ExtractedStationeryItemScalarFieldEnum | ExtractedStationeryItemScalarFieldEnum[]
   }
 
   /**
@@ -20310,6 +20183,7 @@ export namespace Prisma {
     orderNotes?: boolean | Order$orderNotesArgs<ExtArgs>
     returnRequests?: boolean | Order$returnRequestsArgs<ExtArgs>
     refundRecords?: boolean | Order$refundRecordsArgs<ExtArgs>
+    bankDepositSubmissions?: boolean | Order$bankDepositSubmissionsArgs<ExtArgs>
     _count?: boolean | OrderCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["order"]>
 
@@ -20411,6 +20285,7 @@ export namespace Prisma {
     orderNotes?: boolean | Order$orderNotesArgs<ExtArgs>
     returnRequests?: boolean | Order$returnRequestsArgs<ExtArgs>
     refundRecords?: boolean | Order$refundRecordsArgs<ExtArgs>
+    bankDepositSubmissions?: boolean | Order$bankDepositSubmissionsArgs<ExtArgs>
     _count?: boolean | OrderCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type OrderIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -20436,6 +20311,7 @@ export namespace Prisma {
       orderNotes: Prisma.$OrderNotePayload<ExtArgs>[]
       returnRequests: Prisma.$OrderReturnRequestPayload<ExtArgs>[]
       refundRecords: Prisma.$RefundRecordPayload<ExtArgs>[]
+      bankDepositSubmissions: Prisma.$BankDepositSubmissionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -20867,6 +20743,7 @@ export namespace Prisma {
     orderNotes<T extends Order$orderNotesArgs<ExtArgs> = {}>(args?: Subset<T, Order$orderNotesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     returnRequests<T extends Order$returnRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Order$returnRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderReturnRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     refundRecords<T extends Order$refundRecordsArgs<ExtArgs> = {}>(args?: Subset<T, Order$refundRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RefundRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    bankDepositSubmissions<T extends Order$bankDepositSubmissionsArgs<ExtArgs> = {}>(args?: Subset<T, Order$bankDepositSubmissionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -21562,6 +21439,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: RefundRecordScalarFieldEnum | RefundRecordScalarFieldEnum[]
+  }
+
+  /**
+   * Order.bankDepositSubmissions
+   */
+  export type Order$bankDepositSubmissionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    where?: BankDepositSubmissionWhereInput
+    orderBy?: BankDepositSubmissionOrderByWithRelationInput | BankDepositSubmissionOrderByWithRelationInput[]
+    cursor?: BankDepositSubmissionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BankDepositSubmissionScalarFieldEnum | BankDepositSubmissionScalarFieldEnum[]
   }
 
   /**
@@ -26508,6 +26409,7 @@ export namespace Prisma {
     updatedAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
     items?: boolean | OrderReturnRequest$itemsArgs<ExtArgs>
+    refundRecords?: boolean | OrderReturnRequest$refundRecordsArgs<ExtArgs>
     _count?: boolean | OrderReturnRequestCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["orderReturnRequest"]>
 
@@ -26550,6 +26452,7 @@ export namespace Prisma {
   export type OrderReturnRequestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
     items?: boolean | OrderReturnRequest$itemsArgs<ExtArgs>
+    refundRecords?: boolean | OrderReturnRequest$refundRecordsArgs<ExtArgs>
     _count?: boolean | OrderReturnRequestCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type OrderReturnRequestIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -26564,6 +26467,7 @@ export namespace Prisma {
     objects: {
       order: Prisma.$OrderPayload<ExtArgs>
       items: Prisma.$OrderReturnItemPayload<ExtArgs>[]
+      refundRecords: Prisma.$RefundRecordPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -26970,6 +26874,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     order<T extends OrderDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrderDefaultArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     items<T extends OrderReturnRequest$itemsArgs<ExtArgs> = {}>(args?: Subset<T, OrderReturnRequest$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderReturnItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    refundRecords<T extends OrderReturnRequest$refundRecordsArgs<ExtArgs> = {}>(args?: Subset<T, OrderReturnRequest$refundRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RefundRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -27429,6 +27334,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: OrderReturnItemScalarFieldEnum | OrderReturnItemScalarFieldEnum[]
+  }
+
+  /**
+   * OrderReturnRequest.refundRecords
+   */
+  export type OrderReturnRequest$refundRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RefundRecord
+     */
+    select?: RefundRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RefundRecord
+     */
+    omit?: RefundRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundRecordInclude<ExtArgs> | null
+    where?: RefundRecordWhereInput
+    orderBy?: RefundRecordOrderByWithRelationInput | RefundRecordOrderByWithRelationInput[]
+    cursor?: RefundRecordWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: RefundRecordScalarFieldEnum | RefundRecordScalarFieldEnum[]
   }
 
   /**
@@ -28644,33 +28573,82 @@ export namespace Prisma {
     id: string | null
     orderId: string | null
     amountCents: number | null
+    currency: string | null
     method: string | null
+    status: $Enums.RefundStatus | null
     reference: string | null
+    externalReference: string | null
+    idempotencyKey: string | null
+    payloadHash: string | null
     reason: string | null
+    failureReason: string | null
+    maskedAccountNumber: string | null
+    encryptedBankDetails: string | null
     processedBy: string | null
+    processedById: string | null
+    requestedById: string | null
+    approvedById: string | null
+    approvedAt: Date | null
+    completedById: string | null
+    completedAt: Date | null
+    orderReturnRequestId: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type RefundRecordMaxAggregateOutputType = {
     id: string | null
     orderId: string | null
     amountCents: number | null
+    currency: string | null
     method: string | null
+    status: $Enums.RefundStatus | null
     reference: string | null
+    externalReference: string | null
+    idempotencyKey: string | null
+    payloadHash: string | null
     reason: string | null
+    failureReason: string | null
+    maskedAccountNumber: string | null
+    encryptedBankDetails: string | null
     processedBy: string | null
+    processedById: string | null
+    requestedById: string | null
+    approvedById: string | null
+    approvedAt: Date | null
+    completedById: string | null
+    completedAt: Date | null
+    orderReturnRequestId: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type RefundRecordCountAggregateOutputType = {
     id: number
     orderId: number
     amountCents: number
+    currency: number
     method: number
+    status: number
     reference: number
+    externalReference: number
+    idempotencyKey: number
+    payloadHash: number
     reason: number
+    failureReason: number
+    maskedAccountNumber: number
+    encryptedBankDetails: number
     processedBy: number
+    processedById: number
+    requestedById: number
+    approvedById: number
+    approvedAt: number
+    completedById: number
+    completedAt: number
+    orderReturnRequestId: number
+    metadata: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -28687,33 +28665,82 @@ export namespace Prisma {
     id?: true
     orderId?: true
     amountCents?: true
+    currency?: true
     method?: true
+    status?: true
     reference?: true
+    externalReference?: true
+    idempotencyKey?: true
+    payloadHash?: true
     reason?: true
+    failureReason?: true
+    maskedAccountNumber?: true
+    encryptedBankDetails?: true
     processedBy?: true
+    processedById?: true
+    requestedById?: true
+    approvedById?: true
+    approvedAt?: true
+    completedById?: true
+    completedAt?: true
+    orderReturnRequestId?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type RefundRecordMaxAggregateInputType = {
     id?: true
     orderId?: true
     amountCents?: true
+    currency?: true
     method?: true
+    status?: true
     reference?: true
+    externalReference?: true
+    idempotencyKey?: true
+    payloadHash?: true
     reason?: true
+    failureReason?: true
+    maskedAccountNumber?: true
+    encryptedBankDetails?: true
     processedBy?: true
+    processedById?: true
+    requestedById?: true
+    approvedById?: true
+    approvedAt?: true
+    completedById?: true
+    completedAt?: true
+    orderReturnRequestId?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type RefundRecordCountAggregateInputType = {
     id?: true
     orderId?: true
     amountCents?: true
+    currency?: true
     method?: true
+    status?: true
     reference?: true
+    externalReference?: true
+    idempotencyKey?: true
+    payloadHash?: true
     reason?: true
+    failureReason?: true
+    maskedAccountNumber?: true
+    encryptedBankDetails?: true
     processedBy?: true
+    processedById?: true
+    requestedById?: true
+    approvedById?: true
+    approvedAt?: true
+    completedById?: true
+    completedAt?: true
+    orderReturnRequestId?: true
+    metadata?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -28807,11 +28834,28 @@ export namespace Prisma {
     id: string
     orderId: string
     amountCents: number
+    currency: string
     method: string
+    status: $Enums.RefundStatus
     reference: string | null
+    externalReference: string | null
+    idempotencyKey: string | null
+    payloadHash: string | null
     reason: string
+    failureReason: string | null
+    maskedAccountNumber: string | null
+    encryptedBankDetails: string | null
     processedBy: string | null
+    processedById: string | null
+    requestedById: string | null
+    approvedById: string | null
+    approvedAt: Date | null
+    completedById: string | null
+    completedAt: Date | null
+    orderReturnRequestId: string | null
+    metadata: JsonValue | null
     createdAt: Date
+    updatedAt: Date
     _count: RefundRecordCountAggregateOutputType | null
     _avg: RefundRecordAvgAggregateOutputType | null
     _sum: RefundRecordSumAggregateOutputType | null
@@ -28837,74 +28881,166 @@ export namespace Prisma {
     id?: boolean
     orderId?: boolean
     amountCents?: boolean
+    currency?: boolean
     method?: boolean
+    status?: boolean
     reference?: boolean
+    externalReference?: boolean
+    idempotencyKey?: boolean
+    payloadHash?: boolean
     reason?: boolean
+    failureReason?: boolean
+    maskedAccountNumber?: boolean
+    encryptedBankDetails?: boolean
     processedBy?: boolean
+    processedById?: boolean
+    requestedById?: boolean
+    approvedById?: boolean
+    approvedAt?: boolean
+    completedById?: boolean
+    completedAt?: boolean
+    orderReturnRequestId?: boolean
+    metadata?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
+    orderReturnRequest?: boolean | RefundRecord$orderReturnRequestArgs<ExtArgs>
   }, ExtArgs["result"]["refundRecord"]>
 
   export type RefundRecordSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     orderId?: boolean
     amountCents?: boolean
+    currency?: boolean
     method?: boolean
+    status?: boolean
     reference?: boolean
+    externalReference?: boolean
+    idempotencyKey?: boolean
+    payloadHash?: boolean
     reason?: boolean
+    failureReason?: boolean
+    maskedAccountNumber?: boolean
+    encryptedBankDetails?: boolean
     processedBy?: boolean
+    processedById?: boolean
+    requestedById?: boolean
+    approvedById?: boolean
+    approvedAt?: boolean
+    completedById?: boolean
+    completedAt?: boolean
+    orderReturnRequestId?: boolean
+    metadata?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
+    orderReturnRequest?: boolean | RefundRecord$orderReturnRequestArgs<ExtArgs>
   }, ExtArgs["result"]["refundRecord"]>
 
   export type RefundRecordSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     orderId?: boolean
     amountCents?: boolean
+    currency?: boolean
     method?: boolean
+    status?: boolean
     reference?: boolean
+    externalReference?: boolean
+    idempotencyKey?: boolean
+    payloadHash?: boolean
     reason?: boolean
+    failureReason?: boolean
+    maskedAccountNumber?: boolean
+    encryptedBankDetails?: boolean
     processedBy?: boolean
+    processedById?: boolean
+    requestedById?: boolean
+    approvedById?: boolean
+    approvedAt?: boolean
+    completedById?: boolean
+    completedAt?: boolean
+    orderReturnRequestId?: boolean
+    metadata?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
+    orderReturnRequest?: boolean | RefundRecord$orderReturnRequestArgs<ExtArgs>
   }, ExtArgs["result"]["refundRecord"]>
 
   export type RefundRecordSelectScalar = {
     id?: boolean
     orderId?: boolean
     amountCents?: boolean
+    currency?: boolean
     method?: boolean
+    status?: boolean
     reference?: boolean
+    externalReference?: boolean
+    idempotencyKey?: boolean
+    payloadHash?: boolean
     reason?: boolean
+    failureReason?: boolean
+    maskedAccountNumber?: boolean
+    encryptedBankDetails?: boolean
     processedBy?: boolean
+    processedById?: boolean
+    requestedById?: boolean
+    approvedById?: boolean
+    approvedAt?: boolean
+    completedById?: boolean
+    completedAt?: boolean
+    orderReturnRequestId?: boolean
+    metadata?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type RefundRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "amountCents" | "method" | "reference" | "reason" | "processedBy" | "createdAt", ExtArgs["result"]["refundRecord"]>
+  export type RefundRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "amountCents" | "currency" | "method" | "status" | "reference" | "externalReference" | "idempotencyKey" | "payloadHash" | "reason" | "failureReason" | "maskedAccountNumber" | "encryptedBankDetails" | "processedBy" | "processedById" | "requestedById" | "approvedById" | "approvedAt" | "completedById" | "completedAt" | "orderReturnRequestId" | "metadata" | "createdAt" | "updatedAt", ExtArgs["result"]["refundRecord"]>
   export type RefundRecordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
+    orderReturnRequest?: boolean | RefundRecord$orderReturnRequestArgs<ExtArgs>
   }
   export type RefundRecordIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
+    orderReturnRequest?: boolean | RefundRecord$orderReturnRequestArgs<ExtArgs>
   }
   export type RefundRecordIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
+    orderReturnRequest?: boolean | RefundRecord$orderReturnRequestArgs<ExtArgs>
   }
 
   export type $RefundRecordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "RefundRecord"
     objects: {
       order: Prisma.$OrderPayload<ExtArgs>
+      orderReturnRequest: Prisma.$OrderReturnRequestPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       orderId: string
       amountCents: number
+      currency: string
       method: string
+      status: $Enums.RefundStatus
       reference: string | null
+      externalReference: string | null
+      idempotencyKey: string | null
+      payloadHash: string | null
       reason: string
+      failureReason: string | null
+      maskedAccountNumber: string | null
+      encryptedBankDetails: string | null
       processedBy: string | null
+      processedById: string | null
+      requestedById: string | null
+      approvedById: string | null
+      approvedAt: Date | null
+      completedById: string | null
+      completedAt: Date | null
+      orderReturnRequestId: string | null
+      metadata: Prisma.JsonValue | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["refundRecord"]>
     composites: {}
   }
@@ -29300,6 +29436,7 @@ export namespace Prisma {
   export interface Prisma__RefundRecordClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     order<T extends OrderDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrderDefaultArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    orderReturnRequest<T extends RefundRecord$orderReturnRequestArgs<ExtArgs> = {}>(args?: Subset<T, RefundRecord$orderReturnRequestArgs<ExtArgs>>): Prisma__OrderReturnRequestClient<$Result.GetResult<Prisma.$OrderReturnRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -29332,11 +29469,28 @@ export namespace Prisma {
     readonly id: FieldRef<"RefundRecord", 'String'>
     readonly orderId: FieldRef<"RefundRecord", 'String'>
     readonly amountCents: FieldRef<"RefundRecord", 'Int'>
+    readonly currency: FieldRef<"RefundRecord", 'String'>
     readonly method: FieldRef<"RefundRecord", 'String'>
+    readonly status: FieldRef<"RefundRecord", 'RefundStatus'>
     readonly reference: FieldRef<"RefundRecord", 'String'>
+    readonly externalReference: FieldRef<"RefundRecord", 'String'>
+    readonly idempotencyKey: FieldRef<"RefundRecord", 'String'>
+    readonly payloadHash: FieldRef<"RefundRecord", 'String'>
     readonly reason: FieldRef<"RefundRecord", 'String'>
+    readonly failureReason: FieldRef<"RefundRecord", 'String'>
+    readonly maskedAccountNumber: FieldRef<"RefundRecord", 'String'>
+    readonly encryptedBankDetails: FieldRef<"RefundRecord", 'String'>
     readonly processedBy: FieldRef<"RefundRecord", 'String'>
+    readonly processedById: FieldRef<"RefundRecord", 'String'>
+    readonly requestedById: FieldRef<"RefundRecord", 'String'>
+    readonly approvedById: FieldRef<"RefundRecord", 'String'>
+    readonly approvedAt: FieldRef<"RefundRecord", 'DateTime'>
+    readonly completedById: FieldRef<"RefundRecord", 'String'>
+    readonly completedAt: FieldRef<"RefundRecord", 'DateTime'>
+    readonly orderReturnRequestId: FieldRef<"RefundRecord", 'String'>
+    readonly metadata: FieldRef<"RefundRecord", 'Json'>
     readonly createdAt: FieldRef<"RefundRecord", 'DateTime'>
+    readonly updatedAt: FieldRef<"RefundRecord", 'DateTime'>
   }
     
 
@@ -29735,6 +29889,25 @@ export namespace Prisma {
      * Limit how many RefundRecords to delete.
      */
     limit?: number
+  }
+
+  /**
+   * RefundRecord.orderReturnRequest
+   */
+  export type RefundRecord$orderReturnRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderReturnRequest
+     */
+    select?: OrderReturnRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderReturnRequest
+     */
+    omit?: OrderReturnRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderReturnRequestInclude<ExtArgs> | null
+    where?: OrderReturnRequestWhereInput
   }
 
   /**
@@ -32397,6 +32570,8 @@ export namespace Prisma {
     updatedAt?: boolean
     reservation?: boolean | StockReservationDefaultArgs<ExtArgs>
     order?: boolean | PaymentAttempt$orderArgs<ExtArgs>
+    bankDepositSubmissions?: boolean | PaymentAttempt$bankDepositSubmissionsArgs<ExtArgs>
+    _count?: boolean | PaymentAttemptCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["paymentAttempt"]>
 
   export type PaymentAttemptSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -32455,6 +32630,8 @@ export namespace Prisma {
   export type PaymentAttemptInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     reservation?: boolean | StockReservationDefaultArgs<ExtArgs>
     order?: boolean | PaymentAttempt$orderArgs<ExtArgs>
+    bankDepositSubmissions?: boolean | PaymentAttempt$bankDepositSubmissionsArgs<ExtArgs>
+    _count?: boolean | PaymentAttemptCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PaymentAttemptIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     reservation?: boolean | StockReservationDefaultArgs<ExtArgs>
@@ -32470,6 +32647,7 @@ export namespace Prisma {
     objects: {
       reservation: Prisma.$StockReservationPayload<ExtArgs>
       order: Prisma.$OrderPayload<ExtArgs> | null
+      bankDepositSubmissions: Prisma.$BankDepositSubmissionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -32881,6 +33059,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     reservation<T extends StockReservationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, StockReservationDefaultArgs<ExtArgs>>): Prisma__StockReservationClient<$Result.GetResult<Prisma.$StockReservationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     order<T extends PaymentAttempt$orderArgs<ExtArgs> = {}>(args?: Subset<T, PaymentAttempt$orderArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    bankDepositSubmissions<T extends PaymentAttempt$bankDepositSubmissionsArgs<ExtArgs> = {}>(args?: Subset<T, PaymentAttempt$bankDepositSubmissionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -33343,6 +33522,30 @@ export namespace Prisma {
   }
 
   /**
+   * PaymentAttempt.bankDepositSubmissions
+   */
+  export type PaymentAttempt$bankDepositSubmissionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    where?: BankDepositSubmissionWhereInput
+    orderBy?: BankDepositSubmissionOrderByWithRelationInput | BankDepositSubmissionOrderByWithRelationInput[]
+    cursor?: BankDepositSubmissionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BankDepositSubmissionScalarFieldEnum | BankDepositSubmissionScalarFieldEnum[]
+  }
+
+  /**
    * PaymentAttempt without action
    */
   export type PaymentAttemptDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -33358,6 +33561,1330 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: PaymentAttemptInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model BankDepositSubmission
+   */
+
+  export type AggregateBankDepositSubmission = {
+    _count: BankDepositSubmissionCountAggregateOutputType | null
+    _avg: BankDepositSubmissionAvgAggregateOutputType | null
+    _sum: BankDepositSubmissionSumAggregateOutputType | null
+    _min: BankDepositSubmissionMinAggregateOutputType | null
+    _max: BankDepositSubmissionMaxAggregateOutputType | null
+  }
+
+  export type BankDepositSubmissionAvgAggregateOutputType = {
+    fileSizeBytes: number | null
+    amountCents: number | null
+  }
+
+  export type BankDepositSubmissionSumAggregateOutputType = {
+    fileSizeBytes: number | null
+    amountCents: number | null
+  }
+
+  export type BankDepositSubmissionMinAggregateOutputType = {
+    id: string | null
+    orderId: string | null
+    paymentAttemptId: string | null
+    receiptStorageKey: string | null
+    originalFilename: string | null
+    fileSizeBytes: number | null
+    mimeType: string | null
+    fileHashSha256: string | null
+    referenceNumber: string | null
+    depositDate: Date | null
+    amountCents: number | null
+    customerNotes: string | null
+    status: $Enums.BankDepositStatus | null
+    rejectionReason: string | null
+    reviewedById: string | null
+    reviewedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BankDepositSubmissionMaxAggregateOutputType = {
+    id: string | null
+    orderId: string | null
+    paymentAttemptId: string | null
+    receiptStorageKey: string | null
+    originalFilename: string | null
+    fileSizeBytes: number | null
+    mimeType: string | null
+    fileHashSha256: string | null
+    referenceNumber: string | null
+    depositDate: Date | null
+    amountCents: number | null
+    customerNotes: string | null
+    status: $Enums.BankDepositStatus | null
+    rejectionReason: string | null
+    reviewedById: string | null
+    reviewedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BankDepositSubmissionCountAggregateOutputType = {
+    id: number
+    orderId: number
+    paymentAttemptId: number
+    receiptStorageKey: number
+    originalFilename: number
+    fileSizeBytes: number
+    mimeType: number
+    fileHashSha256: number
+    referenceNumber: number
+    depositDate: number
+    amountCents: number
+    customerNotes: number
+    status: number
+    rejectionReason: number
+    reviewedById: number
+    reviewedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type BankDepositSubmissionAvgAggregateInputType = {
+    fileSizeBytes?: true
+    amountCents?: true
+  }
+
+  export type BankDepositSubmissionSumAggregateInputType = {
+    fileSizeBytes?: true
+    amountCents?: true
+  }
+
+  export type BankDepositSubmissionMinAggregateInputType = {
+    id?: true
+    orderId?: true
+    paymentAttemptId?: true
+    receiptStorageKey?: true
+    originalFilename?: true
+    fileSizeBytes?: true
+    mimeType?: true
+    fileHashSha256?: true
+    referenceNumber?: true
+    depositDate?: true
+    amountCents?: true
+    customerNotes?: true
+    status?: true
+    rejectionReason?: true
+    reviewedById?: true
+    reviewedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BankDepositSubmissionMaxAggregateInputType = {
+    id?: true
+    orderId?: true
+    paymentAttemptId?: true
+    receiptStorageKey?: true
+    originalFilename?: true
+    fileSizeBytes?: true
+    mimeType?: true
+    fileHashSha256?: true
+    referenceNumber?: true
+    depositDate?: true
+    amountCents?: true
+    customerNotes?: true
+    status?: true
+    rejectionReason?: true
+    reviewedById?: true
+    reviewedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BankDepositSubmissionCountAggregateInputType = {
+    id?: true
+    orderId?: true
+    paymentAttemptId?: true
+    receiptStorageKey?: true
+    originalFilename?: true
+    fileSizeBytes?: true
+    mimeType?: true
+    fileHashSha256?: true
+    referenceNumber?: true
+    depositDate?: true
+    amountCents?: true
+    customerNotes?: true
+    status?: true
+    rejectionReason?: true
+    reviewedById?: true
+    reviewedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type BankDepositSubmissionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BankDepositSubmission to aggregate.
+     */
+    where?: BankDepositSubmissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BankDepositSubmissions to fetch.
+     */
+    orderBy?: BankDepositSubmissionOrderByWithRelationInput | BankDepositSubmissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BankDepositSubmissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BankDepositSubmissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BankDepositSubmissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned BankDepositSubmissions
+    **/
+    _count?: true | BankDepositSubmissionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: BankDepositSubmissionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: BankDepositSubmissionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BankDepositSubmissionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BankDepositSubmissionMaxAggregateInputType
+  }
+
+  export type GetBankDepositSubmissionAggregateType<T extends BankDepositSubmissionAggregateArgs> = {
+        [P in keyof T & keyof AggregateBankDepositSubmission]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBankDepositSubmission[P]>
+      : GetScalarType<T[P], AggregateBankDepositSubmission[P]>
+  }
+
+
+
+
+  export type BankDepositSubmissionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BankDepositSubmissionWhereInput
+    orderBy?: BankDepositSubmissionOrderByWithAggregationInput | BankDepositSubmissionOrderByWithAggregationInput[]
+    by: BankDepositSubmissionScalarFieldEnum[] | BankDepositSubmissionScalarFieldEnum
+    having?: BankDepositSubmissionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BankDepositSubmissionCountAggregateInputType | true
+    _avg?: BankDepositSubmissionAvgAggregateInputType
+    _sum?: BankDepositSubmissionSumAggregateInputType
+    _min?: BankDepositSubmissionMinAggregateInputType
+    _max?: BankDepositSubmissionMaxAggregateInputType
+  }
+
+  export type BankDepositSubmissionGroupByOutputType = {
+    id: string
+    orderId: string
+    paymentAttemptId: string | null
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256: string | null
+    referenceNumber: string
+    depositDate: Date
+    amountCents: number
+    customerNotes: string | null
+    status: $Enums.BankDepositStatus
+    rejectionReason: string | null
+    reviewedById: string | null
+    reviewedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: BankDepositSubmissionCountAggregateOutputType | null
+    _avg: BankDepositSubmissionAvgAggregateOutputType | null
+    _sum: BankDepositSubmissionSumAggregateOutputType | null
+    _min: BankDepositSubmissionMinAggregateOutputType | null
+    _max: BankDepositSubmissionMaxAggregateOutputType | null
+  }
+
+  type GetBankDepositSubmissionGroupByPayload<T extends BankDepositSubmissionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BankDepositSubmissionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BankDepositSubmissionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BankDepositSubmissionGroupByOutputType[P]>
+            : GetScalarType<T[P], BankDepositSubmissionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BankDepositSubmissionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    orderId?: boolean
+    paymentAttemptId?: boolean
+    receiptStorageKey?: boolean
+    originalFilename?: boolean
+    fileSizeBytes?: boolean
+    mimeType?: boolean
+    fileHashSha256?: boolean
+    referenceNumber?: boolean
+    depositDate?: boolean
+    amountCents?: boolean
+    customerNotes?: boolean
+    status?: boolean
+    rejectionReason?: boolean
+    reviewedById?: boolean
+    reviewedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    paymentAttempt?: boolean | BankDepositSubmission$paymentAttemptArgs<ExtArgs>
+    reviewedBy?: boolean | BankDepositSubmission$reviewedByArgs<ExtArgs>
+  }, ExtArgs["result"]["bankDepositSubmission"]>
+
+  export type BankDepositSubmissionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    orderId?: boolean
+    paymentAttemptId?: boolean
+    receiptStorageKey?: boolean
+    originalFilename?: boolean
+    fileSizeBytes?: boolean
+    mimeType?: boolean
+    fileHashSha256?: boolean
+    referenceNumber?: boolean
+    depositDate?: boolean
+    amountCents?: boolean
+    customerNotes?: boolean
+    status?: boolean
+    rejectionReason?: boolean
+    reviewedById?: boolean
+    reviewedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    paymentAttempt?: boolean | BankDepositSubmission$paymentAttemptArgs<ExtArgs>
+    reviewedBy?: boolean | BankDepositSubmission$reviewedByArgs<ExtArgs>
+  }, ExtArgs["result"]["bankDepositSubmission"]>
+
+  export type BankDepositSubmissionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    orderId?: boolean
+    paymentAttemptId?: boolean
+    receiptStorageKey?: boolean
+    originalFilename?: boolean
+    fileSizeBytes?: boolean
+    mimeType?: boolean
+    fileHashSha256?: boolean
+    referenceNumber?: boolean
+    depositDate?: boolean
+    amountCents?: boolean
+    customerNotes?: boolean
+    status?: boolean
+    rejectionReason?: boolean
+    reviewedById?: boolean
+    reviewedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    paymentAttempt?: boolean | BankDepositSubmission$paymentAttemptArgs<ExtArgs>
+    reviewedBy?: boolean | BankDepositSubmission$reviewedByArgs<ExtArgs>
+  }, ExtArgs["result"]["bankDepositSubmission"]>
+
+  export type BankDepositSubmissionSelectScalar = {
+    id?: boolean
+    orderId?: boolean
+    paymentAttemptId?: boolean
+    receiptStorageKey?: boolean
+    originalFilename?: boolean
+    fileSizeBytes?: boolean
+    mimeType?: boolean
+    fileHashSha256?: boolean
+    referenceNumber?: boolean
+    depositDate?: boolean
+    amountCents?: boolean
+    customerNotes?: boolean
+    status?: boolean
+    rejectionReason?: boolean
+    reviewedById?: boolean
+    reviewedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type BankDepositSubmissionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "paymentAttemptId" | "receiptStorageKey" | "originalFilename" | "fileSizeBytes" | "mimeType" | "fileHashSha256" | "referenceNumber" | "depositDate" | "amountCents" | "customerNotes" | "status" | "rejectionReason" | "reviewedById" | "reviewedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["bankDepositSubmission"]>
+  export type BankDepositSubmissionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    paymentAttempt?: boolean | BankDepositSubmission$paymentAttemptArgs<ExtArgs>
+    reviewedBy?: boolean | BankDepositSubmission$reviewedByArgs<ExtArgs>
+  }
+  export type BankDepositSubmissionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    paymentAttempt?: boolean | BankDepositSubmission$paymentAttemptArgs<ExtArgs>
+    reviewedBy?: boolean | BankDepositSubmission$reviewedByArgs<ExtArgs>
+  }
+  export type BankDepositSubmissionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    paymentAttempt?: boolean | BankDepositSubmission$paymentAttemptArgs<ExtArgs>
+    reviewedBy?: boolean | BankDepositSubmission$reviewedByArgs<ExtArgs>
+  }
+
+  export type $BankDepositSubmissionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BankDepositSubmission"
+    objects: {
+      order: Prisma.$OrderPayload<ExtArgs>
+      paymentAttempt: Prisma.$PaymentAttemptPayload<ExtArgs> | null
+      reviewedBy: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      orderId: string
+      paymentAttemptId: string | null
+      receiptStorageKey: string
+      originalFilename: string
+      fileSizeBytes: number
+      mimeType: string
+      fileHashSha256: string | null
+      referenceNumber: string
+      depositDate: Date
+      amountCents: number
+      customerNotes: string | null
+      status: $Enums.BankDepositStatus
+      rejectionReason: string | null
+      reviewedById: string | null
+      reviewedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["bankDepositSubmission"]>
+    composites: {}
+  }
+
+  type BankDepositSubmissionGetPayload<S extends boolean | null | undefined | BankDepositSubmissionDefaultArgs> = $Result.GetResult<Prisma.$BankDepositSubmissionPayload, S>
+
+  type BankDepositSubmissionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BankDepositSubmissionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BankDepositSubmissionCountAggregateInputType | true
+    }
+
+  export interface BankDepositSubmissionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BankDepositSubmission'], meta: { name: 'BankDepositSubmission' } }
+    /**
+     * Find zero or one BankDepositSubmission that matches the filter.
+     * @param {BankDepositSubmissionFindUniqueArgs} args - Arguments to find a BankDepositSubmission
+     * @example
+     * // Get one BankDepositSubmission
+     * const bankDepositSubmission = await prisma.bankDepositSubmission.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BankDepositSubmissionFindUniqueArgs>(args: SelectSubset<T, BankDepositSubmissionFindUniqueArgs<ExtArgs>>): Prisma__BankDepositSubmissionClient<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one BankDepositSubmission that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BankDepositSubmissionFindUniqueOrThrowArgs} args - Arguments to find a BankDepositSubmission
+     * @example
+     * // Get one BankDepositSubmission
+     * const bankDepositSubmission = await prisma.bankDepositSubmission.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BankDepositSubmissionFindUniqueOrThrowArgs>(args: SelectSubset<T, BankDepositSubmissionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BankDepositSubmissionClient<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BankDepositSubmission that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankDepositSubmissionFindFirstArgs} args - Arguments to find a BankDepositSubmission
+     * @example
+     * // Get one BankDepositSubmission
+     * const bankDepositSubmission = await prisma.bankDepositSubmission.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BankDepositSubmissionFindFirstArgs>(args?: SelectSubset<T, BankDepositSubmissionFindFirstArgs<ExtArgs>>): Prisma__BankDepositSubmissionClient<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BankDepositSubmission that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankDepositSubmissionFindFirstOrThrowArgs} args - Arguments to find a BankDepositSubmission
+     * @example
+     * // Get one BankDepositSubmission
+     * const bankDepositSubmission = await prisma.bankDepositSubmission.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BankDepositSubmissionFindFirstOrThrowArgs>(args?: SelectSubset<T, BankDepositSubmissionFindFirstOrThrowArgs<ExtArgs>>): Prisma__BankDepositSubmissionClient<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more BankDepositSubmissions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankDepositSubmissionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BankDepositSubmissions
+     * const bankDepositSubmissions = await prisma.bankDepositSubmission.findMany()
+     * 
+     * // Get first 10 BankDepositSubmissions
+     * const bankDepositSubmissions = await prisma.bankDepositSubmission.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const bankDepositSubmissionWithIdOnly = await prisma.bankDepositSubmission.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BankDepositSubmissionFindManyArgs>(args?: SelectSubset<T, BankDepositSubmissionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a BankDepositSubmission.
+     * @param {BankDepositSubmissionCreateArgs} args - Arguments to create a BankDepositSubmission.
+     * @example
+     * // Create one BankDepositSubmission
+     * const BankDepositSubmission = await prisma.bankDepositSubmission.create({
+     *   data: {
+     *     // ... data to create a BankDepositSubmission
+     *   }
+     * })
+     * 
+     */
+    create<T extends BankDepositSubmissionCreateArgs>(args: SelectSubset<T, BankDepositSubmissionCreateArgs<ExtArgs>>): Prisma__BankDepositSubmissionClient<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many BankDepositSubmissions.
+     * @param {BankDepositSubmissionCreateManyArgs} args - Arguments to create many BankDepositSubmissions.
+     * @example
+     * // Create many BankDepositSubmissions
+     * const bankDepositSubmission = await prisma.bankDepositSubmission.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BankDepositSubmissionCreateManyArgs>(args?: SelectSubset<T, BankDepositSubmissionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many BankDepositSubmissions and returns the data saved in the database.
+     * @param {BankDepositSubmissionCreateManyAndReturnArgs} args - Arguments to create many BankDepositSubmissions.
+     * @example
+     * // Create many BankDepositSubmissions
+     * const bankDepositSubmission = await prisma.bankDepositSubmission.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many BankDepositSubmissions and only return the `id`
+     * const bankDepositSubmissionWithIdOnly = await prisma.bankDepositSubmission.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BankDepositSubmissionCreateManyAndReturnArgs>(args?: SelectSubset<T, BankDepositSubmissionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a BankDepositSubmission.
+     * @param {BankDepositSubmissionDeleteArgs} args - Arguments to delete one BankDepositSubmission.
+     * @example
+     * // Delete one BankDepositSubmission
+     * const BankDepositSubmission = await prisma.bankDepositSubmission.delete({
+     *   where: {
+     *     // ... filter to delete one BankDepositSubmission
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BankDepositSubmissionDeleteArgs>(args: SelectSubset<T, BankDepositSubmissionDeleteArgs<ExtArgs>>): Prisma__BankDepositSubmissionClient<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one BankDepositSubmission.
+     * @param {BankDepositSubmissionUpdateArgs} args - Arguments to update one BankDepositSubmission.
+     * @example
+     * // Update one BankDepositSubmission
+     * const bankDepositSubmission = await prisma.bankDepositSubmission.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BankDepositSubmissionUpdateArgs>(args: SelectSubset<T, BankDepositSubmissionUpdateArgs<ExtArgs>>): Prisma__BankDepositSubmissionClient<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more BankDepositSubmissions.
+     * @param {BankDepositSubmissionDeleteManyArgs} args - Arguments to filter BankDepositSubmissions to delete.
+     * @example
+     * // Delete a few BankDepositSubmissions
+     * const { count } = await prisma.bankDepositSubmission.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BankDepositSubmissionDeleteManyArgs>(args?: SelectSubset<T, BankDepositSubmissionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BankDepositSubmissions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankDepositSubmissionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BankDepositSubmissions
+     * const bankDepositSubmission = await prisma.bankDepositSubmission.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BankDepositSubmissionUpdateManyArgs>(args: SelectSubset<T, BankDepositSubmissionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BankDepositSubmissions and returns the data updated in the database.
+     * @param {BankDepositSubmissionUpdateManyAndReturnArgs} args - Arguments to update many BankDepositSubmissions.
+     * @example
+     * // Update many BankDepositSubmissions
+     * const bankDepositSubmission = await prisma.bankDepositSubmission.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more BankDepositSubmissions and only return the `id`
+     * const bankDepositSubmissionWithIdOnly = await prisma.bankDepositSubmission.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends BankDepositSubmissionUpdateManyAndReturnArgs>(args: SelectSubset<T, BankDepositSubmissionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one BankDepositSubmission.
+     * @param {BankDepositSubmissionUpsertArgs} args - Arguments to update or create a BankDepositSubmission.
+     * @example
+     * // Update or create a BankDepositSubmission
+     * const bankDepositSubmission = await prisma.bankDepositSubmission.upsert({
+     *   create: {
+     *     // ... data to create a BankDepositSubmission
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BankDepositSubmission we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BankDepositSubmissionUpsertArgs>(args: SelectSubset<T, BankDepositSubmissionUpsertArgs<ExtArgs>>): Prisma__BankDepositSubmissionClient<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of BankDepositSubmissions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankDepositSubmissionCountArgs} args - Arguments to filter BankDepositSubmissions to count.
+     * @example
+     * // Count the number of BankDepositSubmissions
+     * const count = await prisma.bankDepositSubmission.count({
+     *   where: {
+     *     // ... the filter for the BankDepositSubmissions we want to count
+     *   }
+     * })
+    **/
+    count<T extends BankDepositSubmissionCountArgs>(
+      args?: Subset<T, BankDepositSubmissionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BankDepositSubmissionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a BankDepositSubmission.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankDepositSubmissionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BankDepositSubmissionAggregateArgs>(args: Subset<T, BankDepositSubmissionAggregateArgs>): Prisma.PrismaPromise<GetBankDepositSubmissionAggregateType<T>>
+
+    /**
+     * Group by BankDepositSubmission.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankDepositSubmissionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BankDepositSubmissionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BankDepositSubmissionGroupByArgs['orderBy'] }
+        : { orderBy?: BankDepositSubmissionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BankDepositSubmissionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBankDepositSubmissionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the BankDepositSubmission model
+   */
+  readonly fields: BankDepositSubmissionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BankDepositSubmission.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BankDepositSubmissionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    order<T extends OrderDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrderDefaultArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    paymentAttempt<T extends BankDepositSubmission$paymentAttemptArgs<ExtArgs> = {}>(args?: Subset<T, BankDepositSubmission$paymentAttemptArgs<ExtArgs>>): Prisma__PaymentAttemptClient<$Result.GetResult<Prisma.$PaymentAttemptPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    reviewedBy<T extends BankDepositSubmission$reviewedByArgs<ExtArgs> = {}>(args?: Subset<T, BankDepositSubmission$reviewedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the BankDepositSubmission model
+   */
+  interface BankDepositSubmissionFieldRefs {
+    readonly id: FieldRef<"BankDepositSubmission", 'String'>
+    readonly orderId: FieldRef<"BankDepositSubmission", 'String'>
+    readonly paymentAttemptId: FieldRef<"BankDepositSubmission", 'String'>
+    readonly receiptStorageKey: FieldRef<"BankDepositSubmission", 'String'>
+    readonly originalFilename: FieldRef<"BankDepositSubmission", 'String'>
+    readonly fileSizeBytes: FieldRef<"BankDepositSubmission", 'Int'>
+    readonly mimeType: FieldRef<"BankDepositSubmission", 'String'>
+    readonly fileHashSha256: FieldRef<"BankDepositSubmission", 'String'>
+    readonly referenceNumber: FieldRef<"BankDepositSubmission", 'String'>
+    readonly depositDate: FieldRef<"BankDepositSubmission", 'DateTime'>
+    readonly amountCents: FieldRef<"BankDepositSubmission", 'Int'>
+    readonly customerNotes: FieldRef<"BankDepositSubmission", 'String'>
+    readonly status: FieldRef<"BankDepositSubmission", 'BankDepositStatus'>
+    readonly rejectionReason: FieldRef<"BankDepositSubmission", 'String'>
+    readonly reviewedById: FieldRef<"BankDepositSubmission", 'String'>
+    readonly reviewedAt: FieldRef<"BankDepositSubmission", 'DateTime'>
+    readonly createdAt: FieldRef<"BankDepositSubmission", 'DateTime'>
+    readonly updatedAt: FieldRef<"BankDepositSubmission", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * BankDepositSubmission findUnique
+   */
+  export type BankDepositSubmissionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    /**
+     * Filter, which BankDepositSubmission to fetch.
+     */
+    where: BankDepositSubmissionWhereUniqueInput
+  }
+
+  /**
+   * BankDepositSubmission findUniqueOrThrow
+   */
+  export type BankDepositSubmissionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    /**
+     * Filter, which BankDepositSubmission to fetch.
+     */
+    where: BankDepositSubmissionWhereUniqueInput
+  }
+
+  /**
+   * BankDepositSubmission findFirst
+   */
+  export type BankDepositSubmissionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    /**
+     * Filter, which BankDepositSubmission to fetch.
+     */
+    where?: BankDepositSubmissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BankDepositSubmissions to fetch.
+     */
+    orderBy?: BankDepositSubmissionOrderByWithRelationInput | BankDepositSubmissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BankDepositSubmissions.
+     */
+    cursor?: BankDepositSubmissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BankDepositSubmissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BankDepositSubmissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BankDepositSubmissions.
+     */
+    distinct?: BankDepositSubmissionScalarFieldEnum | BankDepositSubmissionScalarFieldEnum[]
+  }
+
+  /**
+   * BankDepositSubmission findFirstOrThrow
+   */
+  export type BankDepositSubmissionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    /**
+     * Filter, which BankDepositSubmission to fetch.
+     */
+    where?: BankDepositSubmissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BankDepositSubmissions to fetch.
+     */
+    orderBy?: BankDepositSubmissionOrderByWithRelationInput | BankDepositSubmissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BankDepositSubmissions.
+     */
+    cursor?: BankDepositSubmissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BankDepositSubmissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BankDepositSubmissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BankDepositSubmissions.
+     */
+    distinct?: BankDepositSubmissionScalarFieldEnum | BankDepositSubmissionScalarFieldEnum[]
+  }
+
+  /**
+   * BankDepositSubmission findMany
+   */
+  export type BankDepositSubmissionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    /**
+     * Filter, which BankDepositSubmissions to fetch.
+     */
+    where?: BankDepositSubmissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BankDepositSubmissions to fetch.
+     */
+    orderBy?: BankDepositSubmissionOrderByWithRelationInput | BankDepositSubmissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing BankDepositSubmissions.
+     */
+    cursor?: BankDepositSubmissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BankDepositSubmissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BankDepositSubmissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BankDepositSubmissions.
+     */
+    distinct?: BankDepositSubmissionScalarFieldEnum | BankDepositSubmissionScalarFieldEnum[]
+  }
+
+  /**
+   * BankDepositSubmission create
+   */
+  export type BankDepositSubmissionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a BankDepositSubmission.
+     */
+    data: XOR<BankDepositSubmissionCreateInput, BankDepositSubmissionUncheckedCreateInput>
+  }
+
+  /**
+   * BankDepositSubmission createMany
+   */
+  export type BankDepositSubmissionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many BankDepositSubmissions.
+     */
+    data: BankDepositSubmissionCreateManyInput | BankDepositSubmissionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * BankDepositSubmission createManyAndReturn
+   */
+  export type BankDepositSubmissionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * The data used to create many BankDepositSubmissions.
+     */
+    data: BankDepositSubmissionCreateManyInput | BankDepositSubmissionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BankDepositSubmission update
+   */
+  export type BankDepositSubmissionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a BankDepositSubmission.
+     */
+    data: XOR<BankDepositSubmissionUpdateInput, BankDepositSubmissionUncheckedUpdateInput>
+    /**
+     * Choose, which BankDepositSubmission to update.
+     */
+    where: BankDepositSubmissionWhereUniqueInput
+  }
+
+  /**
+   * BankDepositSubmission updateMany
+   */
+  export type BankDepositSubmissionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update BankDepositSubmissions.
+     */
+    data: XOR<BankDepositSubmissionUpdateManyMutationInput, BankDepositSubmissionUncheckedUpdateManyInput>
+    /**
+     * Filter which BankDepositSubmissions to update
+     */
+    where?: BankDepositSubmissionWhereInput
+    /**
+     * Limit how many BankDepositSubmissions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * BankDepositSubmission updateManyAndReturn
+   */
+  export type BankDepositSubmissionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * The data used to update BankDepositSubmissions.
+     */
+    data: XOR<BankDepositSubmissionUpdateManyMutationInput, BankDepositSubmissionUncheckedUpdateManyInput>
+    /**
+     * Filter which BankDepositSubmissions to update
+     */
+    where?: BankDepositSubmissionWhereInput
+    /**
+     * Limit how many BankDepositSubmissions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BankDepositSubmission upsert
+   */
+  export type BankDepositSubmissionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the BankDepositSubmission to update in case it exists.
+     */
+    where: BankDepositSubmissionWhereUniqueInput
+    /**
+     * In case the BankDepositSubmission found by the `where` argument doesn't exist, create a new BankDepositSubmission with this data.
+     */
+    create: XOR<BankDepositSubmissionCreateInput, BankDepositSubmissionUncheckedCreateInput>
+    /**
+     * In case the BankDepositSubmission was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BankDepositSubmissionUpdateInput, BankDepositSubmissionUncheckedUpdateInput>
+  }
+
+  /**
+   * BankDepositSubmission delete
+   */
+  export type BankDepositSubmissionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
+    /**
+     * Filter which BankDepositSubmission to delete.
+     */
+    where: BankDepositSubmissionWhereUniqueInput
+  }
+
+  /**
+   * BankDepositSubmission deleteMany
+   */
+  export type BankDepositSubmissionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BankDepositSubmissions to delete
+     */
+    where?: BankDepositSubmissionWhereInput
+    /**
+     * Limit how many BankDepositSubmissions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * BankDepositSubmission.paymentAttempt
+   */
+  export type BankDepositSubmission$paymentAttemptArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentAttempt
+     */
+    select?: PaymentAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentAttempt
+     */
+    omit?: PaymentAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentAttemptInclude<ExtArgs> | null
+    where?: PaymentAttemptWhereInput
+  }
+
+  /**
+   * BankDepositSubmission.reviewedBy
+   */
+  export type BankDepositSubmission$reviewedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * BankDepositSubmission without action
+   */
+  export type BankDepositSubmissionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankDepositSubmission
+     */
+    select?: BankDepositSubmissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankDepositSubmission
+     */
+    omit?: BankDepositSubmissionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankDepositSubmissionInclude<ExtArgs> | null
   }
 
 
@@ -39378,2686 +40905,6 @@ export namespace Prisma {
 
 
   /**
-   * Model UploadedDocument
-   */
-
-  export type AggregateUploadedDocument = {
-    _count: UploadedDocumentCountAggregateOutputType | null
-    _avg: UploadedDocumentAvgAggregateOutputType | null
-    _sum: UploadedDocumentSumAggregateOutputType | null
-    _min: UploadedDocumentMinAggregateOutputType | null
-    _max: UploadedDocumentMaxAggregateOutputType | null
-  }
-
-  export type UploadedDocumentAvgAggregateOutputType = {
-    fileSizeBytes: number | null
-    pageCount: number | null
-    attempts: number | null
-  }
-
-  export type UploadedDocumentSumAggregateOutputType = {
-    fileSizeBytes: number | null
-    pageCount: number | null
-    attempts: number | null
-  }
-
-  export type UploadedDocumentMinAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    sessionId: string | null
-    fileName: string | null
-    fileUrl: string | null
-    storagePath: string | null
-    fileSizeBytes: number | null
-    fileType: string | null
-    pageCount: number | null
-    status: $Enums.DocumentStatus | null
-    isSimulatedOCR: boolean | null
-    ocrProvider: string | null
-    customerNotes: string | null
-    processingError: string | null
-    attempts: number | null
-    processedAt: Date | null
-    confirmedAt: Date | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type UploadedDocumentMaxAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    sessionId: string | null
-    fileName: string | null
-    fileUrl: string | null
-    storagePath: string | null
-    fileSizeBytes: number | null
-    fileType: string | null
-    pageCount: number | null
-    status: $Enums.DocumentStatus | null
-    isSimulatedOCR: boolean | null
-    ocrProvider: string | null
-    customerNotes: string | null
-    processingError: string | null
-    attempts: number | null
-    processedAt: Date | null
-    confirmedAt: Date | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type UploadedDocumentCountAggregateOutputType = {
-    id: number
-    userId: number
-    sessionId: number
-    fileName: number
-    fileUrl: number
-    storagePath: number
-    fileSizeBytes: number
-    fileType: number
-    pageCount: number
-    status: number
-    isSimulatedOCR: number
-    ocrProvider: number
-    customerNotes: number
-    processingError: number
-    attempts: number
-    processedAt: number
-    confirmedAt: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type UploadedDocumentAvgAggregateInputType = {
-    fileSizeBytes?: true
-    pageCount?: true
-    attempts?: true
-  }
-
-  export type UploadedDocumentSumAggregateInputType = {
-    fileSizeBytes?: true
-    pageCount?: true
-    attempts?: true
-  }
-
-  export type UploadedDocumentMinAggregateInputType = {
-    id?: true
-    userId?: true
-    sessionId?: true
-    fileName?: true
-    fileUrl?: true
-    storagePath?: true
-    fileSizeBytes?: true
-    fileType?: true
-    pageCount?: true
-    status?: true
-    isSimulatedOCR?: true
-    ocrProvider?: true
-    customerNotes?: true
-    processingError?: true
-    attempts?: true
-    processedAt?: true
-    confirmedAt?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type UploadedDocumentMaxAggregateInputType = {
-    id?: true
-    userId?: true
-    sessionId?: true
-    fileName?: true
-    fileUrl?: true
-    storagePath?: true
-    fileSizeBytes?: true
-    fileType?: true
-    pageCount?: true
-    status?: true
-    isSimulatedOCR?: true
-    ocrProvider?: true
-    customerNotes?: true
-    processingError?: true
-    attempts?: true
-    processedAt?: true
-    confirmedAt?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type UploadedDocumentCountAggregateInputType = {
-    id?: true
-    userId?: true
-    sessionId?: true
-    fileName?: true
-    fileUrl?: true
-    storagePath?: true
-    fileSizeBytes?: true
-    fileType?: true
-    pageCount?: true
-    status?: true
-    isSimulatedOCR?: true
-    ocrProvider?: true
-    customerNotes?: true
-    processingError?: true
-    attempts?: true
-    processedAt?: true
-    confirmedAt?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type UploadedDocumentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which UploadedDocument to aggregate.
-     */
-    where?: UploadedDocumentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of UploadedDocuments to fetch.
-     */
-    orderBy?: UploadedDocumentOrderByWithRelationInput | UploadedDocumentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: UploadedDocumentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` UploadedDocuments from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` UploadedDocuments.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned UploadedDocuments
-    **/
-    _count?: true | UploadedDocumentCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: UploadedDocumentAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: UploadedDocumentSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: UploadedDocumentMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: UploadedDocumentMaxAggregateInputType
-  }
-
-  export type GetUploadedDocumentAggregateType<T extends UploadedDocumentAggregateArgs> = {
-        [P in keyof T & keyof AggregateUploadedDocument]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateUploadedDocument[P]>
-      : GetScalarType<T[P], AggregateUploadedDocument[P]>
-  }
-
-
-
-
-  export type UploadedDocumentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: UploadedDocumentWhereInput
-    orderBy?: UploadedDocumentOrderByWithAggregationInput | UploadedDocumentOrderByWithAggregationInput[]
-    by: UploadedDocumentScalarFieldEnum[] | UploadedDocumentScalarFieldEnum
-    having?: UploadedDocumentScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: UploadedDocumentCountAggregateInputType | true
-    _avg?: UploadedDocumentAvgAggregateInputType
-    _sum?: UploadedDocumentSumAggregateInputType
-    _min?: UploadedDocumentMinAggregateInputType
-    _max?: UploadedDocumentMaxAggregateInputType
-  }
-
-  export type UploadedDocumentGroupByOutputType = {
-    id: string
-    userId: string | null
-    sessionId: string | null
-    fileName: string
-    fileUrl: string
-    storagePath: string | null
-    fileSizeBytes: number
-    fileType: string
-    pageCount: number
-    status: $Enums.DocumentStatus
-    isSimulatedOCR: boolean
-    ocrProvider: string | null
-    customerNotes: string | null
-    processingError: string | null
-    attempts: number
-    processedAt: Date | null
-    confirmedAt: Date | null
-    createdAt: Date
-    updatedAt: Date
-    _count: UploadedDocumentCountAggregateOutputType | null
-    _avg: UploadedDocumentAvgAggregateOutputType | null
-    _sum: UploadedDocumentSumAggregateOutputType | null
-    _min: UploadedDocumentMinAggregateOutputType | null
-    _max: UploadedDocumentMaxAggregateOutputType | null
-  }
-
-  type GetUploadedDocumentGroupByPayload<T extends UploadedDocumentGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<UploadedDocumentGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof UploadedDocumentGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], UploadedDocumentGroupByOutputType[P]>
-            : GetScalarType<T[P], UploadedDocumentGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type UploadedDocumentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    sessionId?: boolean
-    fileName?: boolean
-    fileUrl?: boolean
-    storagePath?: boolean
-    fileSizeBytes?: boolean
-    fileType?: boolean
-    pageCount?: boolean
-    status?: boolean
-    isSimulatedOCR?: boolean
-    ocrProvider?: boolean
-    customerNotes?: boolean
-    processingError?: boolean
-    attempts?: boolean
-    processedAt?: boolean
-    confirmedAt?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UploadedDocument$userArgs<ExtArgs>
-    extractedItems?: boolean | UploadedDocument$extractedItemsArgs<ExtArgs>
-    _count?: boolean | UploadedDocumentCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["uploadedDocument"]>
-
-  export type UploadedDocumentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    sessionId?: boolean
-    fileName?: boolean
-    fileUrl?: boolean
-    storagePath?: boolean
-    fileSizeBytes?: boolean
-    fileType?: boolean
-    pageCount?: boolean
-    status?: boolean
-    isSimulatedOCR?: boolean
-    ocrProvider?: boolean
-    customerNotes?: boolean
-    processingError?: boolean
-    attempts?: boolean
-    processedAt?: boolean
-    confirmedAt?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UploadedDocument$userArgs<ExtArgs>
-  }, ExtArgs["result"]["uploadedDocument"]>
-
-  export type UploadedDocumentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    sessionId?: boolean
-    fileName?: boolean
-    fileUrl?: boolean
-    storagePath?: boolean
-    fileSizeBytes?: boolean
-    fileType?: boolean
-    pageCount?: boolean
-    status?: boolean
-    isSimulatedOCR?: boolean
-    ocrProvider?: boolean
-    customerNotes?: boolean
-    processingError?: boolean
-    attempts?: boolean
-    processedAt?: boolean
-    confirmedAt?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UploadedDocument$userArgs<ExtArgs>
-  }, ExtArgs["result"]["uploadedDocument"]>
-
-  export type UploadedDocumentSelectScalar = {
-    id?: boolean
-    userId?: boolean
-    sessionId?: boolean
-    fileName?: boolean
-    fileUrl?: boolean
-    storagePath?: boolean
-    fileSizeBytes?: boolean
-    fileType?: boolean
-    pageCount?: boolean
-    status?: boolean
-    isSimulatedOCR?: boolean
-    ocrProvider?: boolean
-    customerNotes?: boolean
-    processingError?: boolean
-    attempts?: boolean
-    processedAt?: boolean
-    confirmedAt?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type UploadedDocumentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sessionId" | "fileName" | "fileUrl" | "storagePath" | "fileSizeBytes" | "fileType" | "pageCount" | "status" | "isSimulatedOCR" | "ocrProvider" | "customerNotes" | "processingError" | "attempts" | "processedAt" | "confirmedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["uploadedDocument"]>
-  export type UploadedDocumentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UploadedDocument$userArgs<ExtArgs>
-    extractedItems?: boolean | UploadedDocument$extractedItemsArgs<ExtArgs>
-    _count?: boolean | UploadedDocumentCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type UploadedDocumentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UploadedDocument$userArgs<ExtArgs>
-  }
-  export type UploadedDocumentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UploadedDocument$userArgs<ExtArgs>
-  }
-
-  export type $UploadedDocumentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "UploadedDocument"
-    objects: {
-      user: Prisma.$UserPayload<ExtArgs> | null
-      extractedItems: Prisma.$ExtractedStationeryItemPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      userId: string | null
-      sessionId: string | null
-      fileName: string
-      fileUrl: string
-      storagePath: string | null
-      fileSizeBytes: number
-      fileType: string
-      pageCount: number
-      status: $Enums.DocumentStatus
-      isSimulatedOCR: boolean
-      ocrProvider: string | null
-      customerNotes: string | null
-      processingError: string | null
-      attempts: number
-      processedAt: Date | null
-      confirmedAt: Date | null
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["uploadedDocument"]>
-    composites: {}
-  }
-
-  type UploadedDocumentGetPayload<S extends boolean | null | undefined | UploadedDocumentDefaultArgs> = $Result.GetResult<Prisma.$UploadedDocumentPayload, S>
-
-  type UploadedDocumentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<UploadedDocumentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: UploadedDocumentCountAggregateInputType | true
-    }
-
-  export interface UploadedDocumentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UploadedDocument'], meta: { name: 'UploadedDocument' } }
-    /**
-     * Find zero or one UploadedDocument that matches the filter.
-     * @param {UploadedDocumentFindUniqueArgs} args - Arguments to find a UploadedDocument
-     * @example
-     * // Get one UploadedDocument
-     * const uploadedDocument = await prisma.uploadedDocument.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends UploadedDocumentFindUniqueArgs>(args: SelectSubset<T, UploadedDocumentFindUniqueArgs<ExtArgs>>): Prisma__UploadedDocumentClient<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one UploadedDocument that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {UploadedDocumentFindUniqueOrThrowArgs} args - Arguments to find a UploadedDocument
-     * @example
-     * // Get one UploadedDocument
-     * const uploadedDocument = await prisma.uploadedDocument.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends UploadedDocumentFindUniqueOrThrowArgs>(args: SelectSubset<T, UploadedDocumentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UploadedDocumentClient<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first UploadedDocument that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UploadedDocumentFindFirstArgs} args - Arguments to find a UploadedDocument
-     * @example
-     * // Get one UploadedDocument
-     * const uploadedDocument = await prisma.uploadedDocument.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends UploadedDocumentFindFirstArgs>(args?: SelectSubset<T, UploadedDocumentFindFirstArgs<ExtArgs>>): Prisma__UploadedDocumentClient<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first UploadedDocument that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UploadedDocumentFindFirstOrThrowArgs} args - Arguments to find a UploadedDocument
-     * @example
-     * // Get one UploadedDocument
-     * const uploadedDocument = await prisma.uploadedDocument.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends UploadedDocumentFindFirstOrThrowArgs>(args?: SelectSubset<T, UploadedDocumentFindFirstOrThrowArgs<ExtArgs>>): Prisma__UploadedDocumentClient<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more UploadedDocuments that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UploadedDocumentFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all UploadedDocuments
-     * const uploadedDocuments = await prisma.uploadedDocument.findMany()
-     * 
-     * // Get first 10 UploadedDocuments
-     * const uploadedDocuments = await prisma.uploadedDocument.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const uploadedDocumentWithIdOnly = await prisma.uploadedDocument.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends UploadedDocumentFindManyArgs>(args?: SelectSubset<T, UploadedDocumentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a UploadedDocument.
-     * @param {UploadedDocumentCreateArgs} args - Arguments to create a UploadedDocument.
-     * @example
-     * // Create one UploadedDocument
-     * const UploadedDocument = await prisma.uploadedDocument.create({
-     *   data: {
-     *     // ... data to create a UploadedDocument
-     *   }
-     * })
-     * 
-     */
-    create<T extends UploadedDocumentCreateArgs>(args: SelectSubset<T, UploadedDocumentCreateArgs<ExtArgs>>): Prisma__UploadedDocumentClient<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many UploadedDocuments.
-     * @param {UploadedDocumentCreateManyArgs} args - Arguments to create many UploadedDocuments.
-     * @example
-     * // Create many UploadedDocuments
-     * const uploadedDocument = await prisma.uploadedDocument.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends UploadedDocumentCreateManyArgs>(args?: SelectSubset<T, UploadedDocumentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many UploadedDocuments and returns the data saved in the database.
-     * @param {UploadedDocumentCreateManyAndReturnArgs} args - Arguments to create many UploadedDocuments.
-     * @example
-     * // Create many UploadedDocuments
-     * const uploadedDocument = await prisma.uploadedDocument.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many UploadedDocuments and only return the `id`
-     * const uploadedDocumentWithIdOnly = await prisma.uploadedDocument.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends UploadedDocumentCreateManyAndReturnArgs>(args?: SelectSubset<T, UploadedDocumentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a UploadedDocument.
-     * @param {UploadedDocumentDeleteArgs} args - Arguments to delete one UploadedDocument.
-     * @example
-     * // Delete one UploadedDocument
-     * const UploadedDocument = await prisma.uploadedDocument.delete({
-     *   where: {
-     *     // ... filter to delete one UploadedDocument
-     *   }
-     * })
-     * 
-     */
-    delete<T extends UploadedDocumentDeleteArgs>(args: SelectSubset<T, UploadedDocumentDeleteArgs<ExtArgs>>): Prisma__UploadedDocumentClient<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one UploadedDocument.
-     * @param {UploadedDocumentUpdateArgs} args - Arguments to update one UploadedDocument.
-     * @example
-     * // Update one UploadedDocument
-     * const uploadedDocument = await prisma.uploadedDocument.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends UploadedDocumentUpdateArgs>(args: SelectSubset<T, UploadedDocumentUpdateArgs<ExtArgs>>): Prisma__UploadedDocumentClient<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more UploadedDocuments.
-     * @param {UploadedDocumentDeleteManyArgs} args - Arguments to filter UploadedDocuments to delete.
-     * @example
-     * // Delete a few UploadedDocuments
-     * const { count } = await prisma.uploadedDocument.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends UploadedDocumentDeleteManyArgs>(args?: SelectSubset<T, UploadedDocumentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more UploadedDocuments.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UploadedDocumentUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many UploadedDocuments
-     * const uploadedDocument = await prisma.uploadedDocument.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends UploadedDocumentUpdateManyArgs>(args: SelectSubset<T, UploadedDocumentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more UploadedDocuments and returns the data updated in the database.
-     * @param {UploadedDocumentUpdateManyAndReturnArgs} args - Arguments to update many UploadedDocuments.
-     * @example
-     * // Update many UploadedDocuments
-     * const uploadedDocument = await prisma.uploadedDocument.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more UploadedDocuments and only return the `id`
-     * const uploadedDocumentWithIdOnly = await prisma.uploadedDocument.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends UploadedDocumentUpdateManyAndReturnArgs>(args: SelectSubset<T, UploadedDocumentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one UploadedDocument.
-     * @param {UploadedDocumentUpsertArgs} args - Arguments to update or create a UploadedDocument.
-     * @example
-     * // Update or create a UploadedDocument
-     * const uploadedDocument = await prisma.uploadedDocument.upsert({
-     *   create: {
-     *     // ... data to create a UploadedDocument
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the UploadedDocument we want to update
-     *   }
-     * })
-     */
-    upsert<T extends UploadedDocumentUpsertArgs>(args: SelectSubset<T, UploadedDocumentUpsertArgs<ExtArgs>>): Prisma__UploadedDocumentClient<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of UploadedDocuments.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UploadedDocumentCountArgs} args - Arguments to filter UploadedDocuments to count.
-     * @example
-     * // Count the number of UploadedDocuments
-     * const count = await prisma.uploadedDocument.count({
-     *   where: {
-     *     // ... the filter for the UploadedDocuments we want to count
-     *   }
-     * })
-    **/
-    count<T extends UploadedDocumentCountArgs>(
-      args?: Subset<T, UploadedDocumentCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], UploadedDocumentCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a UploadedDocument.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UploadedDocumentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends UploadedDocumentAggregateArgs>(args: Subset<T, UploadedDocumentAggregateArgs>): Prisma.PrismaPromise<GetUploadedDocumentAggregateType<T>>
-
-    /**
-     * Group by UploadedDocument.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {UploadedDocumentGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends UploadedDocumentGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: UploadedDocumentGroupByArgs['orderBy'] }
-        : { orderBy?: UploadedDocumentGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, UploadedDocumentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUploadedDocumentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the UploadedDocument model
-   */
-  readonly fields: UploadedDocumentFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for UploadedDocument.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__UploadedDocumentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UploadedDocument$userArgs<ExtArgs> = {}>(args?: Subset<T, UploadedDocument$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    extractedItems<T extends UploadedDocument$extractedItemsArgs<ExtArgs> = {}>(args?: Subset<T, UploadedDocument$extractedItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the UploadedDocument model
-   */
-  interface UploadedDocumentFieldRefs {
-    readonly id: FieldRef<"UploadedDocument", 'String'>
-    readonly userId: FieldRef<"UploadedDocument", 'String'>
-    readonly sessionId: FieldRef<"UploadedDocument", 'String'>
-    readonly fileName: FieldRef<"UploadedDocument", 'String'>
-    readonly fileUrl: FieldRef<"UploadedDocument", 'String'>
-    readonly storagePath: FieldRef<"UploadedDocument", 'String'>
-    readonly fileSizeBytes: FieldRef<"UploadedDocument", 'Int'>
-    readonly fileType: FieldRef<"UploadedDocument", 'String'>
-    readonly pageCount: FieldRef<"UploadedDocument", 'Int'>
-    readonly status: FieldRef<"UploadedDocument", 'DocumentStatus'>
-    readonly isSimulatedOCR: FieldRef<"UploadedDocument", 'Boolean'>
-    readonly ocrProvider: FieldRef<"UploadedDocument", 'String'>
-    readonly customerNotes: FieldRef<"UploadedDocument", 'String'>
-    readonly processingError: FieldRef<"UploadedDocument", 'String'>
-    readonly attempts: FieldRef<"UploadedDocument", 'Int'>
-    readonly processedAt: FieldRef<"UploadedDocument", 'DateTime'>
-    readonly confirmedAt: FieldRef<"UploadedDocument", 'DateTime'>
-    readonly createdAt: FieldRef<"UploadedDocument", 'DateTime'>
-    readonly updatedAt: FieldRef<"UploadedDocument", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * UploadedDocument findUnique
-   */
-  export type UploadedDocumentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentInclude<ExtArgs> | null
-    /**
-     * Filter, which UploadedDocument to fetch.
-     */
-    where: UploadedDocumentWhereUniqueInput
-  }
-
-  /**
-   * UploadedDocument findUniqueOrThrow
-   */
-  export type UploadedDocumentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentInclude<ExtArgs> | null
-    /**
-     * Filter, which UploadedDocument to fetch.
-     */
-    where: UploadedDocumentWhereUniqueInput
-  }
-
-  /**
-   * UploadedDocument findFirst
-   */
-  export type UploadedDocumentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentInclude<ExtArgs> | null
-    /**
-     * Filter, which UploadedDocument to fetch.
-     */
-    where?: UploadedDocumentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of UploadedDocuments to fetch.
-     */
-    orderBy?: UploadedDocumentOrderByWithRelationInput | UploadedDocumentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for UploadedDocuments.
-     */
-    cursor?: UploadedDocumentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` UploadedDocuments from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` UploadedDocuments.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of UploadedDocuments.
-     */
-    distinct?: UploadedDocumentScalarFieldEnum | UploadedDocumentScalarFieldEnum[]
-  }
-
-  /**
-   * UploadedDocument findFirstOrThrow
-   */
-  export type UploadedDocumentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentInclude<ExtArgs> | null
-    /**
-     * Filter, which UploadedDocument to fetch.
-     */
-    where?: UploadedDocumentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of UploadedDocuments to fetch.
-     */
-    orderBy?: UploadedDocumentOrderByWithRelationInput | UploadedDocumentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for UploadedDocuments.
-     */
-    cursor?: UploadedDocumentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` UploadedDocuments from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` UploadedDocuments.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of UploadedDocuments.
-     */
-    distinct?: UploadedDocumentScalarFieldEnum | UploadedDocumentScalarFieldEnum[]
-  }
-
-  /**
-   * UploadedDocument findMany
-   */
-  export type UploadedDocumentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentInclude<ExtArgs> | null
-    /**
-     * Filter, which UploadedDocuments to fetch.
-     */
-    where?: UploadedDocumentWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of UploadedDocuments to fetch.
-     */
-    orderBy?: UploadedDocumentOrderByWithRelationInput | UploadedDocumentOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing UploadedDocuments.
-     */
-    cursor?: UploadedDocumentWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` UploadedDocuments from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` UploadedDocuments.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of UploadedDocuments.
-     */
-    distinct?: UploadedDocumentScalarFieldEnum | UploadedDocumentScalarFieldEnum[]
-  }
-
-  /**
-   * UploadedDocument create
-   */
-  export type UploadedDocumentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentInclude<ExtArgs> | null
-    /**
-     * The data needed to create a UploadedDocument.
-     */
-    data: XOR<UploadedDocumentCreateInput, UploadedDocumentUncheckedCreateInput>
-  }
-
-  /**
-   * UploadedDocument createMany
-   */
-  export type UploadedDocumentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many UploadedDocuments.
-     */
-    data: UploadedDocumentCreateManyInput | UploadedDocumentCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * UploadedDocument createManyAndReturn
-   */
-  export type UploadedDocumentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * The data used to create many UploadedDocuments.
-     */
-    data: UploadedDocumentCreateManyInput | UploadedDocumentCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * UploadedDocument update
-   */
-  export type UploadedDocumentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentInclude<ExtArgs> | null
-    /**
-     * The data needed to update a UploadedDocument.
-     */
-    data: XOR<UploadedDocumentUpdateInput, UploadedDocumentUncheckedUpdateInput>
-    /**
-     * Choose, which UploadedDocument to update.
-     */
-    where: UploadedDocumentWhereUniqueInput
-  }
-
-  /**
-   * UploadedDocument updateMany
-   */
-  export type UploadedDocumentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update UploadedDocuments.
-     */
-    data: XOR<UploadedDocumentUpdateManyMutationInput, UploadedDocumentUncheckedUpdateManyInput>
-    /**
-     * Filter which UploadedDocuments to update
-     */
-    where?: UploadedDocumentWhereInput
-    /**
-     * Limit how many UploadedDocuments to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * UploadedDocument updateManyAndReturn
-   */
-  export type UploadedDocumentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * The data used to update UploadedDocuments.
-     */
-    data: XOR<UploadedDocumentUpdateManyMutationInput, UploadedDocumentUncheckedUpdateManyInput>
-    /**
-     * Filter which UploadedDocuments to update
-     */
-    where?: UploadedDocumentWhereInput
-    /**
-     * Limit how many UploadedDocuments to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * UploadedDocument upsert
-   */
-  export type UploadedDocumentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentInclude<ExtArgs> | null
-    /**
-     * The filter to search for the UploadedDocument to update in case it exists.
-     */
-    where: UploadedDocumentWhereUniqueInput
-    /**
-     * In case the UploadedDocument found by the `where` argument doesn't exist, create a new UploadedDocument with this data.
-     */
-    create: XOR<UploadedDocumentCreateInput, UploadedDocumentUncheckedCreateInput>
-    /**
-     * In case the UploadedDocument was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<UploadedDocumentUpdateInput, UploadedDocumentUncheckedUpdateInput>
-  }
-
-  /**
-   * UploadedDocument delete
-   */
-  export type UploadedDocumentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentInclude<ExtArgs> | null
-    /**
-     * Filter which UploadedDocument to delete.
-     */
-    where: UploadedDocumentWhereUniqueInput
-  }
-
-  /**
-   * UploadedDocument deleteMany
-   */
-  export type UploadedDocumentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which UploadedDocuments to delete
-     */
-    where?: UploadedDocumentWhereInput
-    /**
-     * Limit how many UploadedDocuments to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * UploadedDocument.user
-   */
-  export type UploadedDocument$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the User
-     */
-    select?: UserSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserInclude<ExtArgs> | null
-    where?: UserWhereInput
-  }
-
-  /**
-   * UploadedDocument.extractedItems
-   */
-  export type UploadedDocument$extractedItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-    where?: ExtractedStationeryItemWhereInput
-    orderBy?: ExtractedStationeryItemOrderByWithRelationInput | ExtractedStationeryItemOrderByWithRelationInput[]
-    cursor?: ExtractedStationeryItemWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ExtractedStationeryItemScalarFieldEnum | ExtractedStationeryItemScalarFieldEnum[]
-  }
-
-  /**
-   * UploadedDocument without action
-   */
-  export type UploadedDocumentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UploadedDocument
-     */
-    select?: UploadedDocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UploadedDocument
-     */
-    omit?: UploadedDocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UploadedDocumentInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model ExtractedStationeryItem
-   */
-
-  export type AggregateExtractedStationeryItem = {
-    _count: ExtractedStationeryItemCountAggregateOutputType | null
-    _avg: ExtractedStationeryItemAvgAggregateOutputType | null
-    _sum: ExtractedStationeryItemSumAggregateOutputType | null
-    _min: ExtractedStationeryItemMinAggregateOutputType | null
-    _max: ExtractedStationeryItemMaxAggregateOutputType | null
-  }
-
-  export type ExtractedStationeryItemAvgAggregateOutputType = {
-    quantity: number | null
-    confidenceScore: number | null
-    extractionConfidence: number | null
-    matchConfidence: number | null
-    confirmedQuantity: number | null
-  }
-
-  export type ExtractedStationeryItemSumAggregateOutputType = {
-    quantity: number | null
-    confidenceScore: number | null
-    extractionConfidence: number | null
-    matchConfidence: number | null
-    confirmedQuantity: number | null
-  }
-
-  export type ExtractedStationeryItemMinAggregateOutputType = {
-    id: string | null
-    documentId: string | null
-    rawText: string | null
-    itemDescription: string | null
-    quantity: number | null
-    unit: string | null
-    confidence: $Enums.ItemConfidence | null
-    confidenceScore: number | null
-    extractionConfidence: number | null
-    matchConfidence: number | null
-    matchReason: string | null
-    matchedProductId: string | null
-    matchedVariantId: string | null
-    status: $Enums.MatchStatus | null
-    isConfirmed: boolean | null
-    confirmedProductId: string | null
-    confirmedVariantId: string | null
-    confirmedQuantity: number | null
-    isSubstituted: boolean | null
-    createdAt: Date | null
-  }
-
-  export type ExtractedStationeryItemMaxAggregateOutputType = {
-    id: string | null
-    documentId: string | null
-    rawText: string | null
-    itemDescription: string | null
-    quantity: number | null
-    unit: string | null
-    confidence: $Enums.ItemConfidence | null
-    confidenceScore: number | null
-    extractionConfidence: number | null
-    matchConfidence: number | null
-    matchReason: string | null
-    matchedProductId: string | null
-    matchedVariantId: string | null
-    status: $Enums.MatchStatus | null
-    isConfirmed: boolean | null
-    confirmedProductId: string | null
-    confirmedVariantId: string | null
-    confirmedQuantity: number | null
-    isSubstituted: boolean | null
-    createdAt: Date | null
-  }
-
-  export type ExtractedStationeryItemCountAggregateOutputType = {
-    id: number
-    documentId: number
-    rawText: number
-    itemDescription: number
-    quantity: number
-    unit: number
-    confidence: number
-    confidenceScore: number
-    extractionConfidence: number
-    matchConfidence: number
-    matchReason: number
-    matchedProductId: number
-    matchedVariantId: number
-    candidateProductIds: number
-    status: number
-    isConfirmed: number
-    confirmedProductId: number
-    confirmedVariantId: number
-    confirmedQuantity: number
-    isSubstituted: number
-    createdAt: number
-    _all: number
-  }
-
-
-  export type ExtractedStationeryItemAvgAggregateInputType = {
-    quantity?: true
-    confidenceScore?: true
-    extractionConfidence?: true
-    matchConfidence?: true
-    confirmedQuantity?: true
-  }
-
-  export type ExtractedStationeryItemSumAggregateInputType = {
-    quantity?: true
-    confidenceScore?: true
-    extractionConfidence?: true
-    matchConfidence?: true
-    confirmedQuantity?: true
-  }
-
-  export type ExtractedStationeryItemMinAggregateInputType = {
-    id?: true
-    documentId?: true
-    rawText?: true
-    itemDescription?: true
-    quantity?: true
-    unit?: true
-    confidence?: true
-    confidenceScore?: true
-    extractionConfidence?: true
-    matchConfidence?: true
-    matchReason?: true
-    matchedProductId?: true
-    matchedVariantId?: true
-    status?: true
-    isConfirmed?: true
-    confirmedProductId?: true
-    confirmedVariantId?: true
-    confirmedQuantity?: true
-    isSubstituted?: true
-    createdAt?: true
-  }
-
-  export type ExtractedStationeryItemMaxAggregateInputType = {
-    id?: true
-    documentId?: true
-    rawText?: true
-    itemDescription?: true
-    quantity?: true
-    unit?: true
-    confidence?: true
-    confidenceScore?: true
-    extractionConfidence?: true
-    matchConfidence?: true
-    matchReason?: true
-    matchedProductId?: true
-    matchedVariantId?: true
-    status?: true
-    isConfirmed?: true
-    confirmedProductId?: true
-    confirmedVariantId?: true
-    confirmedQuantity?: true
-    isSubstituted?: true
-    createdAt?: true
-  }
-
-  export type ExtractedStationeryItemCountAggregateInputType = {
-    id?: true
-    documentId?: true
-    rawText?: true
-    itemDescription?: true
-    quantity?: true
-    unit?: true
-    confidence?: true
-    confidenceScore?: true
-    extractionConfidence?: true
-    matchConfidence?: true
-    matchReason?: true
-    matchedProductId?: true
-    matchedVariantId?: true
-    candidateProductIds?: true
-    status?: true
-    isConfirmed?: true
-    confirmedProductId?: true
-    confirmedVariantId?: true
-    confirmedQuantity?: true
-    isSubstituted?: true
-    createdAt?: true
-    _all?: true
-  }
-
-  export type ExtractedStationeryItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ExtractedStationeryItem to aggregate.
-     */
-    where?: ExtractedStationeryItemWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ExtractedStationeryItems to fetch.
-     */
-    orderBy?: ExtractedStationeryItemOrderByWithRelationInput | ExtractedStationeryItemOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: ExtractedStationeryItemWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ExtractedStationeryItems from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ExtractedStationeryItems.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned ExtractedStationeryItems
-    **/
-    _count?: true | ExtractedStationeryItemCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: ExtractedStationeryItemAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: ExtractedStationeryItemSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: ExtractedStationeryItemMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: ExtractedStationeryItemMaxAggregateInputType
-  }
-
-  export type GetExtractedStationeryItemAggregateType<T extends ExtractedStationeryItemAggregateArgs> = {
-        [P in keyof T & keyof AggregateExtractedStationeryItem]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateExtractedStationeryItem[P]>
-      : GetScalarType<T[P], AggregateExtractedStationeryItem[P]>
-  }
-
-
-
-
-  export type ExtractedStationeryItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ExtractedStationeryItemWhereInput
-    orderBy?: ExtractedStationeryItemOrderByWithAggregationInput | ExtractedStationeryItemOrderByWithAggregationInput[]
-    by: ExtractedStationeryItemScalarFieldEnum[] | ExtractedStationeryItemScalarFieldEnum
-    having?: ExtractedStationeryItemScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: ExtractedStationeryItemCountAggregateInputType | true
-    _avg?: ExtractedStationeryItemAvgAggregateInputType
-    _sum?: ExtractedStationeryItemSumAggregateInputType
-    _min?: ExtractedStationeryItemMinAggregateInputType
-    _max?: ExtractedStationeryItemMaxAggregateInputType
-  }
-
-  export type ExtractedStationeryItemGroupByOutputType = {
-    id: string
-    documentId: string
-    rawText: string
-    itemDescription: string
-    quantity: number
-    unit: string | null
-    confidence: $Enums.ItemConfidence
-    confidenceScore: number
-    extractionConfidence: number
-    matchConfidence: number
-    matchReason: string | null
-    matchedProductId: string | null
-    matchedVariantId: string | null
-    candidateProductIds: string[]
-    status: $Enums.MatchStatus
-    isConfirmed: boolean
-    confirmedProductId: string | null
-    confirmedVariantId: string | null
-    confirmedQuantity: number | null
-    isSubstituted: boolean
-    createdAt: Date
-    _count: ExtractedStationeryItemCountAggregateOutputType | null
-    _avg: ExtractedStationeryItemAvgAggregateOutputType | null
-    _sum: ExtractedStationeryItemSumAggregateOutputType | null
-    _min: ExtractedStationeryItemMinAggregateOutputType | null
-    _max: ExtractedStationeryItemMaxAggregateOutputType | null
-  }
-
-  type GetExtractedStationeryItemGroupByPayload<T extends ExtractedStationeryItemGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<ExtractedStationeryItemGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof ExtractedStationeryItemGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], ExtractedStationeryItemGroupByOutputType[P]>
-            : GetScalarType<T[P], ExtractedStationeryItemGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type ExtractedStationeryItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    documentId?: boolean
-    rawText?: boolean
-    itemDescription?: boolean
-    quantity?: boolean
-    unit?: boolean
-    confidence?: boolean
-    confidenceScore?: boolean
-    extractionConfidence?: boolean
-    matchConfidence?: boolean
-    matchReason?: boolean
-    matchedProductId?: boolean
-    matchedVariantId?: boolean
-    candidateProductIds?: boolean
-    status?: boolean
-    isConfirmed?: boolean
-    confirmedProductId?: boolean
-    confirmedVariantId?: boolean
-    confirmedQuantity?: boolean
-    isSubstituted?: boolean
-    createdAt?: boolean
-    document?: boolean | UploadedDocumentDefaultArgs<ExtArgs>
-    matchedProduct?: boolean | ExtractedStationeryItem$matchedProductArgs<ExtArgs>
-  }, ExtArgs["result"]["extractedStationeryItem"]>
-
-  export type ExtractedStationeryItemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    documentId?: boolean
-    rawText?: boolean
-    itemDescription?: boolean
-    quantity?: boolean
-    unit?: boolean
-    confidence?: boolean
-    confidenceScore?: boolean
-    extractionConfidence?: boolean
-    matchConfidence?: boolean
-    matchReason?: boolean
-    matchedProductId?: boolean
-    matchedVariantId?: boolean
-    candidateProductIds?: boolean
-    status?: boolean
-    isConfirmed?: boolean
-    confirmedProductId?: boolean
-    confirmedVariantId?: boolean
-    confirmedQuantity?: boolean
-    isSubstituted?: boolean
-    createdAt?: boolean
-    document?: boolean | UploadedDocumentDefaultArgs<ExtArgs>
-    matchedProduct?: boolean | ExtractedStationeryItem$matchedProductArgs<ExtArgs>
-  }, ExtArgs["result"]["extractedStationeryItem"]>
-
-  export type ExtractedStationeryItemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    documentId?: boolean
-    rawText?: boolean
-    itemDescription?: boolean
-    quantity?: boolean
-    unit?: boolean
-    confidence?: boolean
-    confidenceScore?: boolean
-    extractionConfidence?: boolean
-    matchConfidence?: boolean
-    matchReason?: boolean
-    matchedProductId?: boolean
-    matchedVariantId?: boolean
-    candidateProductIds?: boolean
-    status?: boolean
-    isConfirmed?: boolean
-    confirmedProductId?: boolean
-    confirmedVariantId?: boolean
-    confirmedQuantity?: boolean
-    isSubstituted?: boolean
-    createdAt?: boolean
-    document?: boolean | UploadedDocumentDefaultArgs<ExtArgs>
-    matchedProduct?: boolean | ExtractedStationeryItem$matchedProductArgs<ExtArgs>
-  }, ExtArgs["result"]["extractedStationeryItem"]>
-
-  export type ExtractedStationeryItemSelectScalar = {
-    id?: boolean
-    documentId?: boolean
-    rawText?: boolean
-    itemDescription?: boolean
-    quantity?: boolean
-    unit?: boolean
-    confidence?: boolean
-    confidenceScore?: boolean
-    extractionConfidence?: boolean
-    matchConfidence?: boolean
-    matchReason?: boolean
-    matchedProductId?: boolean
-    matchedVariantId?: boolean
-    candidateProductIds?: boolean
-    status?: boolean
-    isConfirmed?: boolean
-    confirmedProductId?: boolean
-    confirmedVariantId?: boolean
-    confirmedQuantity?: boolean
-    isSubstituted?: boolean
-    createdAt?: boolean
-  }
-
-  export type ExtractedStationeryItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "documentId" | "rawText" | "itemDescription" | "quantity" | "unit" | "confidence" | "confidenceScore" | "extractionConfidence" | "matchConfidence" | "matchReason" | "matchedProductId" | "matchedVariantId" | "candidateProductIds" | "status" | "isConfirmed" | "confirmedProductId" | "confirmedVariantId" | "confirmedQuantity" | "isSubstituted" | "createdAt", ExtArgs["result"]["extractedStationeryItem"]>
-  export type ExtractedStationeryItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    document?: boolean | UploadedDocumentDefaultArgs<ExtArgs>
-    matchedProduct?: boolean | ExtractedStationeryItem$matchedProductArgs<ExtArgs>
-  }
-  export type ExtractedStationeryItemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    document?: boolean | UploadedDocumentDefaultArgs<ExtArgs>
-    matchedProduct?: boolean | ExtractedStationeryItem$matchedProductArgs<ExtArgs>
-  }
-  export type ExtractedStationeryItemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    document?: boolean | UploadedDocumentDefaultArgs<ExtArgs>
-    matchedProduct?: boolean | ExtractedStationeryItem$matchedProductArgs<ExtArgs>
-  }
-
-  export type $ExtractedStationeryItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "ExtractedStationeryItem"
-    objects: {
-      document: Prisma.$UploadedDocumentPayload<ExtArgs>
-      matchedProduct: Prisma.$ProductPayload<ExtArgs> | null
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      documentId: string
-      rawText: string
-      itemDescription: string
-      quantity: number
-      unit: string | null
-      confidence: $Enums.ItemConfidence
-      confidenceScore: number
-      extractionConfidence: number
-      matchConfidence: number
-      matchReason: string | null
-      matchedProductId: string | null
-      matchedVariantId: string | null
-      candidateProductIds: string[]
-      status: $Enums.MatchStatus
-      isConfirmed: boolean
-      confirmedProductId: string | null
-      confirmedVariantId: string | null
-      confirmedQuantity: number | null
-      isSubstituted: boolean
-      createdAt: Date
-    }, ExtArgs["result"]["extractedStationeryItem"]>
-    composites: {}
-  }
-
-  type ExtractedStationeryItemGetPayload<S extends boolean | null | undefined | ExtractedStationeryItemDefaultArgs> = $Result.GetResult<Prisma.$ExtractedStationeryItemPayload, S>
-
-  type ExtractedStationeryItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<ExtractedStationeryItemFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: ExtractedStationeryItemCountAggregateInputType | true
-    }
-
-  export interface ExtractedStationeryItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ExtractedStationeryItem'], meta: { name: 'ExtractedStationeryItem' } }
-    /**
-     * Find zero or one ExtractedStationeryItem that matches the filter.
-     * @param {ExtractedStationeryItemFindUniqueArgs} args - Arguments to find a ExtractedStationeryItem
-     * @example
-     * // Get one ExtractedStationeryItem
-     * const extractedStationeryItem = await prisma.extractedStationeryItem.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends ExtractedStationeryItemFindUniqueArgs>(args: SelectSubset<T, ExtractedStationeryItemFindUniqueArgs<ExtArgs>>): Prisma__ExtractedStationeryItemClient<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one ExtractedStationeryItem that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {ExtractedStationeryItemFindUniqueOrThrowArgs} args - Arguments to find a ExtractedStationeryItem
-     * @example
-     * // Get one ExtractedStationeryItem
-     * const extractedStationeryItem = await prisma.extractedStationeryItem.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends ExtractedStationeryItemFindUniqueOrThrowArgs>(args: SelectSubset<T, ExtractedStationeryItemFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ExtractedStationeryItemClient<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ExtractedStationeryItem that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ExtractedStationeryItemFindFirstArgs} args - Arguments to find a ExtractedStationeryItem
-     * @example
-     * // Get one ExtractedStationeryItem
-     * const extractedStationeryItem = await prisma.extractedStationeryItem.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends ExtractedStationeryItemFindFirstArgs>(args?: SelectSubset<T, ExtractedStationeryItemFindFirstArgs<ExtArgs>>): Prisma__ExtractedStationeryItemClient<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ExtractedStationeryItem that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ExtractedStationeryItemFindFirstOrThrowArgs} args - Arguments to find a ExtractedStationeryItem
-     * @example
-     * // Get one ExtractedStationeryItem
-     * const extractedStationeryItem = await prisma.extractedStationeryItem.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends ExtractedStationeryItemFindFirstOrThrowArgs>(args?: SelectSubset<T, ExtractedStationeryItemFindFirstOrThrowArgs<ExtArgs>>): Prisma__ExtractedStationeryItemClient<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more ExtractedStationeryItems that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ExtractedStationeryItemFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all ExtractedStationeryItems
-     * const extractedStationeryItems = await prisma.extractedStationeryItem.findMany()
-     * 
-     * // Get first 10 ExtractedStationeryItems
-     * const extractedStationeryItems = await prisma.extractedStationeryItem.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const extractedStationeryItemWithIdOnly = await prisma.extractedStationeryItem.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends ExtractedStationeryItemFindManyArgs>(args?: SelectSubset<T, ExtractedStationeryItemFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a ExtractedStationeryItem.
-     * @param {ExtractedStationeryItemCreateArgs} args - Arguments to create a ExtractedStationeryItem.
-     * @example
-     * // Create one ExtractedStationeryItem
-     * const ExtractedStationeryItem = await prisma.extractedStationeryItem.create({
-     *   data: {
-     *     // ... data to create a ExtractedStationeryItem
-     *   }
-     * })
-     * 
-     */
-    create<T extends ExtractedStationeryItemCreateArgs>(args: SelectSubset<T, ExtractedStationeryItemCreateArgs<ExtArgs>>): Prisma__ExtractedStationeryItemClient<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many ExtractedStationeryItems.
-     * @param {ExtractedStationeryItemCreateManyArgs} args - Arguments to create many ExtractedStationeryItems.
-     * @example
-     * // Create many ExtractedStationeryItems
-     * const extractedStationeryItem = await prisma.extractedStationeryItem.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends ExtractedStationeryItemCreateManyArgs>(args?: SelectSubset<T, ExtractedStationeryItemCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many ExtractedStationeryItems and returns the data saved in the database.
-     * @param {ExtractedStationeryItemCreateManyAndReturnArgs} args - Arguments to create many ExtractedStationeryItems.
-     * @example
-     * // Create many ExtractedStationeryItems
-     * const extractedStationeryItem = await prisma.extractedStationeryItem.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many ExtractedStationeryItems and only return the `id`
-     * const extractedStationeryItemWithIdOnly = await prisma.extractedStationeryItem.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends ExtractedStationeryItemCreateManyAndReturnArgs>(args?: SelectSubset<T, ExtractedStationeryItemCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a ExtractedStationeryItem.
-     * @param {ExtractedStationeryItemDeleteArgs} args - Arguments to delete one ExtractedStationeryItem.
-     * @example
-     * // Delete one ExtractedStationeryItem
-     * const ExtractedStationeryItem = await prisma.extractedStationeryItem.delete({
-     *   where: {
-     *     // ... filter to delete one ExtractedStationeryItem
-     *   }
-     * })
-     * 
-     */
-    delete<T extends ExtractedStationeryItemDeleteArgs>(args: SelectSubset<T, ExtractedStationeryItemDeleteArgs<ExtArgs>>): Prisma__ExtractedStationeryItemClient<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one ExtractedStationeryItem.
-     * @param {ExtractedStationeryItemUpdateArgs} args - Arguments to update one ExtractedStationeryItem.
-     * @example
-     * // Update one ExtractedStationeryItem
-     * const extractedStationeryItem = await prisma.extractedStationeryItem.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends ExtractedStationeryItemUpdateArgs>(args: SelectSubset<T, ExtractedStationeryItemUpdateArgs<ExtArgs>>): Prisma__ExtractedStationeryItemClient<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more ExtractedStationeryItems.
-     * @param {ExtractedStationeryItemDeleteManyArgs} args - Arguments to filter ExtractedStationeryItems to delete.
-     * @example
-     * // Delete a few ExtractedStationeryItems
-     * const { count } = await prisma.extractedStationeryItem.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends ExtractedStationeryItemDeleteManyArgs>(args?: SelectSubset<T, ExtractedStationeryItemDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more ExtractedStationeryItems.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ExtractedStationeryItemUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many ExtractedStationeryItems
-     * const extractedStationeryItem = await prisma.extractedStationeryItem.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends ExtractedStationeryItemUpdateManyArgs>(args: SelectSubset<T, ExtractedStationeryItemUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more ExtractedStationeryItems and returns the data updated in the database.
-     * @param {ExtractedStationeryItemUpdateManyAndReturnArgs} args - Arguments to update many ExtractedStationeryItems.
-     * @example
-     * // Update many ExtractedStationeryItems
-     * const extractedStationeryItem = await prisma.extractedStationeryItem.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more ExtractedStationeryItems and only return the `id`
-     * const extractedStationeryItemWithIdOnly = await prisma.extractedStationeryItem.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends ExtractedStationeryItemUpdateManyAndReturnArgs>(args: SelectSubset<T, ExtractedStationeryItemUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one ExtractedStationeryItem.
-     * @param {ExtractedStationeryItemUpsertArgs} args - Arguments to update or create a ExtractedStationeryItem.
-     * @example
-     * // Update or create a ExtractedStationeryItem
-     * const extractedStationeryItem = await prisma.extractedStationeryItem.upsert({
-     *   create: {
-     *     // ... data to create a ExtractedStationeryItem
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the ExtractedStationeryItem we want to update
-     *   }
-     * })
-     */
-    upsert<T extends ExtractedStationeryItemUpsertArgs>(args: SelectSubset<T, ExtractedStationeryItemUpsertArgs<ExtArgs>>): Prisma__ExtractedStationeryItemClient<$Result.GetResult<Prisma.$ExtractedStationeryItemPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of ExtractedStationeryItems.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ExtractedStationeryItemCountArgs} args - Arguments to filter ExtractedStationeryItems to count.
-     * @example
-     * // Count the number of ExtractedStationeryItems
-     * const count = await prisma.extractedStationeryItem.count({
-     *   where: {
-     *     // ... the filter for the ExtractedStationeryItems we want to count
-     *   }
-     * })
-    **/
-    count<T extends ExtractedStationeryItemCountArgs>(
-      args?: Subset<T, ExtractedStationeryItemCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], ExtractedStationeryItemCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a ExtractedStationeryItem.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ExtractedStationeryItemAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends ExtractedStationeryItemAggregateArgs>(args: Subset<T, ExtractedStationeryItemAggregateArgs>): Prisma.PrismaPromise<GetExtractedStationeryItemAggregateType<T>>
-
-    /**
-     * Group by ExtractedStationeryItem.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ExtractedStationeryItemGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends ExtractedStationeryItemGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: ExtractedStationeryItemGroupByArgs['orderBy'] }
-        : { orderBy?: ExtractedStationeryItemGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, ExtractedStationeryItemGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetExtractedStationeryItemGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the ExtractedStationeryItem model
-   */
-  readonly fields: ExtractedStationeryItemFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for ExtractedStationeryItem.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__ExtractedStationeryItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    document<T extends UploadedDocumentDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UploadedDocumentDefaultArgs<ExtArgs>>): Prisma__UploadedDocumentClient<$Result.GetResult<Prisma.$UploadedDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    matchedProduct<T extends ExtractedStationeryItem$matchedProductArgs<ExtArgs> = {}>(args?: Subset<T, ExtractedStationeryItem$matchedProductArgs<ExtArgs>>): Prisma__ProductClient<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the ExtractedStationeryItem model
-   */
-  interface ExtractedStationeryItemFieldRefs {
-    readonly id: FieldRef<"ExtractedStationeryItem", 'String'>
-    readonly documentId: FieldRef<"ExtractedStationeryItem", 'String'>
-    readonly rawText: FieldRef<"ExtractedStationeryItem", 'String'>
-    readonly itemDescription: FieldRef<"ExtractedStationeryItem", 'String'>
-    readonly quantity: FieldRef<"ExtractedStationeryItem", 'Int'>
-    readonly unit: FieldRef<"ExtractedStationeryItem", 'String'>
-    readonly confidence: FieldRef<"ExtractedStationeryItem", 'ItemConfidence'>
-    readonly confidenceScore: FieldRef<"ExtractedStationeryItem", 'Float'>
-    readonly extractionConfidence: FieldRef<"ExtractedStationeryItem", 'Float'>
-    readonly matchConfidence: FieldRef<"ExtractedStationeryItem", 'Float'>
-    readonly matchReason: FieldRef<"ExtractedStationeryItem", 'String'>
-    readonly matchedProductId: FieldRef<"ExtractedStationeryItem", 'String'>
-    readonly matchedVariantId: FieldRef<"ExtractedStationeryItem", 'String'>
-    readonly candidateProductIds: FieldRef<"ExtractedStationeryItem", 'String[]'>
-    readonly status: FieldRef<"ExtractedStationeryItem", 'MatchStatus'>
-    readonly isConfirmed: FieldRef<"ExtractedStationeryItem", 'Boolean'>
-    readonly confirmedProductId: FieldRef<"ExtractedStationeryItem", 'String'>
-    readonly confirmedVariantId: FieldRef<"ExtractedStationeryItem", 'String'>
-    readonly confirmedQuantity: FieldRef<"ExtractedStationeryItem", 'Int'>
-    readonly isSubstituted: FieldRef<"ExtractedStationeryItem", 'Boolean'>
-    readonly createdAt: FieldRef<"ExtractedStationeryItem", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * ExtractedStationeryItem findUnique
-   */
-  export type ExtractedStationeryItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-    /**
-     * Filter, which ExtractedStationeryItem to fetch.
-     */
-    where: ExtractedStationeryItemWhereUniqueInput
-  }
-
-  /**
-   * ExtractedStationeryItem findUniqueOrThrow
-   */
-  export type ExtractedStationeryItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-    /**
-     * Filter, which ExtractedStationeryItem to fetch.
-     */
-    where: ExtractedStationeryItemWhereUniqueInput
-  }
-
-  /**
-   * ExtractedStationeryItem findFirst
-   */
-  export type ExtractedStationeryItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-    /**
-     * Filter, which ExtractedStationeryItem to fetch.
-     */
-    where?: ExtractedStationeryItemWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ExtractedStationeryItems to fetch.
-     */
-    orderBy?: ExtractedStationeryItemOrderByWithRelationInput | ExtractedStationeryItemOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ExtractedStationeryItems.
-     */
-    cursor?: ExtractedStationeryItemWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ExtractedStationeryItems from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ExtractedStationeryItems.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ExtractedStationeryItems.
-     */
-    distinct?: ExtractedStationeryItemScalarFieldEnum | ExtractedStationeryItemScalarFieldEnum[]
-  }
-
-  /**
-   * ExtractedStationeryItem findFirstOrThrow
-   */
-  export type ExtractedStationeryItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-    /**
-     * Filter, which ExtractedStationeryItem to fetch.
-     */
-    where?: ExtractedStationeryItemWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ExtractedStationeryItems to fetch.
-     */
-    orderBy?: ExtractedStationeryItemOrderByWithRelationInput | ExtractedStationeryItemOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ExtractedStationeryItems.
-     */
-    cursor?: ExtractedStationeryItemWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ExtractedStationeryItems from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ExtractedStationeryItems.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ExtractedStationeryItems.
-     */
-    distinct?: ExtractedStationeryItemScalarFieldEnum | ExtractedStationeryItemScalarFieldEnum[]
-  }
-
-  /**
-   * ExtractedStationeryItem findMany
-   */
-  export type ExtractedStationeryItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-    /**
-     * Filter, which ExtractedStationeryItems to fetch.
-     */
-    where?: ExtractedStationeryItemWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ExtractedStationeryItems to fetch.
-     */
-    orderBy?: ExtractedStationeryItemOrderByWithRelationInput | ExtractedStationeryItemOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing ExtractedStationeryItems.
-     */
-    cursor?: ExtractedStationeryItemWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ExtractedStationeryItems from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ExtractedStationeryItems.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ExtractedStationeryItems.
-     */
-    distinct?: ExtractedStationeryItemScalarFieldEnum | ExtractedStationeryItemScalarFieldEnum[]
-  }
-
-  /**
-   * ExtractedStationeryItem create
-   */
-  export type ExtractedStationeryItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-    /**
-     * The data needed to create a ExtractedStationeryItem.
-     */
-    data: XOR<ExtractedStationeryItemCreateInput, ExtractedStationeryItemUncheckedCreateInput>
-  }
-
-  /**
-   * ExtractedStationeryItem createMany
-   */
-  export type ExtractedStationeryItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many ExtractedStationeryItems.
-     */
-    data: ExtractedStationeryItemCreateManyInput | ExtractedStationeryItemCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * ExtractedStationeryItem createManyAndReturn
-   */
-  export type ExtractedStationeryItemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * The data used to create many ExtractedStationeryItems.
-     */
-    data: ExtractedStationeryItemCreateManyInput | ExtractedStationeryItemCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * ExtractedStationeryItem update
-   */
-  export type ExtractedStationeryItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-    /**
-     * The data needed to update a ExtractedStationeryItem.
-     */
-    data: XOR<ExtractedStationeryItemUpdateInput, ExtractedStationeryItemUncheckedUpdateInput>
-    /**
-     * Choose, which ExtractedStationeryItem to update.
-     */
-    where: ExtractedStationeryItemWhereUniqueInput
-  }
-
-  /**
-   * ExtractedStationeryItem updateMany
-   */
-  export type ExtractedStationeryItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update ExtractedStationeryItems.
-     */
-    data: XOR<ExtractedStationeryItemUpdateManyMutationInput, ExtractedStationeryItemUncheckedUpdateManyInput>
-    /**
-     * Filter which ExtractedStationeryItems to update
-     */
-    where?: ExtractedStationeryItemWhereInput
-    /**
-     * Limit how many ExtractedStationeryItems to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * ExtractedStationeryItem updateManyAndReturn
-   */
-  export type ExtractedStationeryItemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * The data used to update ExtractedStationeryItems.
-     */
-    data: XOR<ExtractedStationeryItemUpdateManyMutationInput, ExtractedStationeryItemUncheckedUpdateManyInput>
-    /**
-     * Filter which ExtractedStationeryItems to update
-     */
-    where?: ExtractedStationeryItemWhereInput
-    /**
-     * Limit how many ExtractedStationeryItems to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * ExtractedStationeryItem upsert
-   */
-  export type ExtractedStationeryItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-    /**
-     * The filter to search for the ExtractedStationeryItem to update in case it exists.
-     */
-    where: ExtractedStationeryItemWhereUniqueInput
-    /**
-     * In case the ExtractedStationeryItem found by the `where` argument doesn't exist, create a new ExtractedStationeryItem with this data.
-     */
-    create: XOR<ExtractedStationeryItemCreateInput, ExtractedStationeryItemUncheckedCreateInput>
-    /**
-     * In case the ExtractedStationeryItem was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<ExtractedStationeryItemUpdateInput, ExtractedStationeryItemUncheckedUpdateInput>
-  }
-
-  /**
-   * ExtractedStationeryItem delete
-   */
-  export type ExtractedStationeryItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-    /**
-     * Filter which ExtractedStationeryItem to delete.
-     */
-    where: ExtractedStationeryItemWhereUniqueInput
-  }
-
-  /**
-   * ExtractedStationeryItem deleteMany
-   */
-  export type ExtractedStationeryItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ExtractedStationeryItems to delete
-     */
-    where?: ExtractedStationeryItemWhereInput
-    /**
-     * Limit how many ExtractedStationeryItems to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * ExtractedStationeryItem.matchedProduct
-   */
-  export type ExtractedStationeryItem$matchedProductArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Product
-     */
-    select?: ProductSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Product
-     */
-    omit?: ProductOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProductInclude<ExtArgs> | null
-    where?: ProductWhereInput
-  }
-
-  /**
-   * ExtractedStationeryItem without action
-   */
-  export type ExtractedStationeryItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ExtractedStationeryItem
-     */
-    select?: ExtractedStationeryItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ExtractedStationeryItem
-     */
-    omit?: ExtractedStationeryItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ExtractedStationeryItemInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model WishlistItem
    */
 
@@ -47579,6 +46426,7 @@ export namespace Prisma {
     imageAltText: string | null
     buttonText: string | null
     buttonLink: string | null
+    placement: string | null
     sortOrder: number | null
     status: $Enums.BannerStatus | null
     startAt: Date | null
@@ -47599,6 +46447,7 @@ export namespace Prisma {
     imageAltText: string | null
     buttonText: string | null
     buttonLink: string | null
+    placement: string | null
     sortOrder: number | null
     status: $Enums.BannerStatus | null
     startAt: Date | null
@@ -47619,6 +46468,7 @@ export namespace Prisma {
     imageAltText: number
     buttonText: number
     buttonLink: number
+    placement: number
     sortOrder: number
     status: number
     startAt: number
@@ -47649,6 +46499,7 @@ export namespace Prisma {
     imageAltText?: true
     buttonText?: true
     buttonLink?: true
+    placement?: true
     sortOrder?: true
     status?: true
     startAt?: true
@@ -47669,6 +46520,7 @@ export namespace Prisma {
     imageAltText?: true
     buttonText?: true
     buttonLink?: true
+    placement?: true
     sortOrder?: true
     status?: true
     startAt?: true
@@ -47689,6 +46541,7 @@ export namespace Prisma {
     imageAltText?: true
     buttonText?: true
     buttonLink?: true
+    placement?: true
     sortOrder?: true
     status?: true
     startAt?: true
@@ -47796,6 +46649,7 @@ export namespace Prisma {
     imageAltText: string
     buttonText: string | null
     buttonLink: string | null
+    placement: string | null
     sortOrder: number
     status: $Enums.BannerStatus
     startAt: Date | null
@@ -47835,6 +46689,7 @@ export namespace Prisma {
     imageAltText?: boolean
     buttonText?: boolean
     buttonLink?: boolean
+    placement?: boolean
     sortOrder?: boolean
     status?: boolean
     startAt?: boolean
@@ -47857,6 +46712,7 @@ export namespace Prisma {
     imageAltText?: boolean
     buttonText?: boolean
     buttonLink?: boolean
+    placement?: boolean
     sortOrder?: boolean
     status?: boolean
     startAt?: boolean
@@ -47879,6 +46735,7 @@ export namespace Prisma {
     imageAltText?: boolean
     buttonText?: boolean
     buttonLink?: boolean
+    placement?: boolean
     sortOrder?: boolean
     status?: boolean
     startAt?: boolean
@@ -47901,6 +46758,7 @@ export namespace Prisma {
     imageAltText?: boolean
     buttonText?: boolean
     buttonLink?: boolean
+    placement?: boolean
     sortOrder?: boolean
     status?: boolean
     startAt?: boolean
@@ -47911,7 +46769,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type HomepageBannerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "subtitle" | "description" | "desktopImage" | "mobileImage" | "imageAltText" | "buttonText" | "buttonLink" | "sortOrder" | "status" | "startAt" | "endAt" | "createdById" | "updatedById" | "createdAt" | "updatedAt", ExtArgs["result"]["homepageBanner"]>
+  export type HomepageBannerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "subtitle" | "description" | "desktopImage" | "mobileImage" | "imageAltText" | "buttonText" | "buttonLink" | "placement" | "sortOrder" | "status" | "startAt" | "endAt" | "createdById" | "updatedById" | "createdAt" | "updatedAt", ExtArgs["result"]["homepageBanner"]>
   export type HomepageBannerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdBy?: boolean | HomepageBanner$createdByArgs<ExtArgs>
     updatedBy?: boolean | HomepageBanner$updatedByArgs<ExtArgs>
@@ -47941,6 +46799,7 @@ export namespace Prisma {
       imageAltText: string
       buttonText: string | null
       buttonLink: string | null
+      placement: string | null
       sortOrder: number
       status: $Enums.BannerStatus
       startAt: Date | null
@@ -48383,6 +47242,7 @@ export namespace Prisma {
     readonly imageAltText: FieldRef<"HomepageBanner", 'String'>
     readonly buttonText: FieldRef<"HomepageBanner", 'String'>
     readonly buttonLink: FieldRef<"HomepageBanner", 'String'>
+    readonly placement: FieldRef<"HomepageBanner", 'String'>
     readonly sortOrder: FieldRef<"HomepageBanner", 'Int'>
     readonly status: FieldRef<"HomepageBanner", 'BannerStatus'>
     readonly startAt: FieldRef<"HomepageBanner", 'DateTime'>
@@ -49988,6 +48848,15 @@ export namespace Prisma {
     codEnabled: boolean | null
     bankTransferEnabled: boolean | null
     onlineCardEnabled: boolean | null
+    bankName: string | null
+    accountHolderName: string | null
+    accountNumber: string | null
+    branchName: string | null
+    branchCode: string | null
+    bankCode: string | null
+    paymentInstructions: string | null
+    referenceInstructions: string | null
+    bankLogoUrl: string | null
     updatedAt: Date | null
   }
 
@@ -50001,6 +48870,15 @@ export namespace Prisma {
     codEnabled: boolean | null
     bankTransferEnabled: boolean | null
     onlineCardEnabled: boolean | null
+    bankName: string | null
+    accountHolderName: string | null
+    accountNumber: string | null
+    branchName: string | null
+    branchCode: string | null
+    bankCode: string | null
+    paymentInstructions: string | null
+    referenceInstructions: string | null
+    bankLogoUrl: string | null
     updatedAt: Date | null
   }
 
@@ -50014,6 +48892,15 @@ export namespace Prisma {
     codEnabled: number
     bankTransferEnabled: number
     onlineCardEnabled: number
+    bankName: number
+    accountHolderName: number
+    accountNumber: number
+    branchName: number
+    branchCode: number
+    bankCode: number
+    paymentInstructions: number
+    referenceInstructions: number
+    bankLogoUrl: number
     updatedAt: number
     _all: number
   }
@@ -50039,6 +48926,15 @@ export namespace Prisma {
     codEnabled?: true
     bankTransferEnabled?: true
     onlineCardEnabled?: true
+    bankName?: true
+    accountHolderName?: true
+    accountNumber?: true
+    branchName?: true
+    branchCode?: true
+    bankCode?: true
+    paymentInstructions?: true
+    referenceInstructions?: true
+    bankLogoUrl?: true
     updatedAt?: true
   }
 
@@ -50052,6 +48948,15 @@ export namespace Prisma {
     codEnabled?: true
     bankTransferEnabled?: true
     onlineCardEnabled?: true
+    bankName?: true
+    accountHolderName?: true
+    accountNumber?: true
+    branchName?: true
+    branchCode?: true
+    bankCode?: true
+    paymentInstructions?: true
+    referenceInstructions?: true
+    bankLogoUrl?: true
     updatedAt?: true
   }
 
@@ -50065,6 +48970,15 @@ export namespace Prisma {
     codEnabled?: true
     bankTransferEnabled?: true
     onlineCardEnabled?: true
+    bankName?: true
+    accountHolderName?: true
+    accountNumber?: true
+    branchName?: true
+    branchCode?: true
+    bankCode?: true
+    paymentInstructions?: true
+    referenceInstructions?: true
+    bankLogoUrl?: true
     updatedAt?: true
     _all?: true
   }
@@ -50165,6 +49079,15 @@ export namespace Prisma {
     codEnabled: boolean
     bankTransferEnabled: boolean
     onlineCardEnabled: boolean
+    bankName: string | null
+    accountHolderName: string | null
+    accountNumber: string | null
+    branchName: string | null
+    branchCode: string | null
+    bankCode: string | null
+    paymentInstructions: string | null
+    referenceInstructions: string | null
+    bankLogoUrl: string | null
     updatedAt: Date
     _count: StoreSettingsCountAggregateOutputType | null
     _avg: StoreSettingsAvgAggregateOutputType | null
@@ -50197,6 +49120,15 @@ export namespace Prisma {
     codEnabled?: boolean
     bankTransferEnabled?: boolean
     onlineCardEnabled?: boolean
+    bankName?: boolean
+    accountHolderName?: boolean
+    accountNumber?: boolean
+    branchName?: boolean
+    branchCode?: boolean
+    bankCode?: boolean
+    paymentInstructions?: boolean
+    referenceInstructions?: boolean
+    bankLogoUrl?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["storeSettings"]>
 
@@ -50210,6 +49142,15 @@ export namespace Prisma {
     codEnabled?: boolean
     bankTransferEnabled?: boolean
     onlineCardEnabled?: boolean
+    bankName?: boolean
+    accountHolderName?: boolean
+    accountNumber?: boolean
+    branchName?: boolean
+    branchCode?: boolean
+    bankCode?: boolean
+    paymentInstructions?: boolean
+    referenceInstructions?: boolean
+    bankLogoUrl?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["storeSettings"]>
 
@@ -50223,6 +49164,15 @@ export namespace Prisma {
     codEnabled?: boolean
     bankTransferEnabled?: boolean
     onlineCardEnabled?: boolean
+    bankName?: boolean
+    accountHolderName?: boolean
+    accountNumber?: boolean
+    branchName?: boolean
+    branchCode?: boolean
+    bankCode?: boolean
+    paymentInstructions?: boolean
+    referenceInstructions?: boolean
+    bankLogoUrl?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["storeSettings"]>
 
@@ -50236,10 +49186,19 @@ export namespace Prisma {
     codEnabled?: boolean
     bankTransferEnabled?: boolean
     onlineCardEnabled?: boolean
+    bankName?: boolean
+    accountHolderName?: boolean
+    accountNumber?: boolean
+    branchName?: boolean
+    branchCode?: boolean
+    bankCode?: boolean
+    paymentInstructions?: boolean
+    referenceInstructions?: boolean
+    bankLogoUrl?: boolean
     updatedAt?: boolean
   }
 
-  export type StoreSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "flatDeliveryFeeCents" | "freeDeliveryThresholdCents" | "hotlinePhone" | "whatsappNumber" | "contactEmail" | "codEnabled" | "bankTransferEnabled" | "onlineCardEnabled" | "updatedAt", ExtArgs["result"]["storeSettings"]>
+  export type StoreSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "flatDeliveryFeeCents" | "freeDeliveryThresholdCents" | "hotlinePhone" | "whatsappNumber" | "contactEmail" | "codEnabled" | "bankTransferEnabled" | "onlineCardEnabled" | "bankName" | "accountHolderName" | "accountNumber" | "branchName" | "branchCode" | "bankCode" | "paymentInstructions" | "referenceInstructions" | "bankLogoUrl" | "updatedAt", ExtArgs["result"]["storeSettings"]>
 
   export type $StoreSettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "StoreSettings"
@@ -50254,6 +49213,15 @@ export namespace Prisma {
       codEnabled: boolean
       bankTransferEnabled: boolean
       onlineCardEnabled: boolean
+      bankName: string | null
+      accountHolderName: string | null
+      accountNumber: string | null
+      branchName: string | null
+      branchCode: string | null
+      bankCode: string | null
+      paymentInstructions: string | null
+      referenceInstructions: string | null
+      bankLogoUrl: string | null
       updatedAt: Date
     }, ExtArgs["result"]["storeSettings"]>
     composites: {}
@@ -50687,6 +49655,15 @@ export namespace Prisma {
     readonly codEnabled: FieldRef<"StoreSettings", 'Boolean'>
     readonly bankTransferEnabled: FieldRef<"StoreSettings", 'Boolean'>
     readonly onlineCardEnabled: FieldRef<"StoreSettings", 'Boolean'>
+    readonly bankName: FieldRef<"StoreSettings", 'String'>
+    readonly accountHolderName: FieldRef<"StoreSettings", 'String'>
+    readonly accountNumber: FieldRef<"StoreSettings", 'String'>
+    readonly branchName: FieldRef<"StoreSettings", 'String'>
+    readonly branchCode: FieldRef<"StoreSettings", 'String'>
+    readonly bankCode: FieldRef<"StoreSettings", 'String'>
+    readonly paymentInstructions: FieldRef<"StoreSettings", 'String'>
+    readonly referenceInstructions: FieldRef<"StoreSettings", 'String'>
+    readonly bankLogoUrl: FieldRef<"StoreSettings", 'String'>
     readonly updatedAt: FieldRef<"StoreSettings", 'DateTime'>
   }
     
@@ -69607,11 +68584,28 @@ export namespace Prisma {
     id: 'id',
     orderId: 'orderId',
     amountCents: 'amountCents',
+    currency: 'currency',
     method: 'method',
+    status: 'status',
     reference: 'reference',
+    externalReference: 'externalReference',
+    idempotencyKey: 'idempotencyKey',
+    payloadHash: 'payloadHash',
     reason: 'reason',
+    failureReason: 'failureReason',
+    maskedAccountNumber: 'maskedAccountNumber',
+    encryptedBankDetails: 'encryptedBankDetails',
     processedBy: 'processedBy',
-    createdAt: 'createdAt'
+    processedById: 'processedById',
+    requestedById: 'requestedById',
+    approvedById: 'approvedById',
+    approvedAt: 'approvedAt',
+    completedById: 'completedById',
+    completedAt: 'completedAt',
+    orderReturnRequestId: 'orderReturnRequestId',
+    metadata: 'metadata',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type RefundRecordScalarFieldEnum = (typeof RefundRecordScalarFieldEnum)[keyof typeof RefundRecordScalarFieldEnum]
@@ -69662,6 +68656,30 @@ export namespace Prisma {
   };
 
   export type PaymentAttemptScalarFieldEnum = (typeof PaymentAttemptScalarFieldEnum)[keyof typeof PaymentAttemptScalarFieldEnum]
+
+
+  export const BankDepositSubmissionScalarFieldEnum: {
+    id: 'id',
+    orderId: 'orderId',
+    paymentAttemptId: 'paymentAttemptId',
+    receiptStorageKey: 'receiptStorageKey',
+    originalFilename: 'originalFilename',
+    fileSizeBytes: 'fileSizeBytes',
+    mimeType: 'mimeType',
+    fileHashSha256: 'fileHashSha256',
+    referenceNumber: 'referenceNumber',
+    depositDate: 'depositDate',
+    amountCents: 'amountCents',
+    customerNotes: 'customerNotes',
+    status: 'status',
+    rejectionReason: 'rejectionReason',
+    reviewedById: 'reviewedById',
+    reviewedAt: 'reviewedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type BankDepositSubmissionScalarFieldEnum = (typeof BankDepositSubmissionScalarFieldEnum)[keyof typeof BankDepositSubmissionScalarFieldEnum]
 
 
   export const PromotionScalarFieldEnum: {
@@ -69743,58 +68761,6 @@ export namespace Prisma {
   export type PromotionRedemptionScalarFieldEnum = (typeof PromotionRedemptionScalarFieldEnum)[keyof typeof PromotionRedemptionScalarFieldEnum]
 
 
-  export const UploadedDocumentScalarFieldEnum: {
-    id: 'id',
-    userId: 'userId',
-    sessionId: 'sessionId',
-    fileName: 'fileName',
-    fileUrl: 'fileUrl',
-    storagePath: 'storagePath',
-    fileSizeBytes: 'fileSizeBytes',
-    fileType: 'fileType',
-    pageCount: 'pageCount',
-    status: 'status',
-    isSimulatedOCR: 'isSimulatedOCR',
-    ocrProvider: 'ocrProvider',
-    customerNotes: 'customerNotes',
-    processingError: 'processingError',
-    attempts: 'attempts',
-    processedAt: 'processedAt',
-    confirmedAt: 'confirmedAt',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type UploadedDocumentScalarFieldEnum = (typeof UploadedDocumentScalarFieldEnum)[keyof typeof UploadedDocumentScalarFieldEnum]
-
-
-  export const ExtractedStationeryItemScalarFieldEnum: {
-    id: 'id',
-    documentId: 'documentId',
-    rawText: 'rawText',
-    itemDescription: 'itemDescription',
-    quantity: 'quantity',
-    unit: 'unit',
-    confidence: 'confidence',
-    confidenceScore: 'confidenceScore',
-    extractionConfidence: 'extractionConfidence',
-    matchConfidence: 'matchConfidence',
-    matchReason: 'matchReason',
-    matchedProductId: 'matchedProductId',
-    matchedVariantId: 'matchedVariantId',
-    candidateProductIds: 'candidateProductIds',
-    status: 'status',
-    isConfirmed: 'isConfirmed',
-    confirmedProductId: 'confirmedProductId',
-    confirmedVariantId: 'confirmedVariantId',
-    confirmedQuantity: 'confirmedQuantity',
-    isSubstituted: 'isSubstituted',
-    createdAt: 'createdAt'
-  };
-
-  export type ExtractedStationeryItemScalarFieldEnum = (typeof ExtractedStationeryItemScalarFieldEnum)[keyof typeof ExtractedStationeryItemScalarFieldEnum]
-
-
   export const WishlistItemScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -69870,6 +68836,7 @@ export namespace Prisma {
     imageAltText: 'imageAltText',
     buttonText: 'buttonText',
     buttonLink: 'buttonLink',
+    placement: 'placement',
     sortOrder: 'sortOrder',
     status: 'status',
     startAt: 'startAt',
@@ -69906,6 +68873,15 @@ export namespace Prisma {
     codEnabled: 'codEnabled',
     bankTransferEnabled: 'bankTransferEnabled',
     onlineCardEnabled: 'onlineCardEnabled',
+    bankName: 'bankName',
+    accountHolderName: 'accountHolderName',
+    accountNumber: 'accountNumber',
+    branchName: 'branchName',
+    branchCode: 'branchCode',
+    bankCode: 'bankCode',
+    paymentInstructions: 'paymentInstructions',
+    referenceInstructions: 'referenceInstructions',
+    bankLogoUrl: 'bankLogoUrl',
     updatedAt: 'updatedAt'
   };
 
@@ -70373,6 +69349,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'RefundStatus'
+   */
+  export type EnumRefundStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RefundStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'RefundStatus[]'
+   */
+  export type ListEnumRefundStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RefundStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'ReservationStatus'
    */
   export type EnumReservationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReservationStatus'>
@@ -70397,6 +69387,20 @@ export namespace Prisma {
    * Reference to a field of type 'PaymentAttemptStatus[]'
    */
   export type ListEnumPaymentAttemptStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentAttemptStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'BankDepositStatus'
+   */
+  export type EnumBankDepositStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BankDepositStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'BankDepositStatus[]'
+   */
+  export type ListEnumBankDepositStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BankDepositStatus[]'>
     
 
 
@@ -70439,48 +69443,6 @@ export namespace Prisma {
    * Reference to a field of type 'PromotionStatus[]'
    */
   export type ListEnumPromotionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PromotionStatus[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'DocumentStatus'
-   */
-  export type EnumDocumentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'DocumentStatus[]'
-   */
-  export type ListEnumDocumentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentStatus[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'ItemConfidence'
-   */
-  export type EnumItemConfidenceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ItemConfidence'>
-    
-
-
-  /**
-   * Reference to a field of type 'ItemConfidence[]'
-   */
-  export type ListEnumItemConfidenceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ItemConfidence[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'MatchStatus'
-   */
-  export type EnumMatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MatchStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'MatchStatus[]'
-   */
-  export type ListEnumMatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MatchStatus[]'>
     
 
 
@@ -70628,7 +69590,6 @@ export namespace Prisma {
     wishlist?: WishlistItemListRelationFilter
     savedLists?: SavedListListRelationFilter
     savedStationeryLists?: SavedStationeryListListRelationFilter
-    documents?: UploadedDocumentListRelationFilter
     auditLogs?: AuditLogListRelationFilter
     refreshTokens?: RefreshTokenListRelationFilter
     cart?: XOR<CartNullableScalarRelationFilter, CartWhereInput> | null
@@ -70640,6 +69601,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationListRelationFilter
     importPreviews?: ProductImportPreviewListRelationFilter
     importBatches?: ProductImportBatchListRelationFilter
+    reviewedBankDeposits?: BankDepositSubmissionListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -70668,7 +69630,6 @@ export namespace Prisma {
     wishlist?: WishlistItemOrderByRelationAggregateInput
     savedLists?: SavedListOrderByRelationAggregateInput
     savedStationeryLists?: SavedStationeryListOrderByRelationAggregateInput
-    documents?: UploadedDocumentOrderByRelationAggregateInput
     auditLogs?: AuditLogOrderByRelationAggregateInput
     refreshTokens?: RefreshTokenOrderByRelationAggregateInput
     cart?: CartOrderByWithRelationInput
@@ -70680,6 +69641,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationOrderByRelationAggregateInput
     importPreviews?: ProductImportPreviewOrderByRelationAggregateInput
     importBatches?: ProductImportBatchOrderByRelationAggregateInput
+    reviewedBankDeposits?: BankDepositSubmissionOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -70711,7 +69673,6 @@ export namespace Prisma {
     wishlist?: WishlistItemListRelationFilter
     savedLists?: SavedListListRelationFilter
     savedStationeryLists?: SavedStationeryListListRelationFilter
-    documents?: UploadedDocumentListRelationFilter
     auditLogs?: AuditLogListRelationFilter
     refreshTokens?: RefreshTokenListRelationFilter
     cart?: XOR<CartNullableScalarRelationFilter, CartWhereInput> | null
@@ -70723,6 +69684,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationListRelationFilter
     importPreviews?: ProductImportPreviewListRelationFilter
     importBatches?: ProductImportBatchListRelationFilter
+    reviewedBankDeposits?: BankDepositSubmissionListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -71144,7 +70106,6 @@ export namespace Prisma {
     movements?: InventoryMovementListRelationFilter
     orderItems?: OrderItemListRelationFilter
     packItems?: SchoolPackItemListRelationFilter
-    matchedUploadItems?: ExtractedStationeryItemListRelationFilter
     wishlistItems?: WishlistItemListRelationFilter
     savedListItems?: SavedListItemListRelationFilter
     cartItems?: CartItemListRelationFilter
@@ -71188,7 +70149,6 @@ export namespace Prisma {
     movements?: InventoryMovementOrderByRelationAggregateInput
     orderItems?: OrderItemOrderByRelationAggregateInput
     packItems?: SchoolPackItemOrderByRelationAggregateInput
-    matchedUploadItems?: ExtractedStationeryItemOrderByRelationAggregateInput
     wishlistItems?: WishlistItemOrderByRelationAggregateInput
     savedListItems?: SavedListItemOrderByRelationAggregateInput
     cartItems?: CartItemOrderByRelationAggregateInput
@@ -71235,7 +70195,6 @@ export namespace Prisma {
     movements?: InventoryMovementListRelationFilter
     orderItems?: OrderItemListRelationFilter
     packItems?: SchoolPackItemListRelationFilter
-    matchedUploadItems?: ExtractedStationeryItemListRelationFilter
     wishlistItems?: WishlistItemListRelationFilter
     savedListItems?: SavedListItemListRelationFilter
     cartItems?: CartItemListRelationFilter
@@ -71693,6 +70652,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteListRelationFilter
     returnRequests?: OrderReturnRequestListRelationFilter
     refundRecords?: RefundRecordListRelationFilter
+    bankDepositSubmissions?: BankDepositSubmissionListRelationFilter
   }
 
   export type OrderOrderByWithRelationInput = {
@@ -71731,6 +70691,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteOrderByRelationAggregateInput
     returnRequests?: OrderReturnRequestOrderByRelationAggregateInput
     refundRecords?: RefundRecordOrderByRelationAggregateInput
+    bankDepositSubmissions?: BankDepositSubmissionOrderByRelationAggregateInput
   }
 
   export type OrderWhereUniqueInput = Prisma.AtLeast<{
@@ -71772,6 +70733,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteListRelationFilter
     returnRequests?: OrderReturnRequestListRelationFilter
     refundRecords?: RefundRecordListRelationFilter
+    bankDepositSubmissions?: BankDepositSubmissionListRelationFilter
   }, "id" | "orderNumber">
 
   export type OrderOrderByWithAggregationInput = {
@@ -72213,6 +71175,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"OrderReturnRequest"> | Date | string
     order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
     items?: OrderReturnItemListRelationFilter
+    refundRecords?: RefundRecordListRelationFilter
   }
 
   export type OrderReturnRequestOrderByWithRelationInput = {
@@ -72226,6 +71189,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     order?: OrderOrderByWithRelationInput
     items?: OrderReturnItemOrderByRelationAggregateInput
+    refundRecords?: RefundRecordOrderByRelationAggregateInput
   }
 
   export type OrderReturnRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -72242,6 +71206,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"OrderReturnRequest"> | Date | string
     order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
     items?: OrderReturnItemListRelationFilter
+    refundRecords?: RefundRecordListRelationFilter
   }, "id" | "returnNumber">
 
   export type OrderReturnRequestOrderByWithAggregationInput = {
@@ -72364,50 +71329,122 @@ export namespace Prisma {
     id?: StringFilter<"RefundRecord"> | string
     orderId?: StringFilter<"RefundRecord"> | string
     amountCents?: IntFilter<"RefundRecord"> | number
+    currency?: StringFilter<"RefundRecord"> | string
     method?: StringFilter<"RefundRecord"> | string
+    status?: EnumRefundStatusFilter<"RefundRecord"> | $Enums.RefundStatus
     reference?: StringNullableFilter<"RefundRecord"> | string | null
+    externalReference?: StringNullableFilter<"RefundRecord"> | string | null
+    idempotencyKey?: StringNullableFilter<"RefundRecord"> | string | null
+    payloadHash?: StringNullableFilter<"RefundRecord"> | string | null
     reason?: StringFilter<"RefundRecord"> | string
+    failureReason?: StringNullableFilter<"RefundRecord"> | string | null
+    maskedAccountNumber?: StringNullableFilter<"RefundRecord"> | string | null
+    encryptedBankDetails?: StringNullableFilter<"RefundRecord"> | string | null
     processedBy?: StringNullableFilter<"RefundRecord"> | string | null
+    processedById?: StringNullableFilter<"RefundRecord"> | string | null
+    requestedById?: StringNullableFilter<"RefundRecord"> | string | null
+    approvedById?: StringNullableFilter<"RefundRecord"> | string | null
+    approvedAt?: DateTimeNullableFilter<"RefundRecord"> | Date | string | null
+    completedById?: StringNullableFilter<"RefundRecord"> | string | null
+    completedAt?: DateTimeNullableFilter<"RefundRecord"> | Date | string | null
+    orderReturnRequestId?: StringNullableFilter<"RefundRecord"> | string | null
+    metadata?: JsonNullableFilter<"RefundRecord">
     createdAt?: DateTimeFilter<"RefundRecord"> | Date | string
+    updatedAt?: DateTimeFilter<"RefundRecord"> | Date | string
     order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
+    orderReturnRequest?: XOR<OrderReturnRequestNullableScalarRelationFilter, OrderReturnRequestWhereInput> | null
   }
 
   export type RefundRecordOrderByWithRelationInput = {
     id?: SortOrder
     orderId?: SortOrder
     amountCents?: SortOrder
+    currency?: SortOrder
     method?: SortOrder
+    status?: SortOrder
     reference?: SortOrderInput | SortOrder
+    externalReference?: SortOrderInput | SortOrder
+    idempotencyKey?: SortOrderInput | SortOrder
+    payloadHash?: SortOrderInput | SortOrder
     reason?: SortOrder
+    failureReason?: SortOrderInput | SortOrder
+    maskedAccountNumber?: SortOrderInput | SortOrder
+    encryptedBankDetails?: SortOrderInput | SortOrder
     processedBy?: SortOrderInput | SortOrder
+    processedById?: SortOrderInput | SortOrder
+    requestedById?: SortOrderInput | SortOrder
+    approvedById?: SortOrderInput | SortOrder
+    approvedAt?: SortOrderInput | SortOrder
+    completedById?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    orderReturnRequestId?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     order?: OrderOrderByWithRelationInput
+    orderReturnRequest?: OrderReturnRequestOrderByWithRelationInput
   }
 
   export type RefundRecordWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    orderId_idempotencyKey?: RefundRecordOrderIdIdempotencyKeyCompoundUniqueInput
     AND?: RefundRecordWhereInput | RefundRecordWhereInput[]
     OR?: RefundRecordWhereInput[]
     NOT?: RefundRecordWhereInput | RefundRecordWhereInput[]
     orderId?: StringFilter<"RefundRecord"> | string
     amountCents?: IntFilter<"RefundRecord"> | number
+    currency?: StringFilter<"RefundRecord"> | string
     method?: StringFilter<"RefundRecord"> | string
+    status?: EnumRefundStatusFilter<"RefundRecord"> | $Enums.RefundStatus
     reference?: StringNullableFilter<"RefundRecord"> | string | null
+    externalReference?: StringNullableFilter<"RefundRecord"> | string | null
+    idempotencyKey?: StringNullableFilter<"RefundRecord"> | string | null
+    payloadHash?: StringNullableFilter<"RefundRecord"> | string | null
     reason?: StringFilter<"RefundRecord"> | string
+    failureReason?: StringNullableFilter<"RefundRecord"> | string | null
+    maskedAccountNumber?: StringNullableFilter<"RefundRecord"> | string | null
+    encryptedBankDetails?: StringNullableFilter<"RefundRecord"> | string | null
     processedBy?: StringNullableFilter<"RefundRecord"> | string | null
+    processedById?: StringNullableFilter<"RefundRecord"> | string | null
+    requestedById?: StringNullableFilter<"RefundRecord"> | string | null
+    approvedById?: StringNullableFilter<"RefundRecord"> | string | null
+    approvedAt?: DateTimeNullableFilter<"RefundRecord"> | Date | string | null
+    completedById?: StringNullableFilter<"RefundRecord"> | string | null
+    completedAt?: DateTimeNullableFilter<"RefundRecord"> | Date | string | null
+    orderReturnRequestId?: StringNullableFilter<"RefundRecord"> | string | null
+    metadata?: JsonNullableFilter<"RefundRecord">
     createdAt?: DateTimeFilter<"RefundRecord"> | Date | string
+    updatedAt?: DateTimeFilter<"RefundRecord"> | Date | string
     order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
-  }, "id">
+    orderReturnRequest?: XOR<OrderReturnRequestNullableScalarRelationFilter, OrderReturnRequestWhereInput> | null
+  }, "id" | "orderId_idempotencyKey">
 
   export type RefundRecordOrderByWithAggregationInput = {
     id?: SortOrder
     orderId?: SortOrder
     amountCents?: SortOrder
+    currency?: SortOrder
     method?: SortOrder
+    status?: SortOrder
     reference?: SortOrderInput | SortOrder
+    externalReference?: SortOrderInput | SortOrder
+    idempotencyKey?: SortOrderInput | SortOrder
+    payloadHash?: SortOrderInput | SortOrder
     reason?: SortOrder
+    failureReason?: SortOrderInput | SortOrder
+    maskedAccountNumber?: SortOrderInput | SortOrder
+    encryptedBankDetails?: SortOrderInput | SortOrder
     processedBy?: SortOrderInput | SortOrder
+    processedById?: SortOrderInput | SortOrder
+    requestedById?: SortOrderInput | SortOrder
+    approvedById?: SortOrderInput | SortOrder
+    approvedAt?: SortOrderInput | SortOrder
+    completedById?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    orderReturnRequestId?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: RefundRecordCountOrderByAggregateInput
     _avg?: RefundRecordAvgOrderByAggregateInput
     _max?: RefundRecordMaxOrderByAggregateInput
@@ -72422,11 +71459,28 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"RefundRecord"> | string
     orderId?: StringWithAggregatesFilter<"RefundRecord"> | string
     amountCents?: IntWithAggregatesFilter<"RefundRecord"> | number
+    currency?: StringWithAggregatesFilter<"RefundRecord"> | string
     method?: StringWithAggregatesFilter<"RefundRecord"> | string
+    status?: EnumRefundStatusWithAggregatesFilter<"RefundRecord"> | $Enums.RefundStatus
     reference?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
+    externalReference?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
+    idempotencyKey?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
+    payloadHash?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
     reason?: StringWithAggregatesFilter<"RefundRecord"> | string
+    failureReason?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
+    maskedAccountNumber?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
+    encryptedBankDetails?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
     processedBy?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
+    processedById?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
+    requestedById?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
+    approvedById?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
+    approvedAt?: DateTimeNullableWithAggregatesFilter<"RefundRecord"> | Date | string | null
+    completedById?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
+    completedAt?: DateTimeNullableWithAggregatesFilter<"RefundRecord"> | Date | string | null
+    orderReturnRequestId?: StringNullableWithAggregatesFilter<"RefundRecord"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"RefundRecord">
     createdAt?: DateTimeWithAggregatesFilter<"RefundRecord"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RefundRecord"> | Date | string
   }
 
   export type StockReservationWhereInput = {
@@ -72605,6 +71659,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"PaymentAttempt"> | Date | string
     reservation?: XOR<StockReservationScalarRelationFilter, StockReservationWhereInput>
     order?: XOR<OrderNullableScalarRelationFilter, OrderWhereInput> | null
+    bankDepositSubmissions?: BankDepositSubmissionListRelationFilter
   }
 
   export type PaymentAttemptOrderByWithRelationInput = {
@@ -72623,6 +71678,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     reservation?: StockReservationOrderByWithRelationInput
     order?: OrderOrderByWithRelationInput
+    bankDepositSubmissions?: BankDepositSubmissionOrderByRelationAggregateInput
   }
 
   export type PaymentAttemptWhereUniqueInput = Prisma.AtLeast<{
@@ -72644,6 +71700,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"PaymentAttempt"> | Date | string
     reservation?: XOR<StockReservationScalarRelationFilter, StockReservationWhereInput>
     order?: XOR<OrderNullableScalarRelationFilter, OrderWhereInput> | null
+    bankDepositSubmissions?: BankDepositSubmissionListRelationFilter
   }, "id" | "gatewayReference" | "idempotencyKey">
 
   export type PaymentAttemptOrderByWithAggregationInput = {
@@ -72684,6 +71741,134 @@ export namespace Prisma {
     failureReason?: StringNullableWithAggregatesFilter<"PaymentAttempt"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"PaymentAttempt"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"PaymentAttempt"> | Date | string
+  }
+
+  export type BankDepositSubmissionWhereInput = {
+    AND?: BankDepositSubmissionWhereInput | BankDepositSubmissionWhereInput[]
+    OR?: BankDepositSubmissionWhereInput[]
+    NOT?: BankDepositSubmissionWhereInput | BankDepositSubmissionWhereInput[]
+    id?: StringFilter<"BankDepositSubmission"> | string
+    orderId?: StringFilter<"BankDepositSubmission"> | string
+    paymentAttemptId?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    receiptStorageKey?: StringFilter<"BankDepositSubmission"> | string
+    originalFilename?: StringFilter<"BankDepositSubmission"> | string
+    fileSizeBytes?: IntFilter<"BankDepositSubmission"> | number
+    mimeType?: StringFilter<"BankDepositSubmission"> | string
+    fileHashSha256?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    referenceNumber?: StringFilter<"BankDepositSubmission"> | string
+    depositDate?: DateTimeFilter<"BankDepositSubmission"> | Date | string
+    amountCents?: IntFilter<"BankDepositSubmission"> | number
+    customerNotes?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    status?: EnumBankDepositStatusFilter<"BankDepositSubmission"> | $Enums.BankDepositStatus
+    rejectionReason?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    reviewedById?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    reviewedAt?: DateTimeNullableFilter<"BankDepositSubmission"> | Date | string | null
+    createdAt?: DateTimeFilter<"BankDepositSubmission"> | Date | string
+    updatedAt?: DateTimeFilter<"BankDepositSubmission"> | Date | string
+    order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
+    paymentAttempt?: XOR<PaymentAttemptNullableScalarRelationFilter, PaymentAttemptWhereInput> | null
+    reviewedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type BankDepositSubmissionOrderByWithRelationInput = {
+    id?: SortOrder
+    orderId?: SortOrder
+    paymentAttemptId?: SortOrderInput | SortOrder
+    receiptStorageKey?: SortOrder
+    originalFilename?: SortOrder
+    fileSizeBytes?: SortOrder
+    mimeType?: SortOrder
+    fileHashSha256?: SortOrderInput | SortOrder
+    referenceNumber?: SortOrder
+    depositDate?: SortOrder
+    amountCents?: SortOrder
+    customerNotes?: SortOrderInput | SortOrder
+    status?: SortOrder
+    rejectionReason?: SortOrderInput | SortOrder
+    reviewedById?: SortOrderInput | SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    order?: OrderOrderByWithRelationInput
+    paymentAttempt?: PaymentAttemptOrderByWithRelationInput
+    reviewedBy?: UserOrderByWithRelationInput
+  }
+
+  export type BankDepositSubmissionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: BankDepositSubmissionWhereInput | BankDepositSubmissionWhereInput[]
+    OR?: BankDepositSubmissionWhereInput[]
+    NOT?: BankDepositSubmissionWhereInput | BankDepositSubmissionWhereInput[]
+    orderId?: StringFilter<"BankDepositSubmission"> | string
+    paymentAttemptId?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    receiptStorageKey?: StringFilter<"BankDepositSubmission"> | string
+    originalFilename?: StringFilter<"BankDepositSubmission"> | string
+    fileSizeBytes?: IntFilter<"BankDepositSubmission"> | number
+    mimeType?: StringFilter<"BankDepositSubmission"> | string
+    fileHashSha256?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    referenceNumber?: StringFilter<"BankDepositSubmission"> | string
+    depositDate?: DateTimeFilter<"BankDepositSubmission"> | Date | string
+    amountCents?: IntFilter<"BankDepositSubmission"> | number
+    customerNotes?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    status?: EnumBankDepositStatusFilter<"BankDepositSubmission"> | $Enums.BankDepositStatus
+    rejectionReason?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    reviewedById?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    reviewedAt?: DateTimeNullableFilter<"BankDepositSubmission"> | Date | string | null
+    createdAt?: DateTimeFilter<"BankDepositSubmission"> | Date | string
+    updatedAt?: DateTimeFilter<"BankDepositSubmission"> | Date | string
+    order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
+    paymentAttempt?: XOR<PaymentAttemptNullableScalarRelationFilter, PaymentAttemptWhereInput> | null
+    reviewedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type BankDepositSubmissionOrderByWithAggregationInput = {
+    id?: SortOrder
+    orderId?: SortOrder
+    paymentAttemptId?: SortOrderInput | SortOrder
+    receiptStorageKey?: SortOrder
+    originalFilename?: SortOrder
+    fileSizeBytes?: SortOrder
+    mimeType?: SortOrder
+    fileHashSha256?: SortOrderInput | SortOrder
+    referenceNumber?: SortOrder
+    depositDate?: SortOrder
+    amountCents?: SortOrder
+    customerNotes?: SortOrderInput | SortOrder
+    status?: SortOrder
+    rejectionReason?: SortOrderInput | SortOrder
+    reviewedById?: SortOrderInput | SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: BankDepositSubmissionCountOrderByAggregateInput
+    _avg?: BankDepositSubmissionAvgOrderByAggregateInput
+    _max?: BankDepositSubmissionMaxOrderByAggregateInput
+    _min?: BankDepositSubmissionMinOrderByAggregateInput
+    _sum?: BankDepositSubmissionSumOrderByAggregateInput
+  }
+
+  export type BankDepositSubmissionScalarWhereWithAggregatesInput = {
+    AND?: BankDepositSubmissionScalarWhereWithAggregatesInput | BankDepositSubmissionScalarWhereWithAggregatesInput[]
+    OR?: BankDepositSubmissionScalarWhereWithAggregatesInput[]
+    NOT?: BankDepositSubmissionScalarWhereWithAggregatesInput | BankDepositSubmissionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"BankDepositSubmission"> | string
+    orderId?: StringWithAggregatesFilter<"BankDepositSubmission"> | string
+    paymentAttemptId?: StringNullableWithAggregatesFilter<"BankDepositSubmission"> | string | null
+    receiptStorageKey?: StringWithAggregatesFilter<"BankDepositSubmission"> | string
+    originalFilename?: StringWithAggregatesFilter<"BankDepositSubmission"> | string
+    fileSizeBytes?: IntWithAggregatesFilter<"BankDepositSubmission"> | number
+    mimeType?: StringWithAggregatesFilter<"BankDepositSubmission"> | string
+    fileHashSha256?: StringNullableWithAggregatesFilter<"BankDepositSubmission"> | string | null
+    referenceNumber?: StringWithAggregatesFilter<"BankDepositSubmission"> | string
+    depositDate?: DateTimeWithAggregatesFilter<"BankDepositSubmission"> | Date | string
+    amountCents?: IntWithAggregatesFilter<"BankDepositSubmission"> | number
+    customerNotes?: StringNullableWithAggregatesFilter<"BankDepositSubmission"> | string | null
+    status?: EnumBankDepositStatusWithAggregatesFilter<"BankDepositSubmission"> | $Enums.BankDepositStatus
+    rejectionReason?: StringNullableWithAggregatesFilter<"BankDepositSubmission"> | string | null
+    reviewedById?: StringNullableWithAggregatesFilter<"BankDepositSubmission"> | string | null
+    reviewedAt?: DateTimeNullableWithAggregatesFilter<"BankDepositSubmission"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"BankDepositSubmission"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"BankDepositSubmission"> | Date | string
   }
 
   export type PromotionWhereInput = {
@@ -73120,276 +72305,6 @@ export namespace Prisma {
     redeemedAt?: DateTimeWithAggregatesFilter<"PromotionRedemption"> | Date | string
   }
 
-  export type UploadedDocumentWhereInput = {
-    AND?: UploadedDocumentWhereInput | UploadedDocumentWhereInput[]
-    OR?: UploadedDocumentWhereInput[]
-    NOT?: UploadedDocumentWhereInput | UploadedDocumentWhereInput[]
-    id?: StringFilter<"UploadedDocument"> | string
-    userId?: StringNullableFilter<"UploadedDocument"> | string | null
-    sessionId?: StringNullableFilter<"UploadedDocument"> | string | null
-    fileName?: StringFilter<"UploadedDocument"> | string
-    fileUrl?: StringFilter<"UploadedDocument"> | string
-    storagePath?: StringNullableFilter<"UploadedDocument"> | string | null
-    fileSizeBytes?: IntFilter<"UploadedDocument"> | number
-    fileType?: StringFilter<"UploadedDocument"> | string
-    pageCount?: IntFilter<"UploadedDocument"> | number
-    status?: EnumDocumentStatusFilter<"UploadedDocument"> | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFilter<"UploadedDocument"> | boolean
-    ocrProvider?: StringNullableFilter<"UploadedDocument"> | string | null
-    customerNotes?: StringNullableFilter<"UploadedDocument"> | string | null
-    processingError?: StringNullableFilter<"UploadedDocument"> | string | null
-    attempts?: IntFilter<"UploadedDocument"> | number
-    processedAt?: DateTimeNullableFilter<"UploadedDocument"> | Date | string | null
-    confirmedAt?: DateTimeNullableFilter<"UploadedDocument"> | Date | string | null
-    createdAt?: DateTimeFilter<"UploadedDocument"> | Date | string
-    updatedAt?: DateTimeFilter<"UploadedDocument"> | Date | string
-    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
-    extractedItems?: ExtractedStationeryItemListRelationFilter
-  }
-
-  export type UploadedDocumentOrderByWithRelationInput = {
-    id?: SortOrder
-    userId?: SortOrderInput | SortOrder
-    sessionId?: SortOrderInput | SortOrder
-    fileName?: SortOrder
-    fileUrl?: SortOrder
-    storagePath?: SortOrderInput | SortOrder
-    fileSizeBytes?: SortOrder
-    fileType?: SortOrder
-    pageCount?: SortOrder
-    status?: SortOrder
-    isSimulatedOCR?: SortOrder
-    ocrProvider?: SortOrderInput | SortOrder
-    customerNotes?: SortOrderInput | SortOrder
-    processingError?: SortOrderInput | SortOrder
-    attempts?: SortOrder
-    processedAt?: SortOrderInput | SortOrder
-    confirmedAt?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    user?: UserOrderByWithRelationInput
-    extractedItems?: ExtractedStationeryItemOrderByRelationAggregateInput
-  }
-
-  export type UploadedDocumentWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: UploadedDocumentWhereInput | UploadedDocumentWhereInput[]
-    OR?: UploadedDocumentWhereInput[]
-    NOT?: UploadedDocumentWhereInput | UploadedDocumentWhereInput[]
-    userId?: StringNullableFilter<"UploadedDocument"> | string | null
-    sessionId?: StringNullableFilter<"UploadedDocument"> | string | null
-    fileName?: StringFilter<"UploadedDocument"> | string
-    fileUrl?: StringFilter<"UploadedDocument"> | string
-    storagePath?: StringNullableFilter<"UploadedDocument"> | string | null
-    fileSizeBytes?: IntFilter<"UploadedDocument"> | number
-    fileType?: StringFilter<"UploadedDocument"> | string
-    pageCount?: IntFilter<"UploadedDocument"> | number
-    status?: EnumDocumentStatusFilter<"UploadedDocument"> | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFilter<"UploadedDocument"> | boolean
-    ocrProvider?: StringNullableFilter<"UploadedDocument"> | string | null
-    customerNotes?: StringNullableFilter<"UploadedDocument"> | string | null
-    processingError?: StringNullableFilter<"UploadedDocument"> | string | null
-    attempts?: IntFilter<"UploadedDocument"> | number
-    processedAt?: DateTimeNullableFilter<"UploadedDocument"> | Date | string | null
-    confirmedAt?: DateTimeNullableFilter<"UploadedDocument"> | Date | string | null
-    createdAt?: DateTimeFilter<"UploadedDocument"> | Date | string
-    updatedAt?: DateTimeFilter<"UploadedDocument"> | Date | string
-    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
-    extractedItems?: ExtractedStationeryItemListRelationFilter
-  }, "id">
-
-  export type UploadedDocumentOrderByWithAggregationInput = {
-    id?: SortOrder
-    userId?: SortOrderInput | SortOrder
-    sessionId?: SortOrderInput | SortOrder
-    fileName?: SortOrder
-    fileUrl?: SortOrder
-    storagePath?: SortOrderInput | SortOrder
-    fileSizeBytes?: SortOrder
-    fileType?: SortOrder
-    pageCount?: SortOrder
-    status?: SortOrder
-    isSimulatedOCR?: SortOrder
-    ocrProvider?: SortOrderInput | SortOrder
-    customerNotes?: SortOrderInput | SortOrder
-    processingError?: SortOrderInput | SortOrder
-    attempts?: SortOrder
-    processedAt?: SortOrderInput | SortOrder
-    confirmedAt?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: UploadedDocumentCountOrderByAggregateInput
-    _avg?: UploadedDocumentAvgOrderByAggregateInput
-    _max?: UploadedDocumentMaxOrderByAggregateInput
-    _min?: UploadedDocumentMinOrderByAggregateInput
-    _sum?: UploadedDocumentSumOrderByAggregateInput
-  }
-
-  export type UploadedDocumentScalarWhereWithAggregatesInput = {
-    AND?: UploadedDocumentScalarWhereWithAggregatesInput | UploadedDocumentScalarWhereWithAggregatesInput[]
-    OR?: UploadedDocumentScalarWhereWithAggregatesInput[]
-    NOT?: UploadedDocumentScalarWhereWithAggregatesInput | UploadedDocumentScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"UploadedDocument"> | string
-    userId?: StringNullableWithAggregatesFilter<"UploadedDocument"> | string | null
-    sessionId?: StringNullableWithAggregatesFilter<"UploadedDocument"> | string | null
-    fileName?: StringWithAggregatesFilter<"UploadedDocument"> | string
-    fileUrl?: StringWithAggregatesFilter<"UploadedDocument"> | string
-    storagePath?: StringNullableWithAggregatesFilter<"UploadedDocument"> | string | null
-    fileSizeBytes?: IntWithAggregatesFilter<"UploadedDocument"> | number
-    fileType?: StringWithAggregatesFilter<"UploadedDocument"> | string
-    pageCount?: IntWithAggregatesFilter<"UploadedDocument"> | number
-    status?: EnumDocumentStatusWithAggregatesFilter<"UploadedDocument"> | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolWithAggregatesFilter<"UploadedDocument"> | boolean
-    ocrProvider?: StringNullableWithAggregatesFilter<"UploadedDocument"> | string | null
-    customerNotes?: StringNullableWithAggregatesFilter<"UploadedDocument"> | string | null
-    processingError?: StringNullableWithAggregatesFilter<"UploadedDocument"> | string | null
-    attempts?: IntWithAggregatesFilter<"UploadedDocument"> | number
-    processedAt?: DateTimeNullableWithAggregatesFilter<"UploadedDocument"> | Date | string | null
-    confirmedAt?: DateTimeNullableWithAggregatesFilter<"UploadedDocument"> | Date | string | null
-    createdAt?: DateTimeWithAggregatesFilter<"UploadedDocument"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"UploadedDocument"> | Date | string
-  }
-
-  export type ExtractedStationeryItemWhereInput = {
-    AND?: ExtractedStationeryItemWhereInput | ExtractedStationeryItemWhereInput[]
-    OR?: ExtractedStationeryItemWhereInput[]
-    NOT?: ExtractedStationeryItemWhereInput | ExtractedStationeryItemWhereInput[]
-    id?: StringFilter<"ExtractedStationeryItem"> | string
-    documentId?: StringFilter<"ExtractedStationeryItem"> | string
-    rawText?: StringFilter<"ExtractedStationeryItem"> | string
-    itemDescription?: StringFilter<"ExtractedStationeryItem"> | string
-    quantity?: IntFilter<"ExtractedStationeryItem"> | number
-    unit?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    confidence?: EnumItemConfidenceFilter<"ExtractedStationeryItem"> | $Enums.ItemConfidence
-    confidenceScore?: FloatFilter<"ExtractedStationeryItem"> | number
-    extractionConfidence?: FloatFilter<"ExtractedStationeryItem"> | number
-    matchConfidence?: FloatFilter<"ExtractedStationeryItem"> | number
-    matchReason?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    matchedProductId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    matchedVariantId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    candidateProductIds?: StringNullableListFilter<"ExtractedStationeryItem">
-    status?: EnumMatchStatusFilter<"ExtractedStationeryItem"> | $Enums.MatchStatus
-    isConfirmed?: BoolFilter<"ExtractedStationeryItem"> | boolean
-    confirmedProductId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    confirmedVariantId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    confirmedQuantity?: IntNullableFilter<"ExtractedStationeryItem"> | number | null
-    isSubstituted?: BoolFilter<"ExtractedStationeryItem"> | boolean
-    createdAt?: DateTimeFilter<"ExtractedStationeryItem"> | Date | string
-    document?: XOR<UploadedDocumentScalarRelationFilter, UploadedDocumentWhereInput>
-    matchedProduct?: XOR<ProductNullableScalarRelationFilter, ProductWhereInput> | null
-  }
-
-  export type ExtractedStationeryItemOrderByWithRelationInput = {
-    id?: SortOrder
-    documentId?: SortOrder
-    rawText?: SortOrder
-    itemDescription?: SortOrder
-    quantity?: SortOrder
-    unit?: SortOrderInput | SortOrder
-    confidence?: SortOrder
-    confidenceScore?: SortOrder
-    extractionConfidence?: SortOrder
-    matchConfidence?: SortOrder
-    matchReason?: SortOrderInput | SortOrder
-    matchedProductId?: SortOrderInput | SortOrder
-    matchedVariantId?: SortOrderInput | SortOrder
-    candidateProductIds?: SortOrder
-    status?: SortOrder
-    isConfirmed?: SortOrder
-    confirmedProductId?: SortOrderInput | SortOrder
-    confirmedVariantId?: SortOrderInput | SortOrder
-    confirmedQuantity?: SortOrderInput | SortOrder
-    isSubstituted?: SortOrder
-    createdAt?: SortOrder
-    document?: UploadedDocumentOrderByWithRelationInput
-    matchedProduct?: ProductOrderByWithRelationInput
-  }
-
-  export type ExtractedStationeryItemWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: ExtractedStationeryItemWhereInput | ExtractedStationeryItemWhereInput[]
-    OR?: ExtractedStationeryItemWhereInput[]
-    NOT?: ExtractedStationeryItemWhereInput | ExtractedStationeryItemWhereInput[]
-    documentId?: StringFilter<"ExtractedStationeryItem"> | string
-    rawText?: StringFilter<"ExtractedStationeryItem"> | string
-    itemDescription?: StringFilter<"ExtractedStationeryItem"> | string
-    quantity?: IntFilter<"ExtractedStationeryItem"> | number
-    unit?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    confidence?: EnumItemConfidenceFilter<"ExtractedStationeryItem"> | $Enums.ItemConfidence
-    confidenceScore?: FloatFilter<"ExtractedStationeryItem"> | number
-    extractionConfidence?: FloatFilter<"ExtractedStationeryItem"> | number
-    matchConfidence?: FloatFilter<"ExtractedStationeryItem"> | number
-    matchReason?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    matchedProductId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    matchedVariantId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    candidateProductIds?: StringNullableListFilter<"ExtractedStationeryItem">
-    status?: EnumMatchStatusFilter<"ExtractedStationeryItem"> | $Enums.MatchStatus
-    isConfirmed?: BoolFilter<"ExtractedStationeryItem"> | boolean
-    confirmedProductId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    confirmedVariantId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    confirmedQuantity?: IntNullableFilter<"ExtractedStationeryItem"> | number | null
-    isSubstituted?: BoolFilter<"ExtractedStationeryItem"> | boolean
-    createdAt?: DateTimeFilter<"ExtractedStationeryItem"> | Date | string
-    document?: XOR<UploadedDocumentScalarRelationFilter, UploadedDocumentWhereInput>
-    matchedProduct?: XOR<ProductNullableScalarRelationFilter, ProductWhereInput> | null
-  }, "id">
-
-  export type ExtractedStationeryItemOrderByWithAggregationInput = {
-    id?: SortOrder
-    documentId?: SortOrder
-    rawText?: SortOrder
-    itemDescription?: SortOrder
-    quantity?: SortOrder
-    unit?: SortOrderInput | SortOrder
-    confidence?: SortOrder
-    confidenceScore?: SortOrder
-    extractionConfidence?: SortOrder
-    matchConfidence?: SortOrder
-    matchReason?: SortOrderInput | SortOrder
-    matchedProductId?: SortOrderInput | SortOrder
-    matchedVariantId?: SortOrderInput | SortOrder
-    candidateProductIds?: SortOrder
-    status?: SortOrder
-    isConfirmed?: SortOrder
-    confirmedProductId?: SortOrderInput | SortOrder
-    confirmedVariantId?: SortOrderInput | SortOrder
-    confirmedQuantity?: SortOrderInput | SortOrder
-    isSubstituted?: SortOrder
-    createdAt?: SortOrder
-    _count?: ExtractedStationeryItemCountOrderByAggregateInput
-    _avg?: ExtractedStationeryItemAvgOrderByAggregateInput
-    _max?: ExtractedStationeryItemMaxOrderByAggregateInput
-    _min?: ExtractedStationeryItemMinOrderByAggregateInput
-    _sum?: ExtractedStationeryItemSumOrderByAggregateInput
-  }
-
-  export type ExtractedStationeryItemScalarWhereWithAggregatesInput = {
-    AND?: ExtractedStationeryItemScalarWhereWithAggregatesInput | ExtractedStationeryItemScalarWhereWithAggregatesInput[]
-    OR?: ExtractedStationeryItemScalarWhereWithAggregatesInput[]
-    NOT?: ExtractedStationeryItemScalarWhereWithAggregatesInput | ExtractedStationeryItemScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"ExtractedStationeryItem"> | string
-    documentId?: StringWithAggregatesFilter<"ExtractedStationeryItem"> | string
-    rawText?: StringWithAggregatesFilter<"ExtractedStationeryItem"> | string
-    itemDescription?: StringWithAggregatesFilter<"ExtractedStationeryItem"> | string
-    quantity?: IntWithAggregatesFilter<"ExtractedStationeryItem"> | number
-    unit?: StringNullableWithAggregatesFilter<"ExtractedStationeryItem"> | string | null
-    confidence?: EnumItemConfidenceWithAggregatesFilter<"ExtractedStationeryItem"> | $Enums.ItemConfidence
-    confidenceScore?: FloatWithAggregatesFilter<"ExtractedStationeryItem"> | number
-    extractionConfidence?: FloatWithAggregatesFilter<"ExtractedStationeryItem"> | number
-    matchConfidence?: FloatWithAggregatesFilter<"ExtractedStationeryItem"> | number
-    matchReason?: StringNullableWithAggregatesFilter<"ExtractedStationeryItem"> | string | null
-    matchedProductId?: StringNullableWithAggregatesFilter<"ExtractedStationeryItem"> | string | null
-    matchedVariantId?: StringNullableWithAggregatesFilter<"ExtractedStationeryItem"> | string | null
-    candidateProductIds?: StringNullableListFilter<"ExtractedStationeryItem">
-    status?: EnumMatchStatusWithAggregatesFilter<"ExtractedStationeryItem"> | $Enums.MatchStatus
-    isConfirmed?: BoolWithAggregatesFilter<"ExtractedStationeryItem"> | boolean
-    confirmedProductId?: StringNullableWithAggregatesFilter<"ExtractedStationeryItem"> | string | null
-    confirmedVariantId?: StringNullableWithAggregatesFilter<"ExtractedStationeryItem"> | string | null
-    confirmedQuantity?: IntNullableWithAggregatesFilter<"ExtractedStationeryItem"> | number | null
-    isSubstituted?: BoolWithAggregatesFilter<"ExtractedStationeryItem"> | boolean
-    createdAt?: DateTimeWithAggregatesFilter<"ExtractedStationeryItem"> | Date | string
-  }
-
   export type WishlistItemWhereInput = {
     AND?: WishlistItemWhereInput | WishlistItemWhereInput[]
     OR?: WishlistItemWhereInput[]
@@ -73740,6 +72655,7 @@ export namespace Prisma {
     imageAltText?: StringFilter<"HomepageBanner"> | string
     buttonText?: StringNullableFilter<"HomepageBanner"> | string | null
     buttonLink?: StringNullableFilter<"HomepageBanner"> | string | null
+    placement?: StringNullableFilter<"HomepageBanner"> | string | null
     sortOrder?: IntFilter<"HomepageBanner"> | number
     status?: EnumBannerStatusFilter<"HomepageBanner"> | $Enums.BannerStatus
     startAt?: DateTimeNullableFilter<"HomepageBanner"> | Date | string | null
@@ -73762,6 +72678,7 @@ export namespace Prisma {
     imageAltText?: SortOrder
     buttonText?: SortOrderInput | SortOrder
     buttonLink?: SortOrderInput | SortOrder
+    placement?: SortOrderInput | SortOrder
     sortOrder?: SortOrder
     status?: SortOrder
     startAt?: SortOrderInput | SortOrder
@@ -73787,6 +72704,7 @@ export namespace Prisma {
     imageAltText?: StringFilter<"HomepageBanner"> | string
     buttonText?: StringNullableFilter<"HomepageBanner"> | string | null
     buttonLink?: StringNullableFilter<"HomepageBanner"> | string | null
+    placement?: StringNullableFilter<"HomepageBanner"> | string | null
     sortOrder?: IntFilter<"HomepageBanner"> | number
     status?: EnumBannerStatusFilter<"HomepageBanner"> | $Enums.BannerStatus
     startAt?: DateTimeNullableFilter<"HomepageBanner"> | Date | string | null
@@ -73809,6 +72727,7 @@ export namespace Prisma {
     imageAltText?: SortOrder
     buttonText?: SortOrderInput | SortOrder
     buttonLink?: SortOrderInput | SortOrder
+    placement?: SortOrderInput | SortOrder
     sortOrder?: SortOrder
     status?: SortOrder
     startAt?: SortOrderInput | SortOrder
@@ -73837,6 +72756,7 @@ export namespace Prisma {
     imageAltText?: StringWithAggregatesFilter<"HomepageBanner"> | string
     buttonText?: StringNullableWithAggregatesFilter<"HomepageBanner"> | string | null
     buttonLink?: StringNullableWithAggregatesFilter<"HomepageBanner"> | string | null
+    placement?: StringNullableWithAggregatesFilter<"HomepageBanner"> | string | null
     sortOrder?: IntWithAggregatesFilter<"HomepageBanner"> | number
     status?: EnumBannerStatusWithAggregatesFilter<"HomepageBanner"> | $Enums.BannerStatus
     startAt?: DateTimeNullableWithAggregatesFilter<"HomepageBanner"> | Date | string | null
@@ -73925,6 +72845,15 @@ export namespace Prisma {
     codEnabled?: BoolFilter<"StoreSettings"> | boolean
     bankTransferEnabled?: BoolFilter<"StoreSettings"> | boolean
     onlineCardEnabled?: BoolFilter<"StoreSettings"> | boolean
+    bankName?: StringNullableFilter<"StoreSettings"> | string | null
+    accountHolderName?: StringNullableFilter<"StoreSettings"> | string | null
+    accountNumber?: StringNullableFilter<"StoreSettings"> | string | null
+    branchName?: StringNullableFilter<"StoreSettings"> | string | null
+    branchCode?: StringNullableFilter<"StoreSettings"> | string | null
+    bankCode?: StringNullableFilter<"StoreSettings"> | string | null
+    paymentInstructions?: StringNullableFilter<"StoreSettings"> | string | null
+    referenceInstructions?: StringNullableFilter<"StoreSettings"> | string | null
+    bankLogoUrl?: StringNullableFilter<"StoreSettings"> | string | null
     updatedAt?: DateTimeFilter<"StoreSettings"> | Date | string
   }
 
@@ -73938,6 +72867,15 @@ export namespace Prisma {
     codEnabled?: SortOrder
     bankTransferEnabled?: SortOrder
     onlineCardEnabled?: SortOrder
+    bankName?: SortOrderInput | SortOrder
+    accountHolderName?: SortOrderInput | SortOrder
+    accountNumber?: SortOrderInput | SortOrder
+    branchName?: SortOrderInput | SortOrder
+    branchCode?: SortOrderInput | SortOrder
+    bankCode?: SortOrderInput | SortOrder
+    paymentInstructions?: SortOrderInput | SortOrder
+    referenceInstructions?: SortOrderInput | SortOrder
+    bankLogoUrl?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
   }
 
@@ -73954,6 +72892,15 @@ export namespace Prisma {
     codEnabled?: BoolFilter<"StoreSettings"> | boolean
     bankTransferEnabled?: BoolFilter<"StoreSettings"> | boolean
     onlineCardEnabled?: BoolFilter<"StoreSettings"> | boolean
+    bankName?: StringNullableFilter<"StoreSettings"> | string | null
+    accountHolderName?: StringNullableFilter<"StoreSettings"> | string | null
+    accountNumber?: StringNullableFilter<"StoreSettings"> | string | null
+    branchName?: StringNullableFilter<"StoreSettings"> | string | null
+    branchCode?: StringNullableFilter<"StoreSettings"> | string | null
+    bankCode?: StringNullableFilter<"StoreSettings"> | string | null
+    paymentInstructions?: StringNullableFilter<"StoreSettings"> | string | null
+    referenceInstructions?: StringNullableFilter<"StoreSettings"> | string | null
+    bankLogoUrl?: StringNullableFilter<"StoreSettings"> | string | null
     updatedAt?: DateTimeFilter<"StoreSettings"> | Date | string
   }, "id">
 
@@ -73967,6 +72914,15 @@ export namespace Prisma {
     codEnabled?: SortOrder
     bankTransferEnabled?: SortOrder
     onlineCardEnabled?: SortOrder
+    bankName?: SortOrderInput | SortOrder
+    accountHolderName?: SortOrderInput | SortOrder
+    accountNumber?: SortOrderInput | SortOrder
+    branchName?: SortOrderInput | SortOrder
+    branchCode?: SortOrderInput | SortOrder
+    bankCode?: SortOrderInput | SortOrder
+    paymentInstructions?: SortOrderInput | SortOrder
+    referenceInstructions?: SortOrderInput | SortOrder
+    bankLogoUrl?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
     _count?: StoreSettingsCountOrderByAggregateInput
     _avg?: StoreSettingsAvgOrderByAggregateInput
@@ -73988,6 +72944,15 @@ export namespace Prisma {
     codEnabled?: BoolWithAggregatesFilter<"StoreSettings"> | boolean
     bankTransferEnabled?: BoolWithAggregatesFilter<"StoreSettings"> | boolean
     onlineCardEnabled?: BoolWithAggregatesFilter<"StoreSettings"> | boolean
+    bankName?: StringNullableWithAggregatesFilter<"StoreSettings"> | string | null
+    accountHolderName?: StringNullableWithAggregatesFilter<"StoreSettings"> | string | null
+    accountNumber?: StringNullableWithAggregatesFilter<"StoreSettings"> | string | null
+    branchName?: StringNullableWithAggregatesFilter<"StoreSettings"> | string | null
+    branchCode?: StringNullableWithAggregatesFilter<"StoreSettings"> | string | null
+    bankCode?: StringNullableWithAggregatesFilter<"StoreSettings"> | string | null
+    paymentInstructions?: StringNullableWithAggregatesFilter<"StoreSettings"> | string | null
+    referenceInstructions?: StringNullableWithAggregatesFilter<"StoreSettings"> | string | null
+    bankLogoUrl?: StringNullableWithAggregatesFilter<"StoreSettings"> | string | null
     updatedAt?: DateTimeWithAggregatesFilter<"StoreSettings"> | Date | string
   }
 
@@ -75224,7 +74189,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -75236,6 +74200,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -75263,7 +74228,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -75275,6 +74239,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUpdateInput = {
@@ -75302,7 +74267,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -75314,6 +74278,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -75341,7 +74306,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -75353,6 +74317,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -75826,7 +74791,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -75867,7 +74831,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -75908,7 +74871,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -75949,7 +74911,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -76452,6 +75413,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateInput = {
@@ -76488,6 +75450,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUpdateInput = {
@@ -76524,6 +75487,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateInput = {
@@ -76560,6 +75524,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderCreateManyInput = {
@@ -77055,6 +76020,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     order: OrderCreateNestedOneWithoutReturnRequestsInput
     items?: OrderReturnItemCreateNestedManyWithoutReturnRequestInput
+    refundRecords?: RefundRecordCreateNestedManyWithoutOrderReturnRequestInput
   }
 
   export type OrderReturnRequestUncheckedCreateInput = {
@@ -77067,6 +76033,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     items?: OrderReturnItemUncheckedCreateNestedManyWithoutReturnRequestInput
+    refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderReturnRequestInput
   }
 
   export type OrderReturnRequestUpdateInput = {
@@ -77079,6 +76046,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutReturnRequestsNestedInput
     items?: OrderReturnItemUpdateManyWithoutReturnRequestNestedInput
+    refundRecords?: RefundRecordUpdateManyWithoutOrderReturnRequestNestedInput
   }
 
   export type OrderReturnRequestUncheckedUpdateInput = {
@@ -77091,6 +76059,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     items?: OrderReturnItemUncheckedUpdateManyWithoutReturnRequestNestedInput
+    refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderReturnRequestNestedInput
   }
 
   export type OrderReturnRequestCreateManyInput = {
@@ -77217,77 +76186,195 @@ export namespace Prisma {
   export type RefundRecordCreateInput = {
     id?: string
     amountCents: number
+    currency?: string
     method: string
+    status?: $Enums.RefundStatus
     reference?: string | null
+    externalReference?: string | null
+    idempotencyKey?: string | null
+    payloadHash?: string | null
     reason: string
+    failureReason?: string | null
+    maskedAccountNumber?: string | null
+    encryptedBankDetails?: string | null
     processedBy?: string | null
+    processedById?: string | null
+    requestedById?: string | null
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    completedById?: string | null
+    completedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+    updatedAt?: Date | string
     order: OrderCreateNestedOneWithoutRefundRecordsInput
+    orderReturnRequest?: OrderReturnRequestCreateNestedOneWithoutRefundRecordsInput
   }
 
   export type RefundRecordUncheckedCreateInput = {
     id?: string
     orderId: string
     amountCents: number
+    currency?: string
     method: string
+    status?: $Enums.RefundStatus
     reference?: string | null
+    externalReference?: string | null
+    idempotencyKey?: string | null
+    payloadHash?: string | null
     reason: string
+    failureReason?: string | null
+    maskedAccountNumber?: string | null
+    encryptedBankDetails?: string | null
     processedBy?: string | null
+    processedById?: string | null
+    requestedById?: string | null
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    completedById?: string | null
+    completedAt?: Date | string | null
+    orderReturnRequestId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RefundRecordUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
     reference?: NullableStringFieldUpdateOperationsInput | string | null
+    externalReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadHash?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    encryptedBankDetails?: NullableStringFieldUpdateOperationsInput | string | null
     processedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    processedById?: NullableStringFieldUpdateOperationsInput | string | null
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedById?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutRefundRecordsNestedInput
+    orderReturnRequest?: OrderReturnRequestUpdateOneWithoutRefundRecordsNestedInput
   }
 
   export type RefundRecordUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderId?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
     reference?: NullableStringFieldUpdateOperationsInput | string | null
+    externalReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadHash?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    encryptedBankDetails?: NullableStringFieldUpdateOperationsInput | string | null
     processedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    processedById?: NullableStringFieldUpdateOperationsInput | string | null
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedById?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    orderReturnRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RefundRecordCreateManyInput = {
     id?: string
     orderId: string
     amountCents: number
+    currency?: string
     method: string
+    status?: $Enums.RefundStatus
     reference?: string | null
+    externalReference?: string | null
+    idempotencyKey?: string | null
+    payloadHash?: string | null
     reason: string
+    failureReason?: string | null
+    maskedAccountNumber?: string | null
+    encryptedBankDetails?: string | null
     processedBy?: string | null
+    processedById?: string | null
+    requestedById?: string | null
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    completedById?: string | null
+    completedAt?: Date | string | null
+    orderReturnRequestId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RefundRecordUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
     reference?: NullableStringFieldUpdateOperationsInput | string | null
+    externalReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadHash?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    encryptedBankDetails?: NullableStringFieldUpdateOperationsInput | string | null
     processedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    processedById?: NullableStringFieldUpdateOperationsInput | string | null
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedById?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RefundRecordUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderId?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
     reference?: NullableStringFieldUpdateOperationsInput | string | null
+    externalReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadHash?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    encryptedBankDetails?: NullableStringFieldUpdateOperationsInput | string | null
     processedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    processedById?: NullableStringFieldUpdateOperationsInput | string | null
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedById?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    orderReturnRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StockReservationCreateInput = {
@@ -77461,6 +76548,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     reservation: StockReservationCreateNestedOneWithoutPaymentAttemptsInput
     order?: OrderCreateNestedOneWithoutPaymentAttemptsInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutPaymentAttemptInput
   }
 
   export type PaymentAttemptUncheckedCreateInput = {
@@ -77477,6 +76565,7 @@ export namespace Prisma {
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutPaymentAttemptInput
   }
 
   export type PaymentAttemptUpdateInput = {
@@ -77493,6 +76582,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     reservation?: StockReservationUpdateOneRequiredWithoutPaymentAttemptsNestedInput
     order?: OrderUpdateOneWithoutPaymentAttemptsNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutPaymentAttemptNestedInput
   }
 
   export type PaymentAttemptUncheckedUpdateInput = {
@@ -77509,6 +76599,7 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutPaymentAttemptNestedInput
   }
 
   export type PaymentAttemptCreateManyInput = {
@@ -77553,6 +76644,150 @@ export namespace Prisma {
     idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
     gatewayPayload?: NullableJsonNullValueInput | InputJsonValue
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BankDepositSubmissionCreateInput = {
+    id?: string
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order: OrderCreateNestedOneWithoutBankDepositSubmissionsInput
+    paymentAttempt?: PaymentAttemptCreateNestedOneWithoutBankDepositSubmissionsInput
+    reviewedBy?: UserCreateNestedOneWithoutReviewedBankDepositsInput
+  }
+
+  export type BankDepositSubmissionUncheckedCreateInput = {
+    id?: string
+    orderId: string
+    paymentAttemptId?: string | null
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BankDepositSubmissionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: OrderUpdateOneRequiredWithoutBankDepositSubmissionsNestedInput
+    paymentAttempt?: PaymentAttemptUpdateOneWithoutBankDepositSubmissionsNestedInput
+    reviewedBy?: UserUpdateOneWithoutReviewedBankDepositsNestedInput
+  }
+
+  export type BankDepositSubmissionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    paymentAttemptId?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BankDepositSubmissionCreateManyInput = {
+    id?: string
+    orderId: string
+    paymentAttemptId?: string | null
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BankDepositSubmissionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BankDepositSubmissionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    paymentAttemptId?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -78020,329 +77255,6 @@ export namespace Prisma {
     redeemedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type UploadedDocumentCreateInput = {
-    id?: string
-    sessionId?: string | null
-    fileName: string
-    fileUrl: string
-    storagePath?: string | null
-    fileSizeBytes: number
-    fileType: string
-    pageCount?: number
-    status?: $Enums.DocumentStatus
-    isSimulatedOCR?: boolean
-    ocrProvider?: string | null
-    customerNotes?: string | null
-    processingError?: string | null
-    attempts?: number
-    processedAt?: Date | string | null
-    confirmedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user?: UserCreateNestedOneWithoutDocumentsInput
-    extractedItems?: ExtractedStationeryItemCreateNestedManyWithoutDocumentInput
-  }
-
-  export type UploadedDocumentUncheckedCreateInput = {
-    id?: string
-    userId?: string | null
-    sessionId?: string | null
-    fileName: string
-    fileUrl: string
-    storagePath?: string | null
-    fileSizeBytes: number
-    fileType: string
-    pageCount?: number
-    status?: $Enums.DocumentStatus
-    isSimulatedOCR?: boolean
-    ocrProvider?: string | null
-    customerNotes?: string | null
-    processingError?: string | null
-    attempts?: number
-    processedAt?: Date | string | null
-    confirmedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    extractedItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutDocumentInput
-  }
-
-  export type UploadedDocumentUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    fileName?: StringFieldUpdateOperationsInput | string
-    fileUrl?: StringFieldUpdateOperationsInput | string
-    storagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    fileSizeBytes?: IntFieldUpdateOperationsInput | number
-    fileType?: StringFieldUpdateOperationsInput | string
-    pageCount?: IntFieldUpdateOperationsInput | number
-    status?: EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFieldUpdateOperationsInput | boolean
-    ocrProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    processingError?: NullableStringFieldUpdateOperationsInput | string | null
-    attempts?: IntFieldUpdateOperationsInput | number
-    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneWithoutDocumentsNestedInput
-    extractedItems?: ExtractedStationeryItemUpdateManyWithoutDocumentNestedInput
-  }
-
-  export type UploadedDocumentUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
-    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    fileName?: StringFieldUpdateOperationsInput | string
-    fileUrl?: StringFieldUpdateOperationsInput | string
-    storagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    fileSizeBytes?: IntFieldUpdateOperationsInput | number
-    fileType?: StringFieldUpdateOperationsInput | string
-    pageCount?: IntFieldUpdateOperationsInput | number
-    status?: EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFieldUpdateOperationsInput | boolean
-    ocrProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    processingError?: NullableStringFieldUpdateOperationsInput | string | null
-    attempts?: IntFieldUpdateOperationsInput | number
-    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    extractedItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutDocumentNestedInput
-  }
-
-  export type UploadedDocumentCreateManyInput = {
-    id?: string
-    userId?: string | null
-    sessionId?: string | null
-    fileName: string
-    fileUrl: string
-    storagePath?: string | null
-    fileSizeBytes: number
-    fileType: string
-    pageCount?: number
-    status?: $Enums.DocumentStatus
-    isSimulatedOCR?: boolean
-    ocrProvider?: string | null
-    customerNotes?: string | null
-    processingError?: string | null
-    attempts?: number
-    processedAt?: Date | string | null
-    confirmedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type UploadedDocumentUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    fileName?: StringFieldUpdateOperationsInput | string
-    fileUrl?: StringFieldUpdateOperationsInput | string
-    storagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    fileSizeBytes?: IntFieldUpdateOperationsInput | number
-    fileType?: StringFieldUpdateOperationsInput | string
-    pageCount?: IntFieldUpdateOperationsInput | number
-    status?: EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFieldUpdateOperationsInput | boolean
-    ocrProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    processingError?: NullableStringFieldUpdateOperationsInput | string | null
-    attempts?: IntFieldUpdateOperationsInput | number
-    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type UploadedDocumentUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
-    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    fileName?: StringFieldUpdateOperationsInput | string
-    fileUrl?: StringFieldUpdateOperationsInput | string
-    storagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    fileSizeBytes?: IntFieldUpdateOperationsInput | number
-    fileType?: StringFieldUpdateOperationsInput | string
-    pageCount?: IntFieldUpdateOperationsInput | number
-    status?: EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFieldUpdateOperationsInput | boolean
-    ocrProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    processingError?: NullableStringFieldUpdateOperationsInput | string | null
-    attempts?: IntFieldUpdateOperationsInput | number
-    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ExtractedStationeryItemCreateInput = {
-    id?: string
-    rawText: string
-    itemDescription: string
-    quantity?: number
-    unit?: string | null
-    confidence?: $Enums.ItemConfidence
-    confidenceScore?: number
-    extractionConfidence?: number
-    matchConfidence?: number
-    matchReason?: string | null
-    matchedVariantId?: string | null
-    candidateProductIds?: ExtractedStationeryItemCreatecandidateProductIdsInput | string[]
-    status?: $Enums.MatchStatus
-    isConfirmed?: boolean
-    confirmedProductId?: string | null
-    confirmedVariantId?: string | null
-    confirmedQuantity?: number | null
-    isSubstituted?: boolean
-    createdAt?: Date | string
-    document: UploadedDocumentCreateNestedOneWithoutExtractedItemsInput
-    matchedProduct?: ProductCreateNestedOneWithoutMatchedUploadItemsInput
-  }
-
-  export type ExtractedStationeryItemUncheckedCreateInput = {
-    id?: string
-    documentId: string
-    rawText: string
-    itemDescription: string
-    quantity?: number
-    unit?: string | null
-    confidence?: $Enums.ItemConfidence
-    confidenceScore?: number
-    extractionConfidence?: number
-    matchConfidence?: number
-    matchReason?: string | null
-    matchedProductId?: string | null
-    matchedVariantId?: string | null
-    candidateProductIds?: ExtractedStationeryItemCreatecandidateProductIdsInput | string[]
-    status?: $Enums.MatchStatus
-    isConfirmed?: boolean
-    confirmedProductId?: string | null
-    confirmedVariantId?: string | null
-    confirmedQuantity?: number | null
-    isSubstituted?: boolean
-    createdAt?: Date | string
-  }
-
-  export type ExtractedStationeryItemUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    rawText?: StringFieldUpdateOperationsInput | string
-    itemDescription?: StringFieldUpdateOperationsInput | string
-    quantity?: IntFieldUpdateOperationsInput | number
-    unit?: NullableStringFieldUpdateOperationsInput | string | null
-    confidence?: EnumItemConfidenceFieldUpdateOperationsInput | $Enums.ItemConfidence
-    confidenceScore?: FloatFieldUpdateOperationsInput | number
-    extractionConfidence?: FloatFieldUpdateOperationsInput | number
-    matchConfidence?: FloatFieldUpdateOperationsInput | number
-    matchReason?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    candidateProductIds?: ExtractedStationeryItemUpdatecandidateProductIdsInput | string[]
-    status?: EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
-    isConfirmed?: BoolFieldUpdateOperationsInput | boolean
-    confirmedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedQuantity?: NullableIntFieldUpdateOperationsInput | number | null
-    isSubstituted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    document?: UploadedDocumentUpdateOneRequiredWithoutExtractedItemsNestedInput
-    matchedProduct?: ProductUpdateOneWithoutMatchedUploadItemsNestedInput
-  }
-
-  export type ExtractedStationeryItemUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    documentId?: StringFieldUpdateOperationsInput | string
-    rawText?: StringFieldUpdateOperationsInput | string
-    itemDescription?: StringFieldUpdateOperationsInput | string
-    quantity?: IntFieldUpdateOperationsInput | number
-    unit?: NullableStringFieldUpdateOperationsInput | string | null
-    confidence?: EnumItemConfidenceFieldUpdateOperationsInput | $Enums.ItemConfidence
-    confidenceScore?: FloatFieldUpdateOperationsInput | number
-    extractionConfidence?: FloatFieldUpdateOperationsInput | number
-    matchConfidence?: FloatFieldUpdateOperationsInput | number
-    matchReason?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    candidateProductIds?: ExtractedStationeryItemUpdatecandidateProductIdsInput | string[]
-    status?: EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
-    isConfirmed?: BoolFieldUpdateOperationsInput | boolean
-    confirmedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedQuantity?: NullableIntFieldUpdateOperationsInput | number | null
-    isSubstituted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ExtractedStationeryItemCreateManyInput = {
-    id?: string
-    documentId: string
-    rawText: string
-    itemDescription: string
-    quantity?: number
-    unit?: string | null
-    confidence?: $Enums.ItemConfidence
-    confidenceScore?: number
-    extractionConfidence?: number
-    matchConfidence?: number
-    matchReason?: string | null
-    matchedProductId?: string | null
-    matchedVariantId?: string | null
-    candidateProductIds?: ExtractedStationeryItemCreatecandidateProductIdsInput | string[]
-    status?: $Enums.MatchStatus
-    isConfirmed?: boolean
-    confirmedProductId?: string | null
-    confirmedVariantId?: string | null
-    confirmedQuantity?: number | null
-    isSubstituted?: boolean
-    createdAt?: Date | string
-  }
-
-  export type ExtractedStationeryItemUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    rawText?: StringFieldUpdateOperationsInput | string
-    itemDescription?: StringFieldUpdateOperationsInput | string
-    quantity?: IntFieldUpdateOperationsInput | number
-    unit?: NullableStringFieldUpdateOperationsInput | string | null
-    confidence?: EnumItemConfidenceFieldUpdateOperationsInput | $Enums.ItemConfidence
-    confidenceScore?: FloatFieldUpdateOperationsInput | number
-    extractionConfidence?: FloatFieldUpdateOperationsInput | number
-    matchConfidence?: FloatFieldUpdateOperationsInput | number
-    matchReason?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    candidateProductIds?: ExtractedStationeryItemUpdatecandidateProductIdsInput | string[]
-    status?: EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
-    isConfirmed?: BoolFieldUpdateOperationsInput | boolean
-    confirmedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedQuantity?: NullableIntFieldUpdateOperationsInput | number | null
-    isSubstituted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ExtractedStationeryItemUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    documentId?: StringFieldUpdateOperationsInput | string
-    rawText?: StringFieldUpdateOperationsInput | string
-    itemDescription?: StringFieldUpdateOperationsInput | string
-    quantity?: IntFieldUpdateOperationsInput | number
-    unit?: NullableStringFieldUpdateOperationsInput | string | null
-    confidence?: EnumItemConfidenceFieldUpdateOperationsInput | $Enums.ItemConfidence
-    confidenceScore?: FloatFieldUpdateOperationsInput | number
-    extractionConfidence?: FloatFieldUpdateOperationsInput | number
-    matchConfidence?: FloatFieldUpdateOperationsInput | number
-    matchReason?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    candidateProductIds?: ExtractedStationeryItemUpdatecandidateProductIdsInput | string[]
-    status?: EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
-    isConfirmed?: BoolFieldUpdateOperationsInput | boolean
-    confirmedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedQuantity?: NullableIntFieldUpdateOperationsInput | number | null
-    isSubstituted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type WishlistItemCreateInput = {
     id?: string
     createdAt?: Date | string
@@ -78701,6 +77613,7 @@ export namespace Prisma {
     imageAltText: string
     buttonText?: string | null
     buttonLink?: string | null
+    placement?: string | null
     sortOrder?: number
     status?: $Enums.BannerStatus
     startAt?: Date | string | null
@@ -78721,6 +77634,7 @@ export namespace Prisma {
     imageAltText: string
     buttonText?: string | null
     buttonLink?: string | null
+    placement?: string | null
     sortOrder?: number
     status?: $Enums.BannerStatus
     startAt?: Date | string | null
@@ -78741,6 +77655,7 @@ export namespace Prisma {
     imageAltText?: StringFieldUpdateOperationsInput | string
     buttonText?: NullableStringFieldUpdateOperationsInput | string | null
     buttonLink?: NullableStringFieldUpdateOperationsInput | string | null
+    placement?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
     status?: EnumBannerStatusFieldUpdateOperationsInput | $Enums.BannerStatus
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -78761,6 +77676,7 @@ export namespace Prisma {
     imageAltText?: StringFieldUpdateOperationsInput | string
     buttonText?: NullableStringFieldUpdateOperationsInput | string | null
     buttonLink?: NullableStringFieldUpdateOperationsInput | string | null
+    placement?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
     status?: EnumBannerStatusFieldUpdateOperationsInput | $Enums.BannerStatus
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -78781,6 +77697,7 @@ export namespace Prisma {
     imageAltText: string
     buttonText?: string | null
     buttonLink?: string | null
+    placement?: string | null
     sortOrder?: number
     status?: $Enums.BannerStatus
     startAt?: Date | string | null
@@ -78801,6 +77718,7 @@ export namespace Prisma {
     imageAltText?: StringFieldUpdateOperationsInput | string
     buttonText?: NullableStringFieldUpdateOperationsInput | string | null
     buttonLink?: NullableStringFieldUpdateOperationsInput | string | null
+    placement?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
     status?: EnumBannerStatusFieldUpdateOperationsInput | $Enums.BannerStatus
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -78819,6 +77737,7 @@ export namespace Prisma {
     imageAltText?: StringFieldUpdateOperationsInput | string
     buttonText?: NullableStringFieldUpdateOperationsInput | string | null
     buttonLink?: NullableStringFieldUpdateOperationsInput | string | null
+    placement?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
     status?: EnumBannerStatusFieldUpdateOperationsInput | $Enums.BannerStatus
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -78908,6 +77827,15 @@ export namespace Prisma {
     codEnabled?: boolean
     bankTransferEnabled?: boolean
     onlineCardEnabled?: boolean
+    bankName?: string | null
+    accountHolderName?: string | null
+    accountNumber?: string | null
+    branchName?: string | null
+    branchCode?: string | null
+    bankCode?: string | null
+    paymentInstructions?: string | null
+    referenceInstructions?: string | null
+    bankLogoUrl?: string | null
     updatedAt?: Date | string
   }
 
@@ -78921,6 +77849,15 @@ export namespace Prisma {
     codEnabled?: boolean
     bankTransferEnabled?: boolean
     onlineCardEnabled?: boolean
+    bankName?: string | null
+    accountHolderName?: string | null
+    accountNumber?: string | null
+    branchName?: string | null
+    branchCode?: string | null
+    bankCode?: string | null
+    paymentInstructions?: string | null
+    referenceInstructions?: string | null
+    bankLogoUrl?: string | null
     updatedAt?: Date | string
   }
 
@@ -78934,6 +77871,15 @@ export namespace Prisma {
     codEnabled?: BoolFieldUpdateOperationsInput | boolean
     bankTransferEnabled?: BoolFieldUpdateOperationsInput | boolean
     onlineCardEnabled?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    branchName?: NullableStringFieldUpdateOperationsInput | string | null
+    branchCode?: NullableStringFieldUpdateOperationsInput | string | null
+    bankCode?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentInstructions?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceInstructions?: NullableStringFieldUpdateOperationsInput | string | null
+    bankLogoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -78947,6 +77893,15 @@ export namespace Prisma {
     codEnabled?: BoolFieldUpdateOperationsInput | boolean
     bankTransferEnabled?: BoolFieldUpdateOperationsInput | boolean
     onlineCardEnabled?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    branchName?: NullableStringFieldUpdateOperationsInput | string | null
+    branchCode?: NullableStringFieldUpdateOperationsInput | string | null
+    bankCode?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentInstructions?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceInstructions?: NullableStringFieldUpdateOperationsInput | string | null
+    bankLogoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -78960,6 +77915,15 @@ export namespace Prisma {
     codEnabled?: boolean
     bankTransferEnabled?: boolean
     onlineCardEnabled?: boolean
+    bankName?: string | null
+    accountHolderName?: string | null
+    accountNumber?: string | null
+    branchName?: string | null
+    branchCode?: string | null
+    bankCode?: string | null
+    paymentInstructions?: string | null
+    referenceInstructions?: string | null
+    bankLogoUrl?: string | null
     updatedAt?: Date | string
   }
 
@@ -78973,6 +77937,15 @@ export namespace Prisma {
     codEnabled?: BoolFieldUpdateOperationsInput | boolean
     bankTransferEnabled?: BoolFieldUpdateOperationsInput | boolean
     onlineCardEnabled?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    branchName?: NullableStringFieldUpdateOperationsInput | string | null
+    branchCode?: NullableStringFieldUpdateOperationsInput | string | null
+    bankCode?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentInstructions?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceInstructions?: NullableStringFieldUpdateOperationsInput | string | null
+    bankLogoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -78986,6 +77959,15 @@ export namespace Prisma {
     codEnabled?: BoolFieldUpdateOperationsInput | boolean
     bankTransferEnabled?: BoolFieldUpdateOperationsInput | boolean
     onlineCardEnabled?: BoolFieldUpdateOperationsInput | boolean
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    branchName?: NullableStringFieldUpdateOperationsInput | string | null
+    branchCode?: NullableStringFieldUpdateOperationsInput | string | null
+    bankCode?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentInstructions?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceInstructions?: NullableStringFieldUpdateOperationsInput | string | null
+    bankLogoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -80405,12 +79387,6 @@ export namespace Prisma {
     none?: SavedStationeryListWhereInput
   }
 
-  export type UploadedDocumentListRelationFilter = {
-    every?: UploadedDocumentWhereInput
-    some?: UploadedDocumentWhereInput
-    none?: UploadedDocumentWhereInput
-  }
-
   export type AuditLogListRelationFilter = {
     every?: AuditLogWhereInput
     some?: AuditLogWhereInput
@@ -80470,6 +79446,12 @@ export namespace Prisma {
     none?: ProductImportBatchWhereInput
   }
 
+  export type BankDepositSubmissionListRelationFilter = {
+    every?: BankDepositSubmissionWhereInput
+    some?: BankDepositSubmissionWhereInput
+    none?: BankDepositSubmissionWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -80492,10 +79474,6 @@ export namespace Prisma {
   }
 
   export type SavedStationeryListOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type UploadedDocumentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -80532,6 +79510,10 @@ export namespace Prisma {
   }
 
   export type ProductImportBatchOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type BankDepositSubmissionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -81002,12 +79984,6 @@ export namespace Prisma {
     none?: SchoolPackItemWhereInput
   }
 
-  export type ExtractedStationeryItemListRelationFilter = {
-    every?: ExtractedStationeryItemWhereInput
-    some?: ExtractedStationeryItemWhereInput
-    none?: ExtractedStationeryItemWhereInput
-  }
-
   export type SavedListItemListRelationFilter = {
     every?: SavedListItemWhereInput
     some?: SavedListItemWhereInput
@@ -81045,10 +80021,6 @@ export namespace Prisma {
   }
 
   export type SchoolPackItemOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type ExtractedStationeryItemOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -82032,15 +81004,72 @@ export namespace Prisma {
     _max?: NestedEnumReturnItemStatusFilter<$PrismaModel>
   }
 
+  export type EnumRefundStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RefundStatus | EnumRefundStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRefundStatusFilter<$PrismaModel> | $Enums.RefundStatus
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type OrderReturnRequestNullableScalarRelationFilter = {
+    is?: OrderReturnRequestWhereInput | null
+    isNot?: OrderReturnRequestWhereInput | null
+  }
+
+  export type RefundRecordOrderIdIdempotencyKeyCompoundUniqueInput = {
+    orderId: string
+    idempotencyKey: string
+  }
+
   export type RefundRecordCountOrderByAggregateInput = {
     id?: SortOrder
     orderId?: SortOrder
     amountCents?: SortOrder
+    currency?: SortOrder
     method?: SortOrder
+    status?: SortOrder
     reference?: SortOrder
+    externalReference?: SortOrder
+    idempotencyKey?: SortOrder
+    payloadHash?: SortOrder
     reason?: SortOrder
+    failureReason?: SortOrder
+    maskedAccountNumber?: SortOrder
+    encryptedBankDetails?: SortOrder
     processedBy?: SortOrder
+    processedById?: SortOrder
+    requestedById?: SortOrder
+    approvedById?: SortOrder
+    approvedAt?: SortOrder
+    completedById?: SortOrder
+    completedAt?: SortOrder
+    orderReturnRequestId?: SortOrder
+    metadata?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type RefundRecordAvgOrderByAggregateInput = {
@@ -82051,26 +81080,94 @@ export namespace Prisma {
     id?: SortOrder
     orderId?: SortOrder
     amountCents?: SortOrder
+    currency?: SortOrder
     method?: SortOrder
+    status?: SortOrder
     reference?: SortOrder
+    externalReference?: SortOrder
+    idempotencyKey?: SortOrder
+    payloadHash?: SortOrder
     reason?: SortOrder
+    failureReason?: SortOrder
+    maskedAccountNumber?: SortOrder
+    encryptedBankDetails?: SortOrder
     processedBy?: SortOrder
+    processedById?: SortOrder
+    requestedById?: SortOrder
+    approvedById?: SortOrder
+    approvedAt?: SortOrder
+    completedById?: SortOrder
+    completedAt?: SortOrder
+    orderReturnRequestId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type RefundRecordMinOrderByAggregateInput = {
     id?: SortOrder
     orderId?: SortOrder
     amountCents?: SortOrder
+    currency?: SortOrder
     method?: SortOrder
+    status?: SortOrder
     reference?: SortOrder
+    externalReference?: SortOrder
+    idempotencyKey?: SortOrder
+    payloadHash?: SortOrder
     reason?: SortOrder
+    failureReason?: SortOrder
+    maskedAccountNumber?: SortOrder
+    encryptedBankDetails?: SortOrder
     processedBy?: SortOrder
+    processedById?: SortOrder
+    requestedById?: SortOrder
+    approvedById?: SortOrder
+    approvedAt?: SortOrder
+    completedById?: SortOrder
+    completedAt?: SortOrder
+    orderReturnRequestId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type RefundRecordSumOrderByAggregateInput = {
     amountCents?: SortOrder
+  }
+
+  export type EnumRefundStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RefundStatus | EnumRefundStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRefundStatusWithAggregatesFilter<$PrismaModel> | $Enums.RefundStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRefundStatusFilter<$PrismaModel>
+    _max?: NestedEnumRefundStatusFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type EnumReservationStatusFilter<$PrismaModel = never> = {
@@ -82182,29 +81279,6 @@ export namespace Prisma {
     notIn?: $Enums.PaymentAttemptStatus[] | ListEnumPaymentAttemptStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumPaymentAttemptStatusFilter<$PrismaModel> | $Enums.PaymentAttemptStatus
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type PaymentAttemptCountOrderByAggregateInput = {
     id?: SortOrder
@@ -82269,31 +81343,100 @@ export namespace Prisma {
     _min?: NestedEnumPaymentAttemptStatusFilter<$PrismaModel>
     _max?: NestedEnumPaymentAttemptStatusFilter<$PrismaModel>
   }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
 
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
+  export type EnumBankDepositStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.BankDepositStatus | EnumBankDepositStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.BankDepositStatus[] | ListEnumBankDepositStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BankDepositStatus[] | ListEnumBankDepositStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumBankDepositStatusFilter<$PrismaModel> | $Enums.BankDepositStatus
+  }
+
+  export type PaymentAttemptNullableScalarRelationFilter = {
+    is?: PaymentAttemptWhereInput | null
+    isNot?: PaymentAttemptWhereInput | null
+  }
+
+  export type BankDepositSubmissionCountOrderByAggregateInput = {
+    id?: SortOrder
+    orderId?: SortOrder
+    paymentAttemptId?: SortOrder
+    receiptStorageKey?: SortOrder
+    originalFilename?: SortOrder
+    fileSizeBytes?: SortOrder
+    mimeType?: SortOrder
+    fileHashSha256?: SortOrder
+    referenceNumber?: SortOrder
+    depositDate?: SortOrder
+    amountCents?: SortOrder
+    customerNotes?: SortOrder
+    status?: SortOrder
+    rejectionReason?: SortOrder
+    reviewedById?: SortOrder
+    reviewedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BankDepositSubmissionAvgOrderByAggregateInput = {
+    fileSizeBytes?: SortOrder
+    amountCents?: SortOrder
+  }
+
+  export type BankDepositSubmissionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    orderId?: SortOrder
+    paymentAttemptId?: SortOrder
+    receiptStorageKey?: SortOrder
+    originalFilename?: SortOrder
+    fileSizeBytes?: SortOrder
+    mimeType?: SortOrder
+    fileHashSha256?: SortOrder
+    referenceNumber?: SortOrder
+    depositDate?: SortOrder
+    amountCents?: SortOrder
+    customerNotes?: SortOrder
+    status?: SortOrder
+    rejectionReason?: SortOrder
+    reviewedById?: SortOrder
+    reviewedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BankDepositSubmissionMinOrderByAggregateInput = {
+    id?: SortOrder
+    orderId?: SortOrder
+    paymentAttemptId?: SortOrder
+    receiptStorageKey?: SortOrder
+    originalFilename?: SortOrder
+    fileSizeBytes?: SortOrder
+    mimeType?: SortOrder
+    fileHashSha256?: SortOrder
+    referenceNumber?: SortOrder
+    depositDate?: SortOrder
+    amountCents?: SortOrder
+    customerNotes?: SortOrder
+    status?: SortOrder
+    rejectionReason?: SortOrder
+    reviewedById?: SortOrder
+    reviewedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BankDepositSubmissionSumOrderByAggregateInput = {
+    fileSizeBytes?: SortOrder
+    amountCents?: SortOrder
+  }
+
+  export type EnumBankDepositStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BankDepositStatus | EnumBankDepositStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.BankDepositStatus[] | ListEnumBankDepositStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BankDepositStatus[] | ListEnumBankDepositStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumBankDepositStatusWithAggregatesFilter<$PrismaModel> | $Enums.BankDepositStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBankDepositStatusFilter<$PrismaModel>
+    _max?: NestedEnumBankDepositStatusFilter<$PrismaModel>
   }
 
   export type EnumPromotionTypeFilter<$PrismaModel = never> = {
@@ -82616,231 +81759,6 @@ export namespace Prisma {
     discountAmount?: SortOrder
   }
 
-  export type EnumDocumentStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.DocumentStatus | EnumDocumentStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.DocumentStatus[] | ListEnumDocumentStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.DocumentStatus[] | ListEnumDocumentStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumDocumentStatusFilter<$PrismaModel> | $Enums.DocumentStatus
-  }
-
-  export type UploadedDocumentCountOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    sessionId?: SortOrder
-    fileName?: SortOrder
-    fileUrl?: SortOrder
-    storagePath?: SortOrder
-    fileSizeBytes?: SortOrder
-    fileType?: SortOrder
-    pageCount?: SortOrder
-    status?: SortOrder
-    isSimulatedOCR?: SortOrder
-    ocrProvider?: SortOrder
-    customerNotes?: SortOrder
-    processingError?: SortOrder
-    attempts?: SortOrder
-    processedAt?: SortOrder
-    confirmedAt?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type UploadedDocumentAvgOrderByAggregateInput = {
-    fileSizeBytes?: SortOrder
-    pageCount?: SortOrder
-    attempts?: SortOrder
-  }
-
-  export type UploadedDocumentMaxOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    sessionId?: SortOrder
-    fileName?: SortOrder
-    fileUrl?: SortOrder
-    storagePath?: SortOrder
-    fileSizeBytes?: SortOrder
-    fileType?: SortOrder
-    pageCount?: SortOrder
-    status?: SortOrder
-    isSimulatedOCR?: SortOrder
-    ocrProvider?: SortOrder
-    customerNotes?: SortOrder
-    processingError?: SortOrder
-    attempts?: SortOrder
-    processedAt?: SortOrder
-    confirmedAt?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type UploadedDocumentMinOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    sessionId?: SortOrder
-    fileName?: SortOrder
-    fileUrl?: SortOrder
-    storagePath?: SortOrder
-    fileSizeBytes?: SortOrder
-    fileType?: SortOrder
-    pageCount?: SortOrder
-    status?: SortOrder
-    isSimulatedOCR?: SortOrder
-    ocrProvider?: SortOrder
-    customerNotes?: SortOrder
-    processingError?: SortOrder
-    attempts?: SortOrder
-    processedAt?: SortOrder
-    confirmedAt?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type UploadedDocumentSumOrderByAggregateInput = {
-    fileSizeBytes?: SortOrder
-    pageCount?: SortOrder
-    attempts?: SortOrder
-  }
-
-  export type EnumDocumentStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.DocumentStatus | EnumDocumentStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.DocumentStatus[] | ListEnumDocumentStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.DocumentStatus[] | ListEnumDocumentStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumDocumentStatusWithAggregatesFilter<$PrismaModel> | $Enums.DocumentStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumDocumentStatusFilter<$PrismaModel>
-    _max?: NestedEnumDocumentStatusFilter<$PrismaModel>
-  }
-
-  export type EnumItemConfidenceFilter<$PrismaModel = never> = {
-    equals?: $Enums.ItemConfidence | EnumItemConfidenceFieldRefInput<$PrismaModel>
-    in?: $Enums.ItemConfidence[] | ListEnumItemConfidenceFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ItemConfidence[] | ListEnumItemConfidenceFieldRefInput<$PrismaModel>
-    not?: NestedEnumItemConfidenceFilter<$PrismaModel> | $Enums.ItemConfidence
-  }
-
-  export type EnumMatchStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.MatchStatus | EnumMatchStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.MatchStatus[] | ListEnumMatchStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MatchStatus[] | ListEnumMatchStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumMatchStatusFilter<$PrismaModel> | $Enums.MatchStatus
-  }
-
-  export type UploadedDocumentScalarRelationFilter = {
-    is?: UploadedDocumentWhereInput
-    isNot?: UploadedDocumentWhereInput
-  }
-
-  export type ProductNullableScalarRelationFilter = {
-    is?: ProductWhereInput | null
-    isNot?: ProductWhereInput | null
-  }
-
-  export type ExtractedStationeryItemCountOrderByAggregateInput = {
-    id?: SortOrder
-    documentId?: SortOrder
-    rawText?: SortOrder
-    itemDescription?: SortOrder
-    quantity?: SortOrder
-    unit?: SortOrder
-    confidence?: SortOrder
-    confidenceScore?: SortOrder
-    extractionConfidence?: SortOrder
-    matchConfidence?: SortOrder
-    matchReason?: SortOrder
-    matchedProductId?: SortOrder
-    matchedVariantId?: SortOrder
-    candidateProductIds?: SortOrder
-    status?: SortOrder
-    isConfirmed?: SortOrder
-    confirmedProductId?: SortOrder
-    confirmedVariantId?: SortOrder
-    confirmedQuantity?: SortOrder
-    isSubstituted?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type ExtractedStationeryItemAvgOrderByAggregateInput = {
-    quantity?: SortOrder
-    confidenceScore?: SortOrder
-    extractionConfidence?: SortOrder
-    matchConfidence?: SortOrder
-    confirmedQuantity?: SortOrder
-  }
-
-  export type ExtractedStationeryItemMaxOrderByAggregateInput = {
-    id?: SortOrder
-    documentId?: SortOrder
-    rawText?: SortOrder
-    itemDescription?: SortOrder
-    quantity?: SortOrder
-    unit?: SortOrder
-    confidence?: SortOrder
-    confidenceScore?: SortOrder
-    extractionConfidence?: SortOrder
-    matchConfidence?: SortOrder
-    matchReason?: SortOrder
-    matchedProductId?: SortOrder
-    matchedVariantId?: SortOrder
-    status?: SortOrder
-    isConfirmed?: SortOrder
-    confirmedProductId?: SortOrder
-    confirmedVariantId?: SortOrder
-    confirmedQuantity?: SortOrder
-    isSubstituted?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type ExtractedStationeryItemMinOrderByAggregateInput = {
-    id?: SortOrder
-    documentId?: SortOrder
-    rawText?: SortOrder
-    itemDescription?: SortOrder
-    quantity?: SortOrder
-    unit?: SortOrder
-    confidence?: SortOrder
-    confidenceScore?: SortOrder
-    extractionConfidence?: SortOrder
-    matchConfidence?: SortOrder
-    matchReason?: SortOrder
-    matchedProductId?: SortOrder
-    matchedVariantId?: SortOrder
-    status?: SortOrder
-    isConfirmed?: SortOrder
-    confirmedProductId?: SortOrder
-    confirmedVariantId?: SortOrder
-    confirmedQuantity?: SortOrder
-    isSubstituted?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type ExtractedStationeryItemSumOrderByAggregateInput = {
-    quantity?: SortOrder
-    confidenceScore?: SortOrder
-    extractionConfidence?: SortOrder
-    matchConfidence?: SortOrder
-    confirmedQuantity?: SortOrder
-  }
-
-  export type EnumItemConfidenceWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ItemConfidence | EnumItemConfidenceFieldRefInput<$PrismaModel>
-    in?: $Enums.ItemConfidence[] | ListEnumItemConfidenceFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ItemConfidence[] | ListEnumItemConfidenceFieldRefInput<$PrismaModel>
-    not?: NestedEnumItemConfidenceWithAggregatesFilter<$PrismaModel> | $Enums.ItemConfidence
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumItemConfidenceFilter<$PrismaModel>
-    _max?: NestedEnumItemConfidenceFilter<$PrismaModel>
-  }
-
-  export type EnumMatchStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.MatchStatus | EnumMatchStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.MatchStatus[] | ListEnumMatchStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MatchStatus[] | ListEnumMatchStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumMatchStatusWithAggregatesFilter<$PrismaModel> | $Enums.MatchStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumMatchStatusFilter<$PrismaModel>
-    _max?: NestedEnumMatchStatusFilter<$PrismaModel>
-  }
-
   export type WishlistItemUserIdProductIdCompoundUniqueInput = {
     userId: string
     productId: string
@@ -83037,6 +81955,7 @@ export namespace Prisma {
     imageAltText?: SortOrder
     buttonText?: SortOrder
     buttonLink?: SortOrder
+    placement?: SortOrder
     sortOrder?: SortOrder
     status?: SortOrder
     startAt?: SortOrder
@@ -83061,6 +81980,7 @@ export namespace Prisma {
     imageAltText?: SortOrder
     buttonText?: SortOrder
     buttonLink?: SortOrder
+    placement?: SortOrder
     sortOrder?: SortOrder
     status?: SortOrder
     startAt?: SortOrder
@@ -83081,6 +82001,7 @@ export namespace Prisma {
     imageAltText?: SortOrder
     buttonText?: SortOrder
     buttonLink?: SortOrder
+    placement?: SortOrder
     sortOrder?: SortOrder
     status?: SortOrder
     startAt?: SortOrder
@@ -83145,6 +82066,15 @@ export namespace Prisma {
     codEnabled?: SortOrder
     bankTransferEnabled?: SortOrder
     onlineCardEnabled?: SortOrder
+    bankName?: SortOrder
+    accountHolderName?: SortOrder
+    accountNumber?: SortOrder
+    branchName?: SortOrder
+    branchCode?: SortOrder
+    bankCode?: SortOrder
+    paymentInstructions?: SortOrder
+    referenceInstructions?: SortOrder
+    bankLogoUrl?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -83163,6 +82093,15 @@ export namespace Prisma {
     codEnabled?: SortOrder
     bankTransferEnabled?: SortOrder
     onlineCardEnabled?: SortOrder
+    bankName?: SortOrder
+    accountHolderName?: SortOrder
+    accountNumber?: SortOrder
+    branchName?: SortOrder
+    branchCode?: SortOrder
+    bankCode?: SortOrder
+    paymentInstructions?: SortOrder
+    referenceInstructions?: SortOrder
+    bankLogoUrl?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -83176,6 +82115,15 @@ export namespace Prisma {
     codEnabled?: SortOrder
     bankTransferEnabled?: SortOrder
     onlineCardEnabled?: SortOrder
+    bankName?: SortOrder
+    accountHolderName?: SortOrder
+    accountNumber?: SortOrder
+    branchName?: SortOrder
+    branchCode?: SortOrder
+    bankCode?: SortOrder
+    paymentInstructions?: SortOrder
+    referenceInstructions?: SortOrder
+    bankLogoUrl?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -83651,6 +82599,11 @@ export namespace Prisma {
     not?: NestedEnumSkuOwnerTypeFilter<$PrismaModel> | $Enums.SkuOwnerType
   }
 
+  export type ProductNullableScalarRelationFilter = {
+    is?: ProductWhereInput | null
+    isNot?: ProductWhereInput | null
+  }
+
   export type GlobalSkuCountOrderByAggregateInput = {
     sku?: SortOrder
     ownerType?: SortOrder
@@ -84041,13 +82994,6 @@ export namespace Prisma {
     connect?: SavedStationeryListWhereUniqueInput | SavedStationeryListWhereUniqueInput[]
   }
 
-  export type UploadedDocumentCreateNestedManyWithoutUserInput = {
-    create?: XOR<UploadedDocumentCreateWithoutUserInput, UploadedDocumentUncheckedCreateWithoutUserInput> | UploadedDocumentCreateWithoutUserInput[] | UploadedDocumentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: UploadedDocumentCreateOrConnectWithoutUserInput | UploadedDocumentCreateOrConnectWithoutUserInput[]
-    createMany?: UploadedDocumentCreateManyUserInputEnvelope
-    connect?: UploadedDocumentWhereUniqueInput | UploadedDocumentWhereUniqueInput[]
-  }
-
   export type AuditLogCreateNestedManyWithoutUserInput = {
     create?: XOR<AuditLogCreateWithoutUserInput, AuditLogUncheckedCreateWithoutUserInput> | AuditLogCreateWithoutUserInput[] | AuditLogUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AuditLogCreateOrConnectWithoutUserInput | AuditLogCreateOrConnectWithoutUserInput[]
@@ -84124,6 +83070,13 @@ export namespace Prisma {
     connect?: ProductImportBatchWhereUniqueInput | ProductImportBatchWhereUniqueInput[]
   }
 
+  export type BankDepositSubmissionCreateNestedManyWithoutReviewedByInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutReviewedByInput, BankDepositSubmissionUncheckedCreateWithoutReviewedByInput> | BankDepositSubmissionCreateWithoutReviewedByInput[] | BankDepositSubmissionUncheckedCreateWithoutReviewedByInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutReviewedByInput | BankDepositSubmissionCreateOrConnectWithoutReviewedByInput[]
+    createMany?: BankDepositSubmissionCreateManyReviewedByInputEnvelope
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+  }
+
   export type AddressUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AddressCreateWithoutUserInput, AddressUncheckedCreateWithoutUserInput> | AddressCreateWithoutUserInput[] | AddressUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AddressCreateOrConnectWithoutUserInput | AddressCreateOrConnectWithoutUserInput[]
@@ -84157,13 +83110,6 @@ export namespace Prisma {
     connectOrCreate?: SavedStationeryListCreateOrConnectWithoutUserInput | SavedStationeryListCreateOrConnectWithoutUserInput[]
     createMany?: SavedStationeryListCreateManyUserInputEnvelope
     connect?: SavedStationeryListWhereUniqueInput | SavedStationeryListWhereUniqueInput[]
-  }
-
-  export type UploadedDocumentUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<UploadedDocumentCreateWithoutUserInput, UploadedDocumentUncheckedCreateWithoutUserInput> | UploadedDocumentCreateWithoutUserInput[] | UploadedDocumentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: UploadedDocumentCreateOrConnectWithoutUserInput | UploadedDocumentCreateOrConnectWithoutUserInput[]
-    createMany?: UploadedDocumentCreateManyUserInputEnvelope
-    connect?: UploadedDocumentWhereUniqueInput | UploadedDocumentWhereUniqueInput[]
   }
 
   export type AuditLogUncheckedCreateNestedManyWithoutUserInput = {
@@ -84240,6 +83186,13 @@ export namespace Prisma {
     connectOrCreate?: ProductImportBatchCreateOrConnectWithoutAdminInput | ProductImportBatchCreateOrConnectWithoutAdminInput[]
     createMany?: ProductImportBatchCreateManyAdminInputEnvelope
     connect?: ProductImportBatchWhereUniqueInput | ProductImportBatchWhereUniqueInput[]
+  }
+
+  export type BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutReviewedByInput, BankDepositSubmissionUncheckedCreateWithoutReviewedByInput> | BankDepositSubmissionCreateWithoutReviewedByInput[] | BankDepositSubmissionUncheckedCreateWithoutReviewedByInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutReviewedByInput | BankDepositSubmissionCreateOrConnectWithoutReviewedByInput[]
+    createMany?: BankDepositSubmissionCreateManyReviewedByInputEnvelope
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -84352,20 +83305,6 @@ export namespace Prisma {
     update?: SavedStationeryListUpdateWithWhereUniqueWithoutUserInput | SavedStationeryListUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: SavedStationeryListUpdateManyWithWhereWithoutUserInput | SavedStationeryListUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: SavedStationeryListScalarWhereInput | SavedStationeryListScalarWhereInput[]
-  }
-
-  export type UploadedDocumentUpdateManyWithoutUserNestedInput = {
-    create?: XOR<UploadedDocumentCreateWithoutUserInput, UploadedDocumentUncheckedCreateWithoutUserInput> | UploadedDocumentCreateWithoutUserInput[] | UploadedDocumentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: UploadedDocumentCreateOrConnectWithoutUserInput | UploadedDocumentCreateOrConnectWithoutUserInput[]
-    upsert?: UploadedDocumentUpsertWithWhereUniqueWithoutUserInput | UploadedDocumentUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: UploadedDocumentCreateManyUserInputEnvelope
-    set?: UploadedDocumentWhereUniqueInput | UploadedDocumentWhereUniqueInput[]
-    disconnect?: UploadedDocumentWhereUniqueInput | UploadedDocumentWhereUniqueInput[]
-    delete?: UploadedDocumentWhereUniqueInput | UploadedDocumentWhereUniqueInput[]
-    connect?: UploadedDocumentWhereUniqueInput | UploadedDocumentWhereUniqueInput[]
-    update?: UploadedDocumentUpdateWithWhereUniqueWithoutUserInput | UploadedDocumentUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: UploadedDocumentUpdateManyWithWhereWithoutUserInput | UploadedDocumentUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: UploadedDocumentScalarWhereInput | UploadedDocumentScalarWhereInput[]
   }
 
   export type AuditLogUpdateManyWithoutUserNestedInput = {
@@ -84518,6 +83457,20 @@ export namespace Prisma {
     deleteMany?: ProductImportBatchScalarWhereInput | ProductImportBatchScalarWhereInput[]
   }
 
+  export type BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutReviewedByInput, BankDepositSubmissionUncheckedCreateWithoutReviewedByInput> | BankDepositSubmissionCreateWithoutReviewedByInput[] | BankDepositSubmissionUncheckedCreateWithoutReviewedByInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutReviewedByInput | BankDepositSubmissionCreateOrConnectWithoutReviewedByInput[]
+    upsert?: BankDepositSubmissionUpsertWithWhereUniqueWithoutReviewedByInput | BankDepositSubmissionUpsertWithWhereUniqueWithoutReviewedByInput[]
+    createMany?: BankDepositSubmissionCreateManyReviewedByInputEnvelope
+    set?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    disconnect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    delete?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    update?: BankDepositSubmissionUpdateWithWhereUniqueWithoutReviewedByInput | BankDepositSubmissionUpdateWithWhereUniqueWithoutReviewedByInput[]
+    updateMany?: BankDepositSubmissionUpdateManyWithWhereWithoutReviewedByInput | BankDepositSubmissionUpdateManyWithWhereWithoutReviewedByInput[]
+    deleteMany?: BankDepositSubmissionScalarWhereInput | BankDepositSubmissionScalarWhereInput[]
+  }
+
   export type AddressUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AddressCreateWithoutUserInput, AddressUncheckedCreateWithoutUserInput> | AddressCreateWithoutUserInput[] | AddressUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AddressCreateOrConnectWithoutUserInput | AddressCreateOrConnectWithoutUserInput[]
@@ -84586,20 +83539,6 @@ export namespace Prisma {
     update?: SavedStationeryListUpdateWithWhereUniqueWithoutUserInput | SavedStationeryListUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: SavedStationeryListUpdateManyWithWhereWithoutUserInput | SavedStationeryListUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: SavedStationeryListScalarWhereInput | SavedStationeryListScalarWhereInput[]
-  }
-
-  export type UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<UploadedDocumentCreateWithoutUserInput, UploadedDocumentUncheckedCreateWithoutUserInput> | UploadedDocumentCreateWithoutUserInput[] | UploadedDocumentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: UploadedDocumentCreateOrConnectWithoutUserInput | UploadedDocumentCreateOrConnectWithoutUserInput[]
-    upsert?: UploadedDocumentUpsertWithWhereUniqueWithoutUserInput | UploadedDocumentUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: UploadedDocumentCreateManyUserInputEnvelope
-    set?: UploadedDocumentWhereUniqueInput | UploadedDocumentWhereUniqueInput[]
-    disconnect?: UploadedDocumentWhereUniqueInput | UploadedDocumentWhereUniqueInput[]
-    delete?: UploadedDocumentWhereUniqueInput | UploadedDocumentWhereUniqueInput[]
-    connect?: UploadedDocumentWhereUniqueInput | UploadedDocumentWhereUniqueInput[]
-    update?: UploadedDocumentUpdateWithWhereUniqueWithoutUserInput | UploadedDocumentUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: UploadedDocumentUpdateManyWithWhereWithoutUserInput | UploadedDocumentUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: UploadedDocumentScalarWhereInput | UploadedDocumentScalarWhereInput[]
   }
 
   export type AuditLogUncheckedUpdateManyWithoutUserNestedInput = {
@@ -84750,6 +83689,20 @@ export namespace Prisma {
     update?: ProductImportBatchUpdateWithWhereUniqueWithoutAdminInput | ProductImportBatchUpdateWithWhereUniqueWithoutAdminInput[]
     updateMany?: ProductImportBatchUpdateManyWithWhereWithoutAdminInput | ProductImportBatchUpdateManyWithWhereWithoutAdminInput[]
     deleteMany?: ProductImportBatchScalarWhereInput | ProductImportBatchScalarWhereInput[]
+  }
+
+  export type BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutReviewedByInput, BankDepositSubmissionUncheckedCreateWithoutReviewedByInput> | BankDepositSubmissionCreateWithoutReviewedByInput[] | BankDepositSubmissionUncheckedCreateWithoutReviewedByInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutReviewedByInput | BankDepositSubmissionCreateOrConnectWithoutReviewedByInput[]
+    upsert?: BankDepositSubmissionUpsertWithWhereUniqueWithoutReviewedByInput | BankDepositSubmissionUpsertWithWhereUniqueWithoutReviewedByInput[]
+    createMany?: BankDepositSubmissionCreateManyReviewedByInputEnvelope
+    set?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    disconnect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    delete?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    update?: BankDepositSubmissionUpdateWithWhereUniqueWithoutReviewedByInput | BankDepositSubmissionUpdateWithWhereUniqueWithoutReviewedByInput[]
+    updateMany?: BankDepositSubmissionUpdateManyWithWhereWithoutReviewedByInput | BankDepositSubmissionUpdateManyWithWhereWithoutReviewedByInput[]
+    deleteMany?: BankDepositSubmissionScalarWhereInput | BankDepositSubmissionScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAddressesInput = {
@@ -85066,13 +84019,6 @@ export namespace Prisma {
     connect?: SchoolPackItemWhereUniqueInput | SchoolPackItemWhereUniqueInput[]
   }
 
-  export type ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput = {
-    create?: XOR<ExtractedStationeryItemCreateWithoutMatchedProductInput, ExtractedStationeryItemUncheckedCreateWithoutMatchedProductInput> | ExtractedStationeryItemCreateWithoutMatchedProductInput[] | ExtractedStationeryItemUncheckedCreateWithoutMatchedProductInput[]
-    connectOrCreate?: ExtractedStationeryItemCreateOrConnectWithoutMatchedProductInput | ExtractedStationeryItemCreateOrConnectWithoutMatchedProductInput[]
-    createMany?: ExtractedStationeryItemCreateManyMatchedProductInputEnvelope
-    connect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-  }
-
   export type WishlistItemCreateNestedManyWithoutProductInput = {
     create?: XOR<WishlistItemCreateWithoutProductInput, WishlistItemUncheckedCreateWithoutProductInput> | WishlistItemCreateWithoutProductInput[] | WishlistItemUncheckedCreateWithoutProductInput[]
     connectOrCreate?: WishlistItemCreateOrConnectWithoutProductInput | WishlistItemCreateOrConnectWithoutProductInput[]
@@ -85147,13 +84093,6 @@ export namespace Prisma {
     connectOrCreate?: SchoolPackItemCreateOrConnectWithoutProductInput | SchoolPackItemCreateOrConnectWithoutProductInput[]
     createMany?: SchoolPackItemCreateManyProductInputEnvelope
     connect?: SchoolPackItemWhereUniqueInput | SchoolPackItemWhereUniqueInput[]
-  }
-
-  export type ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput = {
-    create?: XOR<ExtractedStationeryItemCreateWithoutMatchedProductInput, ExtractedStationeryItemUncheckedCreateWithoutMatchedProductInput> | ExtractedStationeryItemCreateWithoutMatchedProductInput[] | ExtractedStationeryItemUncheckedCreateWithoutMatchedProductInput[]
-    connectOrCreate?: ExtractedStationeryItemCreateOrConnectWithoutMatchedProductInput | ExtractedStationeryItemCreateOrConnectWithoutMatchedProductInput[]
-    createMany?: ExtractedStationeryItemCreateManyMatchedProductInputEnvelope
-    connect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
   }
 
   export type WishlistItemUncheckedCreateNestedManyWithoutProductInput = {
@@ -85316,20 +84255,6 @@ export namespace Prisma {
     deleteMany?: SchoolPackItemScalarWhereInput | SchoolPackItemScalarWhereInput[]
   }
 
-  export type ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput = {
-    create?: XOR<ExtractedStationeryItemCreateWithoutMatchedProductInput, ExtractedStationeryItemUncheckedCreateWithoutMatchedProductInput> | ExtractedStationeryItemCreateWithoutMatchedProductInput[] | ExtractedStationeryItemUncheckedCreateWithoutMatchedProductInput[]
-    connectOrCreate?: ExtractedStationeryItemCreateOrConnectWithoutMatchedProductInput | ExtractedStationeryItemCreateOrConnectWithoutMatchedProductInput[]
-    upsert?: ExtractedStationeryItemUpsertWithWhereUniqueWithoutMatchedProductInput | ExtractedStationeryItemUpsertWithWhereUniqueWithoutMatchedProductInput[]
-    createMany?: ExtractedStationeryItemCreateManyMatchedProductInputEnvelope
-    set?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    disconnect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    delete?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    connect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    update?: ExtractedStationeryItemUpdateWithWhereUniqueWithoutMatchedProductInput | ExtractedStationeryItemUpdateWithWhereUniqueWithoutMatchedProductInput[]
-    updateMany?: ExtractedStationeryItemUpdateManyWithWhereWithoutMatchedProductInput | ExtractedStationeryItemUpdateManyWithWhereWithoutMatchedProductInput[]
-    deleteMany?: ExtractedStationeryItemScalarWhereInput | ExtractedStationeryItemScalarWhereInput[]
-  }
-
   export type WishlistItemUpdateManyWithoutProductNestedInput = {
     create?: XOR<WishlistItemCreateWithoutProductInput, WishlistItemUncheckedCreateWithoutProductInput> | WishlistItemCreateWithoutProductInput[] | WishlistItemUncheckedCreateWithoutProductInput[]
     connectOrCreate?: WishlistItemCreateOrConnectWithoutProductInput | WishlistItemCreateOrConnectWithoutProductInput[]
@@ -85478,20 +84403,6 @@ export namespace Prisma {
     update?: SchoolPackItemUpdateWithWhereUniqueWithoutProductInput | SchoolPackItemUpdateWithWhereUniqueWithoutProductInput[]
     updateMany?: SchoolPackItemUpdateManyWithWhereWithoutProductInput | SchoolPackItemUpdateManyWithWhereWithoutProductInput[]
     deleteMany?: SchoolPackItemScalarWhereInput | SchoolPackItemScalarWhereInput[]
-  }
-
-  export type ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput = {
-    create?: XOR<ExtractedStationeryItemCreateWithoutMatchedProductInput, ExtractedStationeryItemUncheckedCreateWithoutMatchedProductInput> | ExtractedStationeryItemCreateWithoutMatchedProductInput[] | ExtractedStationeryItemUncheckedCreateWithoutMatchedProductInput[]
-    connectOrCreate?: ExtractedStationeryItemCreateOrConnectWithoutMatchedProductInput | ExtractedStationeryItemCreateOrConnectWithoutMatchedProductInput[]
-    upsert?: ExtractedStationeryItemUpsertWithWhereUniqueWithoutMatchedProductInput | ExtractedStationeryItemUpsertWithWhereUniqueWithoutMatchedProductInput[]
-    createMany?: ExtractedStationeryItemCreateManyMatchedProductInputEnvelope
-    set?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    disconnect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    delete?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    connect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    update?: ExtractedStationeryItemUpdateWithWhereUniqueWithoutMatchedProductInput | ExtractedStationeryItemUpdateWithWhereUniqueWithoutMatchedProductInput[]
-    updateMany?: ExtractedStationeryItemUpdateManyWithWhereWithoutMatchedProductInput | ExtractedStationeryItemUpdateManyWithWhereWithoutMatchedProductInput[]
-    deleteMany?: ExtractedStationeryItemScalarWhereInput | ExtractedStationeryItemScalarWhereInput[]
   }
 
   export type WishlistItemUncheckedUpdateManyWithoutProductNestedInput = {
@@ -85978,6 +84889,13 @@ export namespace Prisma {
     connect?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
   }
 
+  export type BankDepositSubmissionCreateNestedManyWithoutOrderInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutOrderInput, BankDepositSubmissionUncheckedCreateWithoutOrderInput> | BankDepositSubmissionCreateWithoutOrderInput[] | BankDepositSubmissionUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutOrderInput | BankDepositSubmissionCreateOrConnectWithoutOrderInput[]
+    createMany?: BankDepositSubmissionCreateManyOrderInputEnvelope
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+  }
+
   export type PromotionRedemptionUncheckedCreateNestedManyWithoutOrderInput = {
     create?: XOR<PromotionRedemptionCreateWithoutOrderInput, PromotionRedemptionUncheckedCreateWithoutOrderInput> | PromotionRedemptionCreateWithoutOrderInput[] | PromotionRedemptionUncheckedCreateWithoutOrderInput[]
     connectOrCreate?: PromotionRedemptionCreateOrConnectWithoutOrderInput | PromotionRedemptionCreateOrConnectWithoutOrderInput[]
@@ -86037,6 +84955,13 @@ export namespace Prisma {
     connectOrCreate?: RefundRecordCreateOrConnectWithoutOrderInput | RefundRecordCreateOrConnectWithoutOrderInput[]
     createMany?: RefundRecordCreateManyOrderInputEnvelope
     connect?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
+  }
+
+  export type BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutOrderInput, BankDepositSubmissionUncheckedCreateWithoutOrderInput> | BankDepositSubmissionCreateWithoutOrderInput[] | BankDepositSubmissionUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutOrderInput | BankDepositSubmissionCreateOrConnectWithoutOrderInput[]
+    createMany?: BankDepositSubmissionCreateManyOrderInputEnvelope
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
   }
 
   export type EnumPaymentMethodFieldUpdateOperationsInput = {
@@ -86189,6 +85114,20 @@ export namespace Prisma {
     deleteMany?: RefundRecordScalarWhereInput | RefundRecordScalarWhereInput[]
   }
 
+  export type BankDepositSubmissionUpdateManyWithoutOrderNestedInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutOrderInput, BankDepositSubmissionUncheckedCreateWithoutOrderInput> | BankDepositSubmissionCreateWithoutOrderInput[] | BankDepositSubmissionUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutOrderInput | BankDepositSubmissionCreateOrConnectWithoutOrderInput[]
+    upsert?: BankDepositSubmissionUpsertWithWhereUniqueWithoutOrderInput | BankDepositSubmissionUpsertWithWhereUniqueWithoutOrderInput[]
+    createMany?: BankDepositSubmissionCreateManyOrderInputEnvelope
+    set?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    disconnect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    delete?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    update?: BankDepositSubmissionUpdateWithWhereUniqueWithoutOrderInput | BankDepositSubmissionUpdateWithWhereUniqueWithoutOrderInput[]
+    updateMany?: BankDepositSubmissionUpdateManyWithWhereWithoutOrderInput | BankDepositSubmissionUpdateManyWithWhereWithoutOrderInput[]
+    deleteMany?: BankDepositSubmissionScalarWhereInput | BankDepositSubmissionScalarWhereInput[]
+  }
+
   export type PromotionRedemptionUncheckedUpdateManyWithoutOrderNestedInput = {
     create?: XOR<PromotionRedemptionCreateWithoutOrderInput, PromotionRedemptionUncheckedCreateWithoutOrderInput> | PromotionRedemptionCreateWithoutOrderInput[] | PromotionRedemptionUncheckedCreateWithoutOrderInput[]
     connectOrCreate?: PromotionRedemptionCreateOrConnectWithoutOrderInput | PromotionRedemptionCreateOrConnectWithoutOrderInput[]
@@ -86305,6 +85244,20 @@ export namespace Prisma {
     update?: RefundRecordUpdateWithWhereUniqueWithoutOrderInput | RefundRecordUpdateWithWhereUniqueWithoutOrderInput[]
     updateMany?: RefundRecordUpdateManyWithWhereWithoutOrderInput | RefundRecordUpdateManyWithWhereWithoutOrderInput[]
     deleteMany?: RefundRecordScalarWhereInput | RefundRecordScalarWhereInput[]
+  }
+
+  export type BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutOrderInput, BankDepositSubmissionUncheckedCreateWithoutOrderInput> | BankDepositSubmissionCreateWithoutOrderInput[] | BankDepositSubmissionUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutOrderInput | BankDepositSubmissionCreateOrConnectWithoutOrderInput[]
+    upsert?: BankDepositSubmissionUpsertWithWhereUniqueWithoutOrderInput | BankDepositSubmissionUpsertWithWhereUniqueWithoutOrderInput[]
+    createMany?: BankDepositSubmissionCreateManyOrderInputEnvelope
+    set?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    disconnect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    delete?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    update?: BankDepositSubmissionUpdateWithWhereUniqueWithoutOrderInput | BankDepositSubmissionUpdateWithWhereUniqueWithoutOrderInput[]
+    updateMany?: BankDepositSubmissionUpdateManyWithWhereWithoutOrderInput | BankDepositSubmissionUpdateManyWithWhereWithoutOrderInput[]
+    deleteMany?: BankDepositSubmissionScalarWhereInput | BankDepositSubmissionScalarWhereInput[]
   }
 
   export type OrderCreateNestedOneWithoutAddressSnapshotInput = {
@@ -86456,11 +85409,25 @@ export namespace Prisma {
     connect?: OrderReturnItemWhereUniqueInput | OrderReturnItemWhereUniqueInput[]
   }
 
+  export type RefundRecordCreateNestedManyWithoutOrderReturnRequestInput = {
+    create?: XOR<RefundRecordCreateWithoutOrderReturnRequestInput, RefundRecordUncheckedCreateWithoutOrderReturnRequestInput> | RefundRecordCreateWithoutOrderReturnRequestInput[] | RefundRecordUncheckedCreateWithoutOrderReturnRequestInput[]
+    connectOrCreate?: RefundRecordCreateOrConnectWithoutOrderReturnRequestInput | RefundRecordCreateOrConnectWithoutOrderReturnRequestInput[]
+    createMany?: RefundRecordCreateManyOrderReturnRequestInputEnvelope
+    connect?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
+  }
+
   export type OrderReturnItemUncheckedCreateNestedManyWithoutReturnRequestInput = {
     create?: XOR<OrderReturnItemCreateWithoutReturnRequestInput, OrderReturnItemUncheckedCreateWithoutReturnRequestInput> | OrderReturnItemCreateWithoutReturnRequestInput[] | OrderReturnItemUncheckedCreateWithoutReturnRequestInput[]
     connectOrCreate?: OrderReturnItemCreateOrConnectWithoutReturnRequestInput | OrderReturnItemCreateOrConnectWithoutReturnRequestInput[]
     createMany?: OrderReturnItemCreateManyReturnRequestInputEnvelope
     connect?: OrderReturnItemWhereUniqueInput | OrderReturnItemWhereUniqueInput[]
+  }
+
+  export type RefundRecordUncheckedCreateNestedManyWithoutOrderReturnRequestInput = {
+    create?: XOR<RefundRecordCreateWithoutOrderReturnRequestInput, RefundRecordUncheckedCreateWithoutOrderReturnRequestInput> | RefundRecordCreateWithoutOrderReturnRequestInput[] | RefundRecordUncheckedCreateWithoutOrderReturnRequestInput[]
+    connectOrCreate?: RefundRecordCreateOrConnectWithoutOrderReturnRequestInput | RefundRecordCreateOrConnectWithoutOrderReturnRequestInput[]
+    createMany?: RefundRecordCreateManyOrderReturnRequestInputEnvelope
+    connect?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
   }
 
   export type EnumReturnStatusFieldUpdateOperationsInput = {
@@ -86489,6 +85456,20 @@ export namespace Prisma {
     deleteMany?: OrderReturnItemScalarWhereInput | OrderReturnItemScalarWhereInput[]
   }
 
+  export type RefundRecordUpdateManyWithoutOrderReturnRequestNestedInput = {
+    create?: XOR<RefundRecordCreateWithoutOrderReturnRequestInput, RefundRecordUncheckedCreateWithoutOrderReturnRequestInput> | RefundRecordCreateWithoutOrderReturnRequestInput[] | RefundRecordUncheckedCreateWithoutOrderReturnRequestInput[]
+    connectOrCreate?: RefundRecordCreateOrConnectWithoutOrderReturnRequestInput | RefundRecordCreateOrConnectWithoutOrderReturnRequestInput[]
+    upsert?: RefundRecordUpsertWithWhereUniqueWithoutOrderReturnRequestInput | RefundRecordUpsertWithWhereUniqueWithoutOrderReturnRequestInput[]
+    createMany?: RefundRecordCreateManyOrderReturnRequestInputEnvelope
+    set?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
+    disconnect?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
+    delete?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
+    connect?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
+    update?: RefundRecordUpdateWithWhereUniqueWithoutOrderReturnRequestInput | RefundRecordUpdateWithWhereUniqueWithoutOrderReturnRequestInput[]
+    updateMany?: RefundRecordUpdateManyWithWhereWithoutOrderReturnRequestInput | RefundRecordUpdateManyWithWhereWithoutOrderReturnRequestInput[]
+    deleteMany?: RefundRecordScalarWhereInput | RefundRecordScalarWhereInput[]
+  }
+
   export type OrderReturnItemUncheckedUpdateManyWithoutReturnRequestNestedInput = {
     create?: XOR<OrderReturnItemCreateWithoutReturnRequestInput, OrderReturnItemUncheckedCreateWithoutReturnRequestInput> | OrderReturnItemCreateWithoutReturnRequestInput[] | OrderReturnItemUncheckedCreateWithoutReturnRequestInput[]
     connectOrCreate?: OrderReturnItemCreateOrConnectWithoutReturnRequestInput | OrderReturnItemCreateOrConnectWithoutReturnRequestInput[]
@@ -86501,6 +85482,20 @@ export namespace Prisma {
     update?: OrderReturnItemUpdateWithWhereUniqueWithoutReturnRequestInput | OrderReturnItemUpdateWithWhereUniqueWithoutReturnRequestInput[]
     updateMany?: OrderReturnItemUpdateManyWithWhereWithoutReturnRequestInput | OrderReturnItemUpdateManyWithWhereWithoutReturnRequestInput[]
     deleteMany?: OrderReturnItemScalarWhereInput | OrderReturnItemScalarWhereInput[]
+  }
+
+  export type RefundRecordUncheckedUpdateManyWithoutOrderReturnRequestNestedInput = {
+    create?: XOR<RefundRecordCreateWithoutOrderReturnRequestInput, RefundRecordUncheckedCreateWithoutOrderReturnRequestInput> | RefundRecordCreateWithoutOrderReturnRequestInput[] | RefundRecordUncheckedCreateWithoutOrderReturnRequestInput[]
+    connectOrCreate?: RefundRecordCreateOrConnectWithoutOrderReturnRequestInput | RefundRecordCreateOrConnectWithoutOrderReturnRequestInput[]
+    upsert?: RefundRecordUpsertWithWhereUniqueWithoutOrderReturnRequestInput | RefundRecordUpsertWithWhereUniqueWithoutOrderReturnRequestInput[]
+    createMany?: RefundRecordCreateManyOrderReturnRequestInputEnvelope
+    set?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
+    disconnect?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
+    delete?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
+    connect?: RefundRecordWhereUniqueInput | RefundRecordWhereUniqueInput[]
+    update?: RefundRecordUpdateWithWhereUniqueWithoutOrderReturnRequestInput | RefundRecordUpdateWithWhereUniqueWithoutOrderReturnRequestInput[]
+    updateMany?: RefundRecordUpdateManyWithWhereWithoutOrderReturnRequestInput | RefundRecordUpdateManyWithWhereWithoutOrderReturnRequestInput[]
+    deleteMany?: RefundRecordScalarWhereInput | RefundRecordScalarWhereInput[]
   }
 
   export type OrderReturnRequestCreateNestedOneWithoutItemsInput = {
@@ -86541,12 +85536,32 @@ export namespace Prisma {
     connect?: OrderWhereUniqueInput
   }
 
+  export type OrderReturnRequestCreateNestedOneWithoutRefundRecordsInput = {
+    create?: XOR<OrderReturnRequestCreateWithoutRefundRecordsInput, OrderReturnRequestUncheckedCreateWithoutRefundRecordsInput>
+    connectOrCreate?: OrderReturnRequestCreateOrConnectWithoutRefundRecordsInput
+    connect?: OrderReturnRequestWhereUniqueInput
+  }
+
+  export type EnumRefundStatusFieldUpdateOperationsInput = {
+    set?: $Enums.RefundStatus
+  }
+
   export type OrderUpdateOneRequiredWithoutRefundRecordsNestedInput = {
     create?: XOR<OrderCreateWithoutRefundRecordsInput, OrderUncheckedCreateWithoutRefundRecordsInput>
     connectOrCreate?: OrderCreateOrConnectWithoutRefundRecordsInput
     upsert?: OrderUpsertWithoutRefundRecordsInput
     connect?: OrderWhereUniqueInput
     update?: XOR<XOR<OrderUpdateToOneWithWhereWithoutRefundRecordsInput, OrderUpdateWithoutRefundRecordsInput>, OrderUncheckedUpdateWithoutRefundRecordsInput>
+  }
+
+  export type OrderReturnRequestUpdateOneWithoutRefundRecordsNestedInput = {
+    create?: XOR<OrderReturnRequestCreateWithoutRefundRecordsInput, OrderReturnRequestUncheckedCreateWithoutRefundRecordsInput>
+    connectOrCreate?: OrderReturnRequestCreateOrConnectWithoutRefundRecordsInput
+    upsert?: OrderReturnRequestUpsertWithoutRefundRecordsInput
+    disconnect?: OrderReturnRequestWhereInput | boolean
+    delete?: OrderReturnRequestWhereInput | boolean
+    connect?: OrderReturnRequestWhereUniqueInput
+    update?: XOR<XOR<OrderReturnRequestUpdateToOneWithWhereWithoutRefundRecordsInput, OrderReturnRequestUpdateWithoutRefundRecordsInput>, OrderReturnRequestUncheckedUpdateWithoutRefundRecordsInput>
   }
 
   export type UserCreateNestedOneWithoutReservationsInput = {
@@ -86725,6 +85740,20 @@ export namespace Prisma {
     connect?: OrderWhereUniqueInput
   }
 
+  export type BankDepositSubmissionCreateNestedManyWithoutPaymentAttemptInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutPaymentAttemptInput, BankDepositSubmissionUncheckedCreateWithoutPaymentAttemptInput> | BankDepositSubmissionCreateWithoutPaymentAttemptInput[] | BankDepositSubmissionUncheckedCreateWithoutPaymentAttemptInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutPaymentAttemptInput | BankDepositSubmissionCreateOrConnectWithoutPaymentAttemptInput[]
+    createMany?: BankDepositSubmissionCreateManyPaymentAttemptInputEnvelope
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+  }
+
+  export type BankDepositSubmissionUncheckedCreateNestedManyWithoutPaymentAttemptInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutPaymentAttemptInput, BankDepositSubmissionUncheckedCreateWithoutPaymentAttemptInput> | BankDepositSubmissionCreateWithoutPaymentAttemptInput[] | BankDepositSubmissionUncheckedCreateWithoutPaymentAttemptInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutPaymentAttemptInput | BankDepositSubmissionCreateOrConnectWithoutPaymentAttemptInput[]
+    createMany?: BankDepositSubmissionCreateManyPaymentAttemptInputEnvelope
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+  }
+
   export type EnumPaymentAttemptStatusFieldUpdateOperationsInput = {
     set?: $Enums.PaymentAttemptStatus
   }
@@ -86745,6 +85774,84 @@ export namespace Prisma {
     delete?: OrderWhereInput | boolean
     connect?: OrderWhereUniqueInput
     update?: XOR<XOR<OrderUpdateToOneWithWhereWithoutPaymentAttemptsInput, OrderUpdateWithoutPaymentAttemptsInput>, OrderUncheckedUpdateWithoutPaymentAttemptsInput>
+  }
+
+  export type BankDepositSubmissionUpdateManyWithoutPaymentAttemptNestedInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutPaymentAttemptInput, BankDepositSubmissionUncheckedCreateWithoutPaymentAttemptInput> | BankDepositSubmissionCreateWithoutPaymentAttemptInput[] | BankDepositSubmissionUncheckedCreateWithoutPaymentAttemptInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutPaymentAttemptInput | BankDepositSubmissionCreateOrConnectWithoutPaymentAttemptInput[]
+    upsert?: BankDepositSubmissionUpsertWithWhereUniqueWithoutPaymentAttemptInput | BankDepositSubmissionUpsertWithWhereUniqueWithoutPaymentAttemptInput[]
+    createMany?: BankDepositSubmissionCreateManyPaymentAttemptInputEnvelope
+    set?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    disconnect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    delete?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    update?: BankDepositSubmissionUpdateWithWhereUniqueWithoutPaymentAttemptInput | BankDepositSubmissionUpdateWithWhereUniqueWithoutPaymentAttemptInput[]
+    updateMany?: BankDepositSubmissionUpdateManyWithWhereWithoutPaymentAttemptInput | BankDepositSubmissionUpdateManyWithWhereWithoutPaymentAttemptInput[]
+    deleteMany?: BankDepositSubmissionScalarWhereInput | BankDepositSubmissionScalarWhereInput[]
+  }
+
+  export type BankDepositSubmissionUncheckedUpdateManyWithoutPaymentAttemptNestedInput = {
+    create?: XOR<BankDepositSubmissionCreateWithoutPaymentAttemptInput, BankDepositSubmissionUncheckedCreateWithoutPaymentAttemptInput> | BankDepositSubmissionCreateWithoutPaymentAttemptInput[] | BankDepositSubmissionUncheckedCreateWithoutPaymentAttemptInput[]
+    connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutPaymentAttemptInput | BankDepositSubmissionCreateOrConnectWithoutPaymentAttemptInput[]
+    upsert?: BankDepositSubmissionUpsertWithWhereUniqueWithoutPaymentAttemptInput | BankDepositSubmissionUpsertWithWhereUniqueWithoutPaymentAttemptInput[]
+    createMany?: BankDepositSubmissionCreateManyPaymentAttemptInputEnvelope
+    set?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    disconnect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    delete?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+    update?: BankDepositSubmissionUpdateWithWhereUniqueWithoutPaymentAttemptInput | BankDepositSubmissionUpdateWithWhereUniqueWithoutPaymentAttemptInput[]
+    updateMany?: BankDepositSubmissionUpdateManyWithWhereWithoutPaymentAttemptInput | BankDepositSubmissionUpdateManyWithWhereWithoutPaymentAttemptInput[]
+    deleteMany?: BankDepositSubmissionScalarWhereInput | BankDepositSubmissionScalarWhereInput[]
+  }
+
+  export type OrderCreateNestedOneWithoutBankDepositSubmissionsInput = {
+    create?: XOR<OrderCreateWithoutBankDepositSubmissionsInput, OrderUncheckedCreateWithoutBankDepositSubmissionsInput>
+    connectOrCreate?: OrderCreateOrConnectWithoutBankDepositSubmissionsInput
+    connect?: OrderWhereUniqueInput
+  }
+
+  export type PaymentAttemptCreateNestedOneWithoutBankDepositSubmissionsInput = {
+    create?: XOR<PaymentAttemptCreateWithoutBankDepositSubmissionsInput, PaymentAttemptUncheckedCreateWithoutBankDepositSubmissionsInput>
+    connectOrCreate?: PaymentAttemptCreateOrConnectWithoutBankDepositSubmissionsInput
+    connect?: PaymentAttemptWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutReviewedBankDepositsInput = {
+    create?: XOR<UserCreateWithoutReviewedBankDepositsInput, UserUncheckedCreateWithoutReviewedBankDepositsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReviewedBankDepositsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumBankDepositStatusFieldUpdateOperationsInput = {
+    set?: $Enums.BankDepositStatus
+  }
+
+  export type OrderUpdateOneRequiredWithoutBankDepositSubmissionsNestedInput = {
+    create?: XOR<OrderCreateWithoutBankDepositSubmissionsInput, OrderUncheckedCreateWithoutBankDepositSubmissionsInput>
+    connectOrCreate?: OrderCreateOrConnectWithoutBankDepositSubmissionsInput
+    upsert?: OrderUpsertWithoutBankDepositSubmissionsInput
+    connect?: OrderWhereUniqueInput
+    update?: XOR<XOR<OrderUpdateToOneWithWhereWithoutBankDepositSubmissionsInput, OrderUpdateWithoutBankDepositSubmissionsInput>, OrderUncheckedUpdateWithoutBankDepositSubmissionsInput>
+  }
+
+  export type PaymentAttemptUpdateOneWithoutBankDepositSubmissionsNestedInput = {
+    create?: XOR<PaymentAttemptCreateWithoutBankDepositSubmissionsInput, PaymentAttemptUncheckedCreateWithoutBankDepositSubmissionsInput>
+    connectOrCreate?: PaymentAttemptCreateOrConnectWithoutBankDepositSubmissionsInput
+    upsert?: PaymentAttemptUpsertWithoutBankDepositSubmissionsInput
+    disconnect?: PaymentAttemptWhereInput | boolean
+    delete?: PaymentAttemptWhereInput | boolean
+    connect?: PaymentAttemptWhereUniqueInput
+    update?: XOR<XOR<PaymentAttemptUpdateToOneWithWhereWithoutBankDepositSubmissionsInput, PaymentAttemptUpdateWithoutBankDepositSubmissionsInput>, PaymentAttemptUncheckedUpdateWithoutBankDepositSubmissionsInput>
+  }
+
+  export type UserUpdateOneWithoutReviewedBankDepositsNestedInput = {
+    create?: XOR<UserCreateWithoutReviewedBankDepositsInput, UserUncheckedCreateWithoutReviewedBankDepositsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReviewedBankDepositsInput
+    upsert?: UserUpsertWithoutReviewedBankDepositsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReviewedBankDepositsInput, UserUpdateWithoutReviewedBankDepositsInput>, UserUncheckedUpdateWithoutReviewedBankDepositsInput>
   }
 
   export type PromotionCodeCreateNestedManyWithoutPromotionInput = {
@@ -87141,115 +86248,6 @@ export namespace Prisma {
     delete?: OrderWhereInput | boolean
     connect?: OrderWhereUniqueInput
     update?: XOR<XOR<OrderUpdateToOneWithWhereWithoutPromotionRedemptionsInput, OrderUpdateWithoutPromotionRedemptionsInput>, OrderUncheckedUpdateWithoutPromotionRedemptionsInput>
-  }
-
-  export type UserCreateNestedOneWithoutDocumentsInput = {
-    create?: XOR<UserCreateWithoutDocumentsInput, UserUncheckedCreateWithoutDocumentsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutDocumentsInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type ExtractedStationeryItemCreateNestedManyWithoutDocumentInput = {
-    create?: XOR<ExtractedStationeryItemCreateWithoutDocumentInput, ExtractedStationeryItemUncheckedCreateWithoutDocumentInput> | ExtractedStationeryItemCreateWithoutDocumentInput[] | ExtractedStationeryItemUncheckedCreateWithoutDocumentInput[]
-    connectOrCreate?: ExtractedStationeryItemCreateOrConnectWithoutDocumentInput | ExtractedStationeryItemCreateOrConnectWithoutDocumentInput[]
-    createMany?: ExtractedStationeryItemCreateManyDocumentInputEnvelope
-    connect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-  }
-
-  export type ExtractedStationeryItemUncheckedCreateNestedManyWithoutDocumentInput = {
-    create?: XOR<ExtractedStationeryItemCreateWithoutDocumentInput, ExtractedStationeryItemUncheckedCreateWithoutDocumentInput> | ExtractedStationeryItemCreateWithoutDocumentInput[] | ExtractedStationeryItemUncheckedCreateWithoutDocumentInput[]
-    connectOrCreate?: ExtractedStationeryItemCreateOrConnectWithoutDocumentInput | ExtractedStationeryItemCreateOrConnectWithoutDocumentInput[]
-    createMany?: ExtractedStationeryItemCreateManyDocumentInputEnvelope
-    connect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-  }
-
-  export type EnumDocumentStatusFieldUpdateOperationsInput = {
-    set?: $Enums.DocumentStatus
-  }
-
-  export type UserUpdateOneWithoutDocumentsNestedInput = {
-    create?: XOR<UserCreateWithoutDocumentsInput, UserUncheckedCreateWithoutDocumentsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutDocumentsInput
-    upsert?: UserUpsertWithoutDocumentsInput
-    disconnect?: UserWhereInput | boolean
-    delete?: UserWhereInput | boolean
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDocumentsInput, UserUpdateWithoutDocumentsInput>, UserUncheckedUpdateWithoutDocumentsInput>
-  }
-
-  export type ExtractedStationeryItemUpdateManyWithoutDocumentNestedInput = {
-    create?: XOR<ExtractedStationeryItemCreateWithoutDocumentInput, ExtractedStationeryItemUncheckedCreateWithoutDocumentInput> | ExtractedStationeryItemCreateWithoutDocumentInput[] | ExtractedStationeryItemUncheckedCreateWithoutDocumentInput[]
-    connectOrCreate?: ExtractedStationeryItemCreateOrConnectWithoutDocumentInput | ExtractedStationeryItemCreateOrConnectWithoutDocumentInput[]
-    upsert?: ExtractedStationeryItemUpsertWithWhereUniqueWithoutDocumentInput | ExtractedStationeryItemUpsertWithWhereUniqueWithoutDocumentInput[]
-    createMany?: ExtractedStationeryItemCreateManyDocumentInputEnvelope
-    set?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    disconnect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    delete?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    connect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    update?: ExtractedStationeryItemUpdateWithWhereUniqueWithoutDocumentInput | ExtractedStationeryItemUpdateWithWhereUniqueWithoutDocumentInput[]
-    updateMany?: ExtractedStationeryItemUpdateManyWithWhereWithoutDocumentInput | ExtractedStationeryItemUpdateManyWithWhereWithoutDocumentInput[]
-    deleteMany?: ExtractedStationeryItemScalarWhereInput | ExtractedStationeryItemScalarWhereInput[]
-  }
-
-  export type ExtractedStationeryItemUncheckedUpdateManyWithoutDocumentNestedInput = {
-    create?: XOR<ExtractedStationeryItemCreateWithoutDocumentInput, ExtractedStationeryItemUncheckedCreateWithoutDocumentInput> | ExtractedStationeryItemCreateWithoutDocumentInput[] | ExtractedStationeryItemUncheckedCreateWithoutDocumentInput[]
-    connectOrCreate?: ExtractedStationeryItemCreateOrConnectWithoutDocumentInput | ExtractedStationeryItemCreateOrConnectWithoutDocumentInput[]
-    upsert?: ExtractedStationeryItemUpsertWithWhereUniqueWithoutDocumentInput | ExtractedStationeryItemUpsertWithWhereUniqueWithoutDocumentInput[]
-    createMany?: ExtractedStationeryItemCreateManyDocumentInputEnvelope
-    set?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    disconnect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    delete?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    connect?: ExtractedStationeryItemWhereUniqueInput | ExtractedStationeryItemWhereUniqueInput[]
-    update?: ExtractedStationeryItemUpdateWithWhereUniqueWithoutDocumentInput | ExtractedStationeryItemUpdateWithWhereUniqueWithoutDocumentInput[]
-    updateMany?: ExtractedStationeryItemUpdateManyWithWhereWithoutDocumentInput | ExtractedStationeryItemUpdateManyWithWhereWithoutDocumentInput[]
-    deleteMany?: ExtractedStationeryItemScalarWhereInput | ExtractedStationeryItemScalarWhereInput[]
-  }
-
-  export type ExtractedStationeryItemCreatecandidateProductIdsInput = {
-    set: string[]
-  }
-
-  export type UploadedDocumentCreateNestedOneWithoutExtractedItemsInput = {
-    create?: XOR<UploadedDocumentCreateWithoutExtractedItemsInput, UploadedDocumentUncheckedCreateWithoutExtractedItemsInput>
-    connectOrCreate?: UploadedDocumentCreateOrConnectWithoutExtractedItemsInput
-    connect?: UploadedDocumentWhereUniqueInput
-  }
-
-  export type ProductCreateNestedOneWithoutMatchedUploadItemsInput = {
-    create?: XOR<ProductCreateWithoutMatchedUploadItemsInput, ProductUncheckedCreateWithoutMatchedUploadItemsInput>
-    connectOrCreate?: ProductCreateOrConnectWithoutMatchedUploadItemsInput
-    connect?: ProductWhereUniqueInput
-  }
-
-  export type EnumItemConfidenceFieldUpdateOperationsInput = {
-    set?: $Enums.ItemConfidence
-  }
-
-  export type ExtractedStationeryItemUpdatecandidateProductIdsInput = {
-    set?: string[]
-    push?: string | string[]
-  }
-
-  export type EnumMatchStatusFieldUpdateOperationsInput = {
-    set?: $Enums.MatchStatus
-  }
-
-  export type UploadedDocumentUpdateOneRequiredWithoutExtractedItemsNestedInput = {
-    create?: XOR<UploadedDocumentCreateWithoutExtractedItemsInput, UploadedDocumentUncheckedCreateWithoutExtractedItemsInput>
-    connectOrCreate?: UploadedDocumentCreateOrConnectWithoutExtractedItemsInput
-    upsert?: UploadedDocumentUpsertWithoutExtractedItemsInput
-    connect?: UploadedDocumentWhereUniqueInput
-    update?: XOR<XOR<UploadedDocumentUpdateToOneWithWhereWithoutExtractedItemsInput, UploadedDocumentUpdateWithoutExtractedItemsInput>, UploadedDocumentUncheckedUpdateWithoutExtractedItemsInput>
-  }
-
-  export type ProductUpdateOneWithoutMatchedUploadItemsNestedInput = {
-    create?: XOR<ProductCreateWithoutMatchedUploadItemsInput, ProductUncheckedCreateWithoutMatchedUploadItemsInput>
-    connectOrCreate?: ProductCreateOrConnectWithoutMatchedUploadItemsInput
-    upsert?: ProductUpsertWithoutMatchedUploadItemsInput
-    disconnect?: ProductWhereInput | boolean
-    delete?: ProductWhereInput | boolean
-    connect?: ProductWhereUniqueInput
-    update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutMatchedUploadItemsInput, ProductUpdateWithoutMatchedUploadItemsInput>, ProductUncheckedUpdateWithoutMatchedUploadItemsInput>
   }
 
   export type UserCreateNestedOneWithoutWishlistInput = {
@@ -88482,6 +87480,46 @@ export namespace Prisma {
     _max?: NestedEnumReturnItemStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumRefundStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RefundStatus | EnumRefundStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRefundStatusFilter<$PrismaModel> | $Enums.RefundStatus
+  }
+
+  export type NestedEnumRefundStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RefundStatus | EnumRefundStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRefundStatusWithAggregatesFilter<$PrismaModel> | $Enums.RefundStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRefundStatusFilter<$PrismaModel>
+    _max?: NestedEnumRefundStatusFilter<$PrismaModel>
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
   export type NestedEnumReservationStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.ReservationStatus | EnumReservationStatusFieldRefInput<$PrismaModel>
     in?: $Enums.ReservationStatus[] | ListEnumReservationStatusFieldRefInput<$PrismaModel>
@@ -88515,28 +87553,22 @@ export namespace Prisma {
     _min?: NestedEnumPaymentAttemptStatusFilter<$PrismaModel>
     _max?: NestedEnumPaymentAttemptStatusFilter<$PrismaModel>
   }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
 
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  export type NestedEnumBankDepositStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.BankDepositStatus | EnumBankDepositStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.BankDepositStatus[] | ListEnumBankDepositStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BankDepositStatus[] | ListEnumBankDepositStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumBankDepositStatusFilter<$PrismaModel> | $Enums.BankDepositStatus
+  }
+
+  export type NestedEnumBankDepositStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BankDepositStatus | EnumBankDepositStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.BankDepositStatus[] | ListEnumBankDepositStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BankDepositStatus[] | ListEnumBankDepositStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumBankDepositStatusWithAggregatesFilter<$PrismaModel> | $Enums.BankDepositStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBankDepositStatusFilter<$PrismaModel>
+    _max?: NestedEnumBankDepositStatusFilter<$PrismaModel>
   }
 
   export type NestedEnumPromotionTypeFilter<$PrismaModel = never> = {
@@ -88588,57 +87620,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPromotionStatusFilter<$PrismaModel>
     _max?: NestedEnumPromotionStatusFilter<$PrismaModel>
-  }
-
-  export type NestedEnumDocumentStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.DocumentStatus | EnumDocumentStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.DocumentStatus[] | ListEnumDocumentStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.DocumentStatus[] | ListEnumDocumentStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumDocumentStatusFilter<$PrismaModel> | $Enums.DocumentStatus
-  }
-
-  export type NestedEnumDocumentStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.DocumentStatus | EnumDocumentStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.DocumentStatus[] | ListEnumDocumentStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.DocumentStatus[] | ListEnumDocumentStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumDocumentStatusWithAggregatesFilter<$PrismaModel> | $Enums.DocumentStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumDocumentStatusFilter<$PrismaModel>
-    _max?: NestedEnumDocumentStatusFilter<$PrismaModel>
-  }
-
-  export type NestedEnumItemConfidenceFilter<$PrismaModel = never> = {
-    equals?: $Enums.ItemConfidence | EnumItemConfidenceFieldRefInput<$PrismaModel>
-    in?: $Enums.ItemConfidence[] | ListEnumItemConfidenceFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ItemConfidence[] | ListEnumItemConfidenceFieldRefInput<$PrismaModel>
-    not?: NestedEnumItemConfidenceFilter<$PrismaModel> | $Enums.ItemConfidence
-  }
-
-  export type NestedEnumMatchStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.MatchStatus | EnumMatchStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.MatchStatus[] | ListEnumMatchStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MatchStatus[] | ListEnumMatchStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumMatchStatusFilter<$PrismaModel> | $Enums.MatchStatus
-  }
-
-  export type NestedEnumItemConfidenceWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ItemConfidence | EnumItemConfidenceFieldRefInput<$PrismaModel>
-    in?: $Enums.ItemConfidence[] | ListEnumItemConfidenceFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ItemConfidence[] | ListEnumItemConfidenceFieldRefInput<$PrismaModel>
-    not?: NestedEnumItemConfidenceWithAggregatesFilter<$PrismaModel> | $Enums.ItemConfidence
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumItemConfidenceFilter<$PrismaModel>
-    _max?: NestedEnumItemConfidenceFilter<$PrismaModel>
-  }
-
-  export type NestedEnumMatchStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.MatchStatus | EnumMatchStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.MatchStatus[] | ListEnumMatchStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MatchStatus[] | ListEnumMatchStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumMatchStatusWithAggregatesFilter<$PrismaModel> | $Enums.MatchStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumMatchStatusFilter<$PrismaModel>
-    _max?: NestedEnumMatchStatusFilter<$PrismaModel>
   }
 
   export type NestedEnumBannerStatusFilter<$PrismaModel = never> = {
@@ -88881,6 +87862,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutUserInput = {
@@ -88916,6 +87898,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutUserInput = {
@@ -89001,60 +87984,6 @@ export namespace Prisma {
 
   export type SavedStationeryListCreateManyUserInputEnvelope = {
     data: SavedStationeryListCreateManyUserInput | SavedStationeryListCreateManyUserInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type UploadedDocumentCreateWithoutUserInput = {
-    id?: string
-    sessionId?: string | null
-    fileName: string
-    fileUrl: string
-    storagePath?: string | null
-    fileSizeBytes: number
-    fileType: string
-    pageCount?: number
-    status?: $Enums.DocumentStatus
-    isSimulatedOCR?: boolean
-    ocrProvider?: string | null
-    customerNotes?: string | null
-    processingError?: string | null
-    attempts?: number
-    processedAt?: Date | string | null
-    confirmedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    extractedItems?: ExtractedStationeryItemCreateNestedManyWithoutDocumentInput
-  }
-
-  export type UploadedDocumentUncheckedCreateWithoutUserInput = {
-    id?: string
-    sessionId?: string | null
-    fileName: string
-    fileUrl: string
-    storagePath?: string | null
-    fileSizeBytes: number
-    fileType: string
-    pageCount?: number
-    status?: $Enums.DocumentStatus
-    isSimulatedOCR?: boolean
-    ocrProvider?: string | null
-    customerNotes?: string | null
-    processingError?: string | null
-    attempts?: number
-    processedAt?: Date | string | null
-    confirmedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    extractedItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutDocumentInput
-  }
-
-  export type UploadedDocumentCreateOrConnectWithoutUserInput = {
-    where: UploadedDocumentWhereUniqueInput
-    create: XOR<UploadedDocumentCreateWithoutUserInput, UploadedDocumentUncheckedCreateWithoutUserInput>
-  }
-
-  export type UploadedDocumentCreateManyUserInputEnvelope = {
-    data: UploadedDocumentCreateManyUserInput | UploadedDocumentCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -89221,6 +88150,7 @@ export namespace Prisma {
     imageAltText: string
     buttonText?: string | null
     buttonLink?: string | null
+    placement?: string | null
     sortOrder?: number
     status?: $Enums.BannerStatus
     startAt?: Date | string | null
@@ -89240,6 +88170,7 @@ export namespace Prisma {
     imageAltText: string
     buttonText?: string | null
     buttonLink?: string | null
+    placement?: string | null
     sortOrder?: number
     status?: $Enums.BannerStatus
     startAt?: Date | string | null
@@ -89269,6 +88200,7 @@ export namespace Prisma {
     imageAltText: string
     buttonText?: string | null
     buttonLink?: string | null
+    placement?: string | null
     sortOrder?: number
     status?: $Enums.BannerStatus
     startAt?: Date | string | null
@@ -89288,6 +88220,7 @@ export namespace Prisma {
     imageAltText: string
     buttonText?: string | null
     buttonLink?: string | null
+    placement?: string | null
     sortOrder?: number
     status?: $Enums.BannerStatus
     startAt?: Date | string | null
@@ -89460,6 +88393,56 @@ export namespace Prisma {
 
   export type ProductImportBatchCreateManyAdminInputEnvelope = {
     data: ProductImportBatchCreateManyAdminInput | ProductImportBatchCreateManyAdminInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type BankDepositSubmissionCreateWithoutReviewedByInput = {
+    id?: string
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order: OrderCreateNestedOneWithoutBankDepositSubmissionsInput
+    paymentAttempt?: PaymentAttemptCreateNestedOneWithoutBankDepositSubmissionsInput
+  }
+
+  export type BankDepositSubmissionUncheckedCreateWithoutReviewedByInput = {
+    id?: string
+    orderId: string
+    paymentAttemptId?: string | null
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BankDepositSubmissionCreateOrConnectWithoutReviewedByInput = {
+    where: BankDepositSubmissionWhereUniqueInput
+    create: XOR<BankDepositSubmissionCreateWithoutReviewedByInput, BankDepositSubmissionUncheckedCreateWithoutReviewedByInput>
+  }
+
+  export type BankDepositSubmissionCreateManyReviewedByInputEnvelope = {
+    data: BankDepositSubmissionCreateManyReviewedByInput | BankDepositSubmissionCreateManyReviewedByInput[]
     skipDuplicates?: boolean
   }
 
@@ -89663,47 +88646,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"SavedStationeryList"> | Date | string
   }
 
-  export type UploadedDocumentUpsertWithWhereUniqueWithoutUserInput = {
-    where: UploadedDocumentWhereUniqueInput
-    update: XOR<UploadedDocumentUpdateWithoutUserInput, UploadedDocumentUncheckedUpdateWithoutUserInput>
-    create: XOR<UploadedDocumentCreateWithoutUserInput, UploadedDocumentUncheckedCreateWithoutUserInput>
-  }
-
-  export type UploadedDocumentUpdateWithWhereUniqueWithoutUserInput = {
-    where: UploadedDocumentWhereUniqueInput
-    data: XOR<UploadedDocumentUpdateWithoutUserInput, UploadedDocumentUncheckedUpdateWithoutUserInput>
-  }
-
-  export type UploadedDocumentUpdateManyWithWhereWithoutUserInput = {
-    where: UploadedDocumentScalarWhereInput
-    data: XOR<UploadedDocumentUpdateManyMutationInput, UploadedDocumentUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type UploadedDocumentScalarWhereInput = {
-    AND?: UploadedDocumentScalarWhereInput | UploadedDocumentScalarWhereInput[]
-    OR?: UploadedDocumentScalarWhereInput[]
-    NOT?: UploadedDocumentScalarWhereInput | UploadedDocumentScalarWhereInput[]
-    id?: StringFilter<"UploadedDocument"> | string
-    userId?: StringNullableFilter<"UploadedDocument"> | string | null
-    sessionId?: StringNullableFilter<"UploadedDocument"> | string | null
-    fileName?: StringFilter<"UploadedDocument"> | string
-    fileUrl?: StringFilter<"UploadedDocument"> | string
-    storagePath?: StringNullableFilter<"UploadedDocument"> | string | null
-    fileSizeBytes?: IntFilter<"UploadedDocument"> | number
-    fileType?: StringFilter<"UploadedDocument"> | string
-    pageCount?: IntFilter<"UploadedDocument"> | number
-    status?: EnumDocumentStatusFilter<"UploadedDocument"> | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFilter<"UploadedDocument"> | boolean
-    ocrProvider?: StringNullableFilter<"UploadedDocument"> | string | null
-    customerNotes?: StringNullableFilter<"UploadedDocument"> | string | null
-    processingError?: StringNullableFilter<"UploadedDocument"> | string | null
-    attempts?: IntFilter<"UploadedDocument"> | number
-    processedAt?: DateTimeNullableFilter<"UploadedDocument"> | Date | string | null
-    confirmedAt?: DateTimeNullableFilter<"UploadedDocument"> | Date | string | null
-    createdAt?: DateTimeFilter<"UploadedDocument"> | Date | string
-    updatedAt?: DateTimeFilter<"UploadedDocument"> | Date | string
-  }
-
   export type AuditLogUpsertWithWhereUniqueWithoutUserInput = {
     where: AuditLogWhereUniqueInput
     update: XOR<AuditLogUpdateWithoutUserInput, AuditLogUncheckedUpdateWithoutUserInput>
@@ -89884,6 +88826,7 @@ export namespace Prisma {
     imageAltText?: StringFilter<"HomepageBanner"> | string
     buttonText?: StringNullableFilter<"HomepageBanner"> | string | null
     buttonLink?: StringNullableFilter<"HomepageBanner"> | string | null
+    placement?: StringNullableFilter<"HomepageBanner"> | string | null
     sortOrder?: IntFilter<"HomepageBanner"> | number
     status?: EnumBannerStatusFilter<"HomepageBanner"> | $Enums.BannerStatus
     startAt?: DateTimeNullableFilter<"HomepageBanner"> | Date | string | null
@@ -90046,6 +88989,46 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"ProductImportBatch"> | Date | string
   }
 
+  export type BankDepositSubmissionUpsertWithWhereUniqueWithoutReviewedByInput = {
+    where: BankDepositSubmissionWhereUniqueInput
+    update: XOR<BankDepositSubmissionUpdateWithoutReviewedByInput, BankDepositSubmissionUncheckedUpdateWithoutReviewedByInput>
+    create: XOR<BankDepositSubmissionCreateWithoutReviewedByInput, BankDepositSubmissionUncheckedCreateWithoutReviewedByInput>
+  }
+
+  export type BankDepositSubmissionUpdateWithWhereUniqueWithoutReviewedByInput = {
+    where: BankDepositSubmissionWhereUniqueInput
+    data: XOR<BankDepositSubmissionUpdateWithoutReviewedByInput, BankDepositSubmissionUncheckedUpdateWithoutReviewedByInput>
+  }
+
+  export type BankDepositSubmissionUpdateManyWithWhereWithoutReviewedByInput = {
+    where: BankDepositSubmissionScalarWhereInput
+    data: XOR<BankDepositSubmissionUpdateManyMutationInput, BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByInput>
+  }
+
+  export type BankDepositSubmissionScalarWhereInput = {
+    AND?: BankDepositSubmissionScalarWhereInput | BankDepositSubmissionScalarWhereInput[]
+    OR?: BankDepositSubmissionScalarWhereInput[]
+    NOT?: BankDepositSubmissionScalarWhereInput | BankDepositSubmissionScalarWhereInput[]
+    id?: StringFilter<"BankDepositSubmission"> | string
+    orderId?: StringFilter<"BankDepositSubmission"> | string
+    paymentAttemptId?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    receiptStorageKey?: StringFilter<"BankDepositSubmission"> | string
+    originalFilename?: StringFilter<"BankDepositSubmission"> | string
+    fileSizeBytes?: IntFilter<"BankDepositSubmission"> | number
+    mimeType?: StringFilter<"BankDepositSubmission"> | string
+    fileHashSha256?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    referenceNumber?: StringFilter<"BankDepositSubmission"> | string
+    depositDate?: DateTimeFilter<"BankDepositSubmission"> | Date | string
+    amountCents?: IntFilter<"BankDepositSubmission"> | number
+    customerNotes?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    status?: EnumBankDepositStatusFilter<"BankDepositSubmission"> | $Enums.BankDepositStatus
+    rejectionReason?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    reviewedById?: StringNullableFilter<"BankDepositSubmission"> | string | null
+    reviewedAt?: DateTimeNullableFilter<"BankDepositSubmission"> | Date | string | null
+    createdAt?: DateTimeFilter<"BankDepositSubmission"> | Date | string
+    updatedAt?: DateTimeFilter<"BankDepositSubmission"> | Date | string
+  }
+
   export type UserCreateWithoutAddressesInput = {
     id?: string
     email: string
@@ -90070,7 +89053,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -90082,6 +89064,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutAddressesInput = {
@@ -90108,7 +89091,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -90120,6 +89102,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutAddressesInput = {
@@ -90162,7 +89145,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -90174,6 +89156,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAddressesInput = {
@@ -90200,7 +89183,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -90212,6 +89194,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserCreateWithoutRefreshTokensInput = {
@@ -90239,7 +89222,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
     reservations?: StockReservationCreateNestedManyWithoutUserInput
@@ -90250,6 +89232,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -90277,7 +89260,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
     reservations?: StockReservationUncheckedCreateNestedManyWithoutUserInput
@@ -90288,6 +89270,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -90331,7 +89314,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
     reservations?: StockReservationUpdateManyWithoutUserNestedInput
@@ -90342,6 +89324,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -90369,7 +89352,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
     reservations?: StockReservationUncheckedUpdateManyWithoutUserNestedInput
@@ -90380,6 +89362,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type CategoryCreateWithoutChildrenInput = {
@@ -90496,7 +89479,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -90536,7 +89518,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -90586,7 +89567,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -90626,7 +89606,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -90866,7 +89845,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -90906,7 +89884,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -91210,62 +90187,6 @@ export namespace Prisma {
 
   export type SchoolPackItemCreateManyProductInputEnvelope = {
     data: SchoolPackItemCreateManyProductInput | SchoolPackItemCreateManyProductInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type ExtractedStationeryItemCreateWithoutMatchedProductInput = {
-    id?: string
-    rawText: string
-    itemDescription: string
-    quantity?: number
-    unit?: string | null
-    confidence?: $Enums.ItemConfidence
-    confidenceScore?: number
-    extractionConfidence?: number
-    matchConfidence?: number
-    matchReason?: string | null
-    matchedVariantId?: string | null
-    candidateProductIds?: ExtractedStationeryItemCreatecandidateProductIdsInput | string[]
-    status?: $Enums.MatchStatus
-    isConfirmed?: boolean
-    confirmedProductId?: string | null
-    confirmedVariantId?: string | null
-    confirmedQuantity?: number | null
-    isSubstituted?: boolean
-    createdAt?: Date | string
-    document: UploadedDocumentCreateNestedOneWithoutExtractedItemsInput
-  }
-
-  export type ExtractedStationeryItemUncheckedCreateWithoutMatchedProductInput = {
-    id?: string
-    documentId: string
-    rawText: string
-    itemDescription: string
-    quantity?: number
-    unit?: string | null
-    confidence?: $Enums.ItemConfidence
-    confidenceScore?: number
-    extractionConfidence?: number
-    matchConfidence?: number
-    matchReason?: string | null
-    matchedVariantId?: string | null
-    candidateProductIds?: ExtractedStationeryItemCreatecandidateProductIdsInput | string[]
-    status?: $Enums.MatchStatus
-    isConfirmed?: boolean
-    confirmedProductId?: string | null
-    confirmedVariantId?: string | null
-    confirmedQuantity?: number | null
-    isSubstituted?: boolean
-    createdAt?: Date | string
-  }
-
-  export type ExtractedStationeryItemCreateOrConnectWithoutMatchedProductInput = {
-    where: ExtractedStationeryItemWhereUniqueInput
-    create: XOR<ExtractedStationeryItemCreateWithoutMatchedProductInput, ExtractedStationeryItemUncheckedCreateWithoutMatchedProductInput>
-  }
-
-  export type ExtractedStationeryItemCreateManyMatchedProductInputEnvelope = {
-    data: ExtractedStationeryItemCreateManyMatchedProductInput | ExtractedStationeryItemCreateManyMatchedProductInput[]
     skipDuplicates?: boolean
   }
 
@@ -91714,49 +90635,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"SchoolPackItem"> | Date | string
   }
 
-  export type ExtractedStationeryItemUpsertWithWhereUniqueWithoutMatchedProductInput = {
-    where: ExtractedStationeryItemWhereUniqueInput
-    update: XOR<ExtractedStationeryItemUpdateWithoutMatchedProductInput, ExtractedStationeryItemUncheckedUpdateWithoutMatchedProductInput>
-    create: XOR<ExtractedStationeryItemCreateWithoutMatchedProductInput, ExtractedStationeryItemUncheckedCreateWithoutMatchedProductInput>
-  }
-
-  export type ExtractedStationeryItemUpdateWithWhereUniqueWithoutMatchedProductInput = {
-    where: ExtractedStationeryItemWhereUniqueInput
-    data: XOR<ExtractedStationeryItemUpdateWithoutMatchedProductInput, ExtractedStationeryItemUncheckedUpdateWithoutMatchedProductInput>
-  }
-
-  export type ExtractedStationeryItemUpdateManyWithWhereWithoutMatchedProductInput = {
-    where: ExtractedStationeryItemScalarWhereInput
-    data: XOR<ExtractedStationeryItemUpdateManyMutationInput, ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductInput>
-  }
-
-  export type ExtractedStationeryItemScalarWhereInput = {
-    AND?: ExtractedStationeryItemScalarWhereInput | ExtractedStationeryItemScalarWhereInput[]
-    OR?: ExtractedStationeryItemScalarWhereInput[]
-    NOT?: ExtractedStationeryItemScalarWhereInput | ExtractedStationeryItemScalarWhereInput[]
-    id?: StringFilter<"ExtractedStationeryItem"> | string
-    documentId?: StringFilter<"ExtractedStationeryItem"> | string
-    rawText?: StringFilter<"ExtractedStationeryItem"> | string
-    itemDescription?: StringFilter<"ExtractedStationeryItem"> | string
-    quantity?: IntFilter<"ExtractedStationeryItem"> | number
-    unit?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    confidence?: EnumItemConfidenceFilter<"ExtractedStationeryItem"> | $Enums.ItemConfidence
-    confidenceScore?: FloatFilter<"ExtractedStationeryItem"> | number
-    extractionConfidence?: FloatFilter<"ExtractedStationeryItem"> | number
-    matchConfidence?: FloatFilter<"ExtractedStationeryItem"> | number
-    matchReason?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    matchedProductId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    matchedVariantId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    candidateProductIds?: StringNullableListFilter<"ExtractedStationeryItem">
-    status?: EnumMatchStatusFilter<"ExtractedStationeryItem"> | $Enums.MatchStatus
-    isConfirmed?: BoolFilter<"ExtractedStationeryItem"> | boolean
-    confirmedProductId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    confirmedVariantId?: StringNullableFilter<"ExtractedStationeryItem"> | string | null
-    confirmedQuantity?: IntNullableFilter<"ExtractedStationeryItem"> | number | null
-    isSubstituted?: BoolFilter<"ExtractedStationeryItem"> | boolean
-    createdAt?: DateTimeFilter<"ExtractedStationeryItem"> | Date | string
-  }
-
   export type WishlistItemUpsertWithWhereUniqueWithoutProductInput = {
     where: WishlistItemWhereUniqueInput
     update: XOR<WishlistItemUpdateWithoutProductInput, WishlistItemUncheckedUpdateWithoutProductInput>
@@ -91932,7 +90810,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -91972,7 +90849,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -92175,7 +91051,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -92215,7 +91090,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -92344,7 +91218,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuCreateNestedOneWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -92384,7 +91257,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuUncheckedCreateNestedOneWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -92481,7 +91353,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuUpdateOneWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -92521,7 +91392,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuUncheckedUpdateOneWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -92685,7 +91555,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuCreateNestedOneWithoutProductInput
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -92725,7 +91594,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuUncheckedCreateNestedOneWithoutProductInput
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -92820,7 +91688,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuUpdateOneWithoutProductNestedInput
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -92860,7 +91727,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuUncheckedUpdateOneWithoutProductNestedInput
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -92893,7 +91759,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -92905,6 +91770,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutOrdersInput = {
@@ -92931,7 +91797,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -92943,6 +91808,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutOrdersInput = {
@@ -93174,6 +92040,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     reservation: StockReservationCreateNestedOneWithoutPaymentAttemptsInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutPaymentAttemptInput
   }
 
   export type PaymentAttemptUncheckedCreateWithoutOrderInput = {
@@ -93189,6 +92056,7 @@ export namespace Prisma {
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutPaymentAttemptInput
   }
 
   export type PaymentAttemptCreateOrConnectWithoutOrderInput = {
@@ -93272,6 +92140,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     items?: OrderReturnItemCreateNestedManyWithoutReturnRequestInput
+    refundRecords?: RefundRecordCreateNestedManyWithoutOrderReturnRequestInput
   }
 
   export type OrderReturnRequestUncheckedCreateWithoutOrderInput = {
@@ -93283,6 +92152,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     items?: OrderReturnItemUncheckedCreateNestedManyWithoutReturnRequestInput
+    refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderReturnRequestInput
   }
 
   export type OrderReturnRequestCreateOrConnectWithoutOrderInput = {
@@ -93298,21 +92168,55 @@ export namespace Prisma {
   export type RefundRecordCreateWithoutOrderInput = {
     id?: string
     amountCents: number
+    currency?: string
     method: string
+    status?: $Enums.RefundStatus
     reference?: string | null
+    externalReference?: string | null
+    idempotencyKey?: string | null
+    payloadHash?: string | null
     reason: string
+    failureReason?: string | null
+    maskedAccountNumber?: string | null
+    encryptedBankDetails?: string | null
     processedBy?: string | null
+    processedById?: string | null
+    requestedById?: string | null
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    completedById?: string | null
+    completedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+    updatedAt?: Date | string
+    orderReturnRequest?: OrderReturnRequestCreateNestedOneWithoutRefundRecordsInput
   }
 
   export type RefundRecordUncheckedCreateWithoutOrderInput = {
     id?: string
     amountCents: number
+    currency?: string
     method: string
+    status?: $Enums.RefundStatus
     reference?: string | null
+    externalReference?: string | null
+    idempotencyKey?: string | null
+    payloadHash?: string | null
     reason: string
+    failureReason?: string | null
+    maskedAccountNumber?: string | null
+    encryptedBankDetails?: string | null
     processedBy?: string | null
+    processedById?: string | null
+    requestedById?: string | null
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    completedById?: string | null
+    completedAt?: Date | string | null
+    orderReturnRequestId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RefundRecordCreateOrConnectWithoutOrderInput = {
@@ -93322,6 +92226,56 @@ export namespace Prisma {
 
   export type RefundRecordCreateManyOrderInputEnvelope = {
     data: RefundRecordCreateManyOrderInput | RefundRecordCreateManyOrderInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type BankDepositSubmissionCreateWithoutOrderInput = {
+    id?: string
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    paymentAttempt?: PaymentAttemptCreateNestedOneWithoutBankDepositSubmissionsInput
+    reviewedBy?: UserCreateNestedOneWithoutReviewedBankDepositsInput
+  }
+
+  export type BankDepositSubmissionUncheckedCreateWithoutOrderInput = {
+    id?: string
+    paymentAttemptId?: string | null
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BankDepositSubmissionCreateOrConnectWithoutOrderInput = {
+    where: BankDepositSubmissionWhereUniqueInput
+    create: XOR<BankDepositSubmissionCreateWithoutOrderInput, BankDepositSubmissionUncheckedCreateWithoutOrderInput>
+  }
+
+  export type BankDepositSubmissionCreateManyOrderInputEnvelope = {
+    data: BankDepositSubmissionCreateManyOrderInput | BankDepositSubmissionCreateManyOrderInput[]
     skipDuplicates?: boolean
   }
 
@@ -93360,7 +92314,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -93372,6 +92325,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOrdersInput = {
@@ -93398,7 +92352,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -93410,6 +92363,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type PromotionUpsertWithoutOrdersInput = {
@@ -93754,11 +92708,44 @@ export namespace Prisma {
     id?: StringFilter<"RefundRecord"> | string
     orderId?: StringFilter<"RefundRecord"> | string
     amountCents?: IntFilter<"RefundRecord"> | number
+    currency?: StringFilter<"RefundRecord"> | string
     method?: StringFilter<"RefundRecord"> | string
+    status?: EnumRefundStatusFilter<"RefundRecord"> | $Enums.RefundStatus
     reference?: StringNullableFilter<"RefundRecord"> | string | null
+    externalReference?: StringNullableFilter<"RefundRecord"> | string | null
+    idempotencyKey?: StringNullableFilter<"RefundRecord"> | string | null
+    payloadHash?: StringNullableFilter<"RefundRecord"> | string | null
     reason?: StringFilter<"RefundRecord"> | string
+    failureReason?: StringNullableFilter<"RefundRecord"> | string | null
+    maskedAccountNumber?: StringNullableFilter<"RefundRecord"> | string | null
+    encryptedBankDetails?: StringNullableFilter<"RefundRecord"> | string | null
     processedBy?: StringNullableFilter<"RefundRecord"> | string | null
+    processedById?: StringNullableFilter<"RefundRecord"> | string | null
+    requestedById?: StringNullableFilter<"RefundRecord"> | string | null
+    approvedById?: StringNullableFilter<"RefundRecord"> | string | null
+    approvedAt?: DateTimeNullableFilter<"RefundRecord"> | Date | string | null
+    completedById?: StringNullableFilter<"RefundRecord"> | string | null
+    completedAt?: DateTimeNullableFilter<"RefundRecord"> | Date | string | null
+    orderReturnRequestId?: StringNullableFilter<"RefundRecord"> | string | null
+    metadata?: JsonNullableFilter<"RefundRecord">
     createdAt?: DateTimeFilter<"RefundRecord"> | Date | string
+    updatedAt?: DateTimeFilter<"RefundRecord"> | Date | string
+  }
+
+  export type BankDepositSubmissionUpsertWithWhereUniqueWithoutOrderInput = {
+    where: BankDepositSubmissionWhereUniqueInput
+    update: XOR<BankDepositSubmissionUpdateWithoutOrderInput, BankDepositSubmissionUncheckedUpdateWithoutOrderInput>
+    create: XOR<BankDepositSubmissionCreateWithoutOrderInput, BankDepositSubmissionUncheckedCreateWithoutOrderInput>
+  }
+
+  export type BankDepositSubmissionUpdateWithWhereUniqueWithoutOrderInput = {
+    where: BankDepositSubmissionWhereUniqueInput
+    data: XOR<BankDepositSubmissionUpdateWithoutOrderInput, BankDepositSubmissionUncheckedUpdateWithoutOrderInput>
+  }
+
+  export type BankDepositSubmissionUpdateManyWithWhereWithoutOrderInput = {
+    where: BankDepositSubmissionScalarWhereInput
+    data: XOR<BankDepositSubmissionUpdateManyMutationInput, BankDepositSubmissionUncheckedUpdateManyWithoutOrderInput>
   }
 
   export type OrderCreateWithoutAddressSnapshotInput = {
@@ -93794,6 +92781,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutAddressSnapshotInput = {
@@ -93829,6 +92817,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutAddressSnapshotInput = {
@@ -93880,6 +92869,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutAddressSnapshotInput = {
@@ -93915,6 +92905,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderCreateWithoutItemsInput = {
@@ -93950,6 +92941,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutItemsInput = {
@@ -93985,6 +92977,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutItemsInput = {
@@ -94023,7 +93016,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuCreateNestedOneWithoutProductInput
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -94063,7 +93055,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuUncheckedCreateNestedOneWithoutProductInput
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -94196,6 +93187,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutItemsInput = {
@@ -94231,6 +93223,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type ProductUpsertWithoutOrderItemsInput = {
@@ -94275,7 +93268,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuUpdateOneWithoutProductNestedInput
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -94315,7 +93307,6 @@ export namespace Prisma {
     globalSku?: GlobalSkuUncheckedUpdateOneWithoutProductNestedInput
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -94436,6 +93427,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutAuditLogsInput = {
@@ -94471,6 +93463,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutAuditLogsInput = {
@@ -94522,6 +93515,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutAuditLogsInput = {
@@ -94557,6 +93551,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderCreateWithoutOrderNotesInput = {
@@ -94592,6 +93587,7 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutOrderNotesInput = {
@@ -94627,6 +93623,7 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogUncheckedCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutOrderNotesInput = {
@@ -94678,6 +93675,7 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutOrderNotesInput = {
@@ -94713,6 +93711,7 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogUncheckedUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderCreateWithoutReturnRequestsInput = {
@@ -94748,6 +93747,7 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogCreateNestedManyWithoutOrderInput
     orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutReturnRequestsInput = {
@@ -94783,6 +93783,7 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogUncheckedCreateNestedManyWithoutOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutReturnRequestsInput = {
@@ -94821,6 +93822,70 @@ export namespace Prisma {
 
   export type OrderReturnItemCreateManyReturnRequestInputEnvelope = {
     data: OrderReturnItemCreateManyReturnRequestInput | OrderReturnItemCreateManyReturnRequestInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type RefundRecordCreateWithoutOrderReturnRequestInput = {
+    id?: string
+    amountCents: number
+    currency?: string
+    method: string
+    status?: $Enums.RefundStatus
+    reference?: string | null
+    externalReference?: string | null
+    idempotencyKey?: string | null
+    payloadHash?: string | null
+    reason: string
+    failureReason?: string | null
+    maskedAccountNumber?: string | null
+    encryptedBankDetails?: string | null
+    processedBy?: string | null
+    processedById?: string | null
+    requestedById?: string | null
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    completedById?: string | null
+    completedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order: OrderCreateNestedOneWithoutRefundRecordsInput
+  }
+
+  export type RefundRecordUncheckedCreateWithoutOrderReturnRequestInput = {
+    id?: string
+    orderId: string
+    amountCents: number
+    currency?: string
+    method: string
+    status?: $Enums.RefundStatus
+    reference?: string | null
+    externalReference?: string | null
+    idempotencyKey?: string | null
+    payloadHash?: string | null
+    reason: string
+    failureReason?: string | null
+    maskedAccountNumber?: string | null
+    encryptedBankDetails?: string | null
+    processedBy?: string | null
+    processedById?: string | null
+    requestedById?: string | null
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    completedById?: string | null
+    completedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RefundRecordCreateOrConnectWithoutOrderReturnRequestInput = {
+    where: RefundRecordWhereUniqueInput
+    create: XOR<RefundRecordCreateWithoutOrderReturnRequestInput, RefundRecordUncheckedCreateWithoutOrderReturnRequestInput>
+  }
+
+  export type RefundRecordCreateManyOrderReturnRequestInputEnvelope = {
+    data: RefundRecordCreateManyOrderReturnRequestInput | RefundRecordCreateManyOrderReturnRequestInput[]
     skipDuplicates?: boolean
   }
 
@@ -94868,6 +93933,7 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogUpdateManyWithoutOrderNestedInput
     orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutReturnRequestsInput = {
@@ -94903,6 +93969,7 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogUncheckedUpdateManyWithoutOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderReturnItemUpsertWithWhereUniqueWithoutReturnRequestInput = {
@@ -94921,6 +93988,22 @@ export namespace Prisma {
     data: XOR<OrderReturnItemUpdateManyMutationInput, OrderReturnItemUncheckedUpdateManyWithoutReturnRequestInput>
   }
 
+  export type RefundRecordUpsertWithWhereUniqueWithoutOrderReturnRequestInput = {
+    where: RefundRecordWhereUniqueInput
+    update: XOR<RefundRecordUpdateWithoutOrderReturnRequestInput, RefundRecordUncheckedUpdateWithoutOrderReturnRequestInput>
+    create: XOR<RefundRecordCreateWithoutOrderReturnRequestInput, RefundRecordUncheckedCreateWithoutOrderReturnRequestInput>
+  }
+
+  export type RefundRecordUpdateWithWhereUniqueWithoutOrderReturnRequestInput = {
+    where: RefundRecordWhereUniqueInput
+    data: XOR<RefundRecordUpdateWithoutOrderReturnRequestInput, RefundRecordUncheckedUpdateWithoutOrderReturnRequestInput>
+  }
+
+  export type RefundRecordUpdateManyWithWhereWithoutOrderReturnRequestInput = {
+    where: RefundRecordScalarWhereInput
+    data: XOR<RefundRecordUpdateManyMutationInput, RefundRecordUncheckedUpdateManyWithoutOrderReturnRequestInput>
+  }
+
   export type OrderReturnRequestCreateWithoutItemsInput = {
     id?: string
     returnNumber: string
@@ -94930,6 +94013,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     order: OrderCreateNestedOneWithoutReturnRequestsInput
+    refundRecords?: RefundRecordCreateNestedManyWithoutOrderReturnRequestInput
   }
 
   export type OrderReturnRequestUncheckedCreateWithoutItemsInput = {
@@ -94941,6 +94025,7 @@ export namespace Prisma {
     rejectionReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderReturnRequestInput
   }
 
   export type OrderReturnRequestCreateOrConnectWithoutItemsInput = {
@@ -95001,6 +94086,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutReturnRequestsNestedInput
+    refundRecords?: RefundRecordUpdateManyWithoutOrderReturnRequestNestedInput
   }
 
   export type OrderReturnRequestUncheckedUpdateWithoutItemsInput = {
@@ -95012,6 +94098,7 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderReturnRequestNestedInput
   }
 
   export type OrderItemUpsertWithoutReturnItemsInput = {
@@ -95086,6 +94173,7 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogCreateNestedManyWithoutOrderInput
     orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutRefundRecordsInput = {
@@ -95121,11 +94209,41 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogUncheckedCreateNestedManyWithoutOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutRefundRecordsInput = {
     where: OrderWhereUniqueInput
     create: XOR<OrderCreateWithoutRefundRecordsInput, OrderUncheckedCreateWithoutRefundRecordsInput>
+  }
+
+  export type OrderReturnRequestCreateWithoutRefundRecordsInput = {
+    id?: string
+    returnNumber: string
+    status?: $Enums.ReturnStatus
+    reason: string
+    rejectionReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order: OrderCreateNestedOneWithoutReturnRequestsInput
+    items?: OrderReturnItemCreateNestedManyWithoutReturnRequestInput
+  }
+
+  export type OrderReturnRequestUncheckedCreateWithoutRefundRecordsInput = {
+    id?: string
+    orderId: string
+    returnNumber: string
+    status?: $Enums.ReturnStatus
+    reason: string
+    rejectionReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    items?: OrderReturnItemUncheckedCreateNestedManyWithoutReturnRequestInput
+  }
+
+  export type OrderReturnRequestCreateOrConnectWithoutRefundRecordsInput = {
+    where: OrderReturnRequestWhereUniqueInput
+    create: XOR<OrderReturnRequestCreateWithoutRefundRecordsInput, OrderReturnRequestUncheckedCreateWithoutRefundRecordsInput>
   }
 
   export type OrderUpsertWithoutRefundRecordsInput = {
@@ -95172,6 +94290,7 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogUpdateManyWithoutOrderNestedInput
     orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutRefundRecordsInput = {
@@ -95207,6 +94326,42 @@ export namespace Prisma {
     auditLogs?: OrderAuditLogUncheckedUpdateManyWithoutOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
+  }
+
+  export type OrderReturnRequestUpsertWithoutRefundRecordsInput = {
+    update: XOR<OrderReturnRequestUpdateWithoutRefundRecordsInput, OrderReturnRequestUncheckedUpdateWithoutRefundRecordsInput>
+    create: XOR<OrderReturnRequestCreateWithoutRefundRecordsInput, OrderReturnRequestUncheckedCreateWithoutRefundRecordsInput>
+    where?: OrderReturnRequestWhereInput
+  }
+
+  export type OrderReturnRequestUpdateToOneWithWhereWithoutRefundRecordsInput = {
+    where?: OrderReturnRequestWhereInput
+    data: XOR<OrderReturnRequestUpdateWithoutRefundRecordsInput, OrderReturnRequestUncheckedUpdateWithoutRefundRecordsInput>
+  }
+
+  export type OrderReturnRequestUpdateWithoutRefundRecordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    returnNumber?: StringFieldUpdateOperationsInput | string
+    status?: EnumReturnStatusFieldUpdateOperationsInput | $Enums.ReturnStatus
+    reason?: StringFieldUpdateOperationsInput | string
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: OrderUpdateOneRequiredWithoutReturnRequestsNestedInput
+    items?: OrderReturnItemUpdateManyWithoutReturnRequestNestedInput
+  }
+
+  export type OrderReturnRequestUncheckedUpdateWithoutRefundRecordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    returnNumber?: StringFieldUpdateOperationsInput | string
+    status?: EnumReturnStatusFieldUpdateOperationsInput | $Enums.ReturnStatus
+    reason?: StringFieldUpdateOperationsInput | string
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: OrderReturnItemUncheckedUpdateManyWithoutReturnRequestNestedInput
   }
 
   export type UserCreateWithoutReservationsInput = {
@@ -95234,7 +94389,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -95245,6 +94399,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutReservationsInput = {
@@ -95272,7 +94427,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -95283,6 +94437,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutReservationsInput = {
@@ -95323,6 +94478,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutReservationInput = {
@@ -95358,6 +94514,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutReservationInput = {
@@ -95406,6 +94563,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     order?: OrderCreateNestedOneWithoutPaymentAttemptsInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutPaymentAttemptInput
   }
 
   export type PaymentAttemptUncheckedCreateWithoutReservationInput = {
@@ -95421,6 +94579,7 @@ export namespace Prisma {
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutPaymentAttemptInput
   }
 
   export type PaymentAttemptCreateOrConnectWithoutReservationInput = {
@@ -95469,7 +94628,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -95480,6 +94638,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReservationsInput = {
@@ -95507,7 +94666,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -95518,6 +94676,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type OrderUpsertWithoutReservationInput = {
@@ -95564,6 +94723,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutReservationInput = {
@@ -95599,6 +94759,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type StockReservationItemUpsertWithWhereUniqueWithoutReservationInput = {
@@ -95696,7 +94857,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -95736,7 +94896,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -95870,7 +95029,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -95910,7 +95068,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -96029,6 +95186,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutPaymentAttemptsInput = {
@@ -96064,11 +95222,62 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutPaymentAttemptsInput = {
     where: OrderWhereUniqueInput
     create: XOR<OrderCreateWithoutPaymentAttemptsInput, OrderUncheckedCreateWithoutPaymentAttemptsInput>
+  }
+
+  export type BankDepositSubmissionCreateWithoutPaymentAttemptInput = {
+    id?: string
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order: OrderCreateNestedOneWithoutBankDepositSubmissionsInput
+    reviewedBy?: UserCreateNestedOneWithoutReviewedBankDepositsInput
+  }
+
+  export type BankDepositSubmissionUncheckedCreateWithoutPaymentAttemptInput = {
+    id?: string
+    orderId: string
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BankDepositSubmissionCreateOrConnectWithoutPaymentAttemptInput = {
+    where: BankDepositSubmissionWhereUniqueInput
+    create: XOR<BankDepositSubmissionCreateWithoutPaymentAttemptInput, BankDepositSubmissionUncheckedCreateWithoutPaymentAttemptInput>
+  }
+
+  export type BankDepositSubmissionCreateManyPaymentAttemptInputEnvelope = {
+    data: BankDepositSubmissionCreateManyPaymentAttemptInput | BankDepositSubmissionCreateManyPaymentAttemptInput[]
+    skipDuplicates?: boolean
   }
 
   export type StockReservationUpsertWithoutPaymentAttemptsInput = {
@@ -96152,6 +95361,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutPaymentAttemptsInput = {
@@ -96187,6 +95397,431 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
+  }
+
+  export type BankDepositSubmissionUpsertWithWhereUniqueWithoutPaymentAttemptInput = {
+    where: BankDepositSubmissionWhereUniqueInput
+    update: XOR<BankDepositSubmissionUpdateWithoutPaymentAttemptInput, BankDepositSubmissionUncheckedUpdateWithoutPaymentAttemptInput>
+    create: XOR<BankDepositSubmissionCreateWithoutPaymentAttemptInput, BankDepositSubmissionUncheckedCreateWithoutPaymentAttemptInput>
+  }
+
+  export type BankDepositSubmissionUpdateWithWhereUniqueWithoutPaymentAttemptInput = {
+    where: BankDepositSubmissionWhereUniqueInput
+    data: XOR<BankDepositSubmissionUpdateWithoutPaymentAttemptInput, BankDepositSubmissionUncheckedUpdateWithoutPaymentAttemptInput>
+  }
+
+  export type BankDepositSubmissionUpdateManyWithWhereWithoutPaymentAttemptInput = {
+    where: BankDepositSubmissionScalarWhereInput
+    data: XOR<BankDepositSubmissionUpdateManyMutationInput, BankDepositSubmissionUncheckedUpdateManyWithoutPaymentAttemptInput>
+  }
+
+  export type OrderCreateWithoutBankDepositSubmissionsInput = {
+    id?: string
+    orderNumber: string
+    customerName: string
+    customerEmail: string
+    customerPhone: string
+    subtotalCents: number
+    discountCents?: number
+    deliveryCents?: number
+    totalCents: number
+    paymentMethod: $Enums.PaymentMethod
+    paymentStatus?: $Enums.PaymentStatus
+    orderStatus?: $Enums.OrderStatus
+    notes?: string | null
+    trackingNumber?: string | null
+    estimatedDeliveryDate?: Date | string | null
+    promoCode?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    trackingOtpHash?: string | null
+    trackingOtpExpiresAt?: Date | string | null
+    trackingOtpAttempts?: number
+    trackingOtpLastSentAt?: Date | string | null
+    user?: UserCreateNestedOneWithoutOrdersInput
+    promotion?: PromotionCreateNestedOneWithoutOrdersInput
+    promotionRedemptions?: PromotionRedemptionCreateNestedManyWithoutOrderInput
+    addressSnapshot?: OrderAddressSnapshotCreateNestedOneWithoutOrderInput
+    items?: OrderItemCreateNestedManyWithoutOrderInput
+    reservation?: StockReservationCreateNestedOneWithoutOrderInput
+    paymentAttempts?: PaymentAttemptCreateNestedManyWithoutOrderInput
+    auditLogs?: OrderAuditLogCreateNestedManyWithoutOrderInput
+    orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
+    returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
+    refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+  }
+
+  export type OrderUncheckedCreateWithoutBankDepositSubmissionsInput = {
+    id?: string
+    orderNumber: string
+    userId?: string | null
+    customerName: string
+    customerEmail: string
+    customerPhone: string
+    subtotalCents: number
+    discountCents?: number
+    deliveryCents?: number
+    totalCents: number
+    paymentMethod: $Enums.PaymentMethod
+    paymentStatus?: $Enums.PaymentStatus
+    orderStatus?: $Enums.OrderStatus
+    notes?: string | null
+    trackingNumber?: string | null
+    estimatedDeliveryDate?: Date | string | null
+    promotionId?: string | null
+    promoCode?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    trackingOtpHash?: string | null
+    trackingOtpExpiresAt?: Date | string | null
+    trackingOtpAttempts?: number
+    trackingOtpLastSentAt?: Date | string | null
+    promotionRedemptions?: PromotionRedemptionUncheckedCreateNestedManyWithoutOrderInput
+    addressSnapshot?: OrderAddressSnapshotUncheckedCreateNestedOneWithoutOrderInput
+    items?: OrderItemUncheckedCreateNestedManyWithoutOrderInput
+    reservation?: StockReservationUncheckedCreateNestedOneWithoutOrderInput
+    paymentAttempts?: PaymentAttemptUncheckedCreateNestedManyWithoutOrderInput
+    auditLogs?: OrderAuditLogUncheckedCreateNestedManyWithoutOrderInput
+    orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
+    returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
+    refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+  }
+
+  export type OrderCreateOrConnectWithoutBankDepositSubmissionsInput = {
+    where: OrderWhereUniqueInput
+    create: XOR<OrderCreateWithoutBankDepositSubmissionsInput, OrderUncheckedCreateWithoutBankDepositSubmissionsInput>
+  }
+
+  export type PaymentAttemptCreateWithoutBankDepositSubmissionsInput = {
+    id?: string
+    amountCents: number
+    currency?: string
+    paymentMethod: $Enums.PaymentMethod
+    status?: $Enums.PaymentAttemptStatus
+    gatewayReference?: string | null
+    idempotencyKey?: string | null
+    gatewayPayload?: NullableJsonNullValueInput | InputJsonValue
+    failureReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    reservation: StockReservationCreateNestedOneWithoutPaymentAttemptsInput
+    order?: OrderCreateNestedOneWithoutPaymentAttemptsInput
+  }
+
+  export type PaymentAttemptUncheckedCreateWithoutBankDepositSubmissionsInput = {
+    id?: string
+    reservationId: string
+    orderId?: string | null
+    amountCents: number
+    currency?: string
+    paymentMethod: $Enums.PaymentMethod
+    status?: $Enums.PaymentAttemptStatus
+    gatewayReference?: string | null
+    idempotencyKey?: string | null
+    gatewayPayload?: NullableJsonNullValueInput | InputJsonValue
+    failureReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PaymentAttemptCreateOrConnectWithoutBankDepositSubmissionsInput = {
+    where: PaymentAttemptWhereUniqueInput
+    create: XOR<PaymentAttemptCreateWithoutBankDepositSubmissionsInput, PaymentAttemptUncheckedCreateWithoutBankDepositSubmissionsInput>
+  }
+
+  export type UserCreateWithoutReviewedBankDepositsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    role?: $Enums.UserRole
+    passwordHash?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    passwordResetTokenHash?: string | null
+    passwordResetExpiresAt?: Date | string | null
+    isEmailVerified?: boolean
+    emailVerificationOtpHash?: string | null
+    emailVerificationExpiresAt?: Date | string | null
+    emailVerificationAttempts?: number
+    emailVerificationLastSentAt?: Date | string | null
+    assignedRole?: RoleCreateNestedOneWithoutUsersInput
+    addresses?: AddressCreateNestedManyWithoutUserInput
+    orders?: OrderCreateNestedManyWithoutUserInput
+    wishlist?: WishlistItemCreateNestedManyWithoutUserInput
+    savedLists?: SavedListCreateNestedManyWithoutUserInput
+    savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    cart?: CartCreateNestedOneWithoutUserInput
+    reservations?: StockReservationCreateNestedManyWithoutUserInput
+    backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutUserInput
+    createdBanners?: HomepageBannerCreateNestedManyWithoutCreatedByInput
+    updatedBanners?: HomepageBannerCreateNestedManyWithoutUpdatedByInput
+    promotionRedemptions?: PromotionRedemptionCreateNestedManyWithoutCustomerInput
+    invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
+    importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
+    importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+  }
+
+  export type UserUncheckedCreateWithoutReviewedBankDepositsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    role?: $Enums.UserRole
+    roleId?: string | null
+    passwordHash?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    passwordResetTokenHash?: string | null
+    passwordResetExpiresAt?: Date | string | null
+    isEmailVerified?: boolean
+    emailVerificationOtpHash?: string | null
+    emailVerificationExpiresAt?: Date | string | null
+    emailVerificationAttempts?: number
+    emailVerificationLastSentAt?: Date | string | null
+    addresses?: AddressUncheckedCreateNestedManyWithoutUserInput
+    orders?: OrderUncheckedCreateNestedManyWithoutUserInput
+    wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
+    savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
+    savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    cart?: CartUncheckedCreateNestedOneWithoutUserInput
+    reservations?: StockReservationUncheckedCreateNestedManyWithoutUserInput
+    backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutUserInput
+    createdBanners?: HomepageBannerUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedBanners?: HomepageBannerUncheckedCreateNestedManyWithoutUpdatedByInput
+    promotionRedemptions?: PromotionRedemptionUncheckedCreateNestedManyWithoutCustomerInput
+    invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+    importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
+    importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+  }
+
+  export type UserCreateOrConnectWithoutReviewedBankDepositsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutReviewedBankDepositsInput, UserUncheckedCreateWithoutReviewedBankDepositsInput>
+  }
+
+  export type OrderUpsertWithoutBankDepositSubmissionsInput = {
+    update: XOR<OrderUpdateWithoutBankDepositSubmissionsInput, OrderUncheckedUpdateWithoutBankDepositSubmissionsInput>
+    create: XOR<OrderCreateWithoutBankDepositSubmissionsInput, OrderUncheckedCreateWithoutBankDepositSubmissionsInput>
+    where?: OrderWhereInput
+  }
+
+  export type OrderUpdateToOneWithWhereWithoutBankDepositSubmissionsInput = {
+    where?: OrderWhereInput
+    data: XOR<OrderUpdateWithoutBankDepositSubmissionsInput, OrderUncheckedUpdateWithoutBankDepositSubmissionsInput>
+  }
+
+  export type OrderUpdateWithoutBankDepositSubmissionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderNumber?: StringFieldUpdateOperationsInput | string
+    customerName?: StringFieldUpdateOperationsInput | string
+    customerEmail?: StringFieldUpdateOperationsInput | string
+    customerPhone?: StringFieldUpdateOperationsInput | string
+    subtotalCents?: IntFieldUpdateOperationsInput | number
+    discountCents?: IntFieldUpdateOperationsInput | number
+    deliveryCents?: IntFieldUpdateOperationsInput | number
+    totalCents?: IntFieldUpdateOperationsInput | number
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    orderStatus?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedDeliveryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    promoCode?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    trackingOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    trackingOtpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    trackingOtpAttempts?: IntFieldUpdateOperationsInput | number
+    trackingOtpLastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneWithoutOrdersNestedInput
+    promotion?: PromotionUpdateOneWithoutOrdersNestedInput
+    promotionRedemptions?: PromotionRedemptionUpdateManyWithoutOrderNestedInput
+    addressSnapshot?: OrderAddressSnapshotUpdateOneWithoutOrderNestedInput
+    items?: OrderItemUpdateManyWithoutOrderNestedInput
+    reservation?: StockReservationUpdateOneWithoutOrderNestedInput
+    paymentAttempts?: PaymentAttemptUpdateManyWithoutOrderNestedInput
+    auditLogs?: OrderAuditLogUpdateManyWithoutOrderNestedInput
+    orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
+    returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
+    refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+  }
+
+  export type OrderUncheckedUpdateWithoutBankDepositSubmissionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderNumber?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerName?: StringFieldUpdateOperationsInput | string
+    customerEmail?: StringFieldUpdateOperationsInput | string
+    customerPhone?: StringFieldUpdateOperationsInput | string
+    subtotalCents?: IntFieldUpdateOperationsInput | number
+    discountCents?: IntFieldUpdateOperationsInput | number
+    deliveryCents?: IntFieldUpdateOperationsInput | number
+    totalCents?: IntFieldUpdateOperationsInput | number
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    orderStatus?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedDeliveryDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    promotionId?: NullableStringFieldUpdateOperationsInput | string | null
+    promoCode?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    trackingOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    trackingOtpExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    trackingOtpAttempts?: IntFieldUpdateOperationsInput | number
+    trackingOtpLastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    promotionRedemptions?: PromotionRedemptionUncheckedUpdateManyWithoutOrderNestedInput
+    addressSnapshot?: OrderAddressSnapshotUncheckedUpdateOneWithoutOrderNestedInput
+    items?: OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+    reservation?: StockReservationUncheckedUpdateOneWithoutOrderNestedInput
+    paymentAttempts?: PaymentAttemptUncheckedUpdateManyWithoutOrderNestedInput
+    auditLogs?: OrderAuditLogUncheckedUpdateManyWithoutOrderNestedInput
+    orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
+    returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
+    refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
+  }
+
+  export type PaymentAttemptUpsertWithoutBankDepositSubmissionsInput = {
+    update: XOR<PaymentAttemptUpdateWithoutBankDepositSubmissionsInput, PaymentAttemptUncheckedUpdateWithoutBankDepositSubmissionsInput>
+    create: XOR<PaymentAttemptCreateWithoutBankDepositSubmissionsInput, PaymentAttemptUncheckedCreateWithoutBankDepositSubmissionsInput>
+    where?: PaymentAttemptWhereInput
+  }
+
+  export type PaymentAttemptUpdateToOneWithWhereWithoutBankDepositSubmissionsInput = {
+    where?: PaymentAttemptWhereInput
+    data: XOR<PaymentAttemptUpdateWithoutBankDepositSubmissionsInput, PaymentAttemptUncheckedUpdateWithoutBankDepositSubmissionsInput>
+  }
+
+  export type PaymentAttemptUpdateWithoutBankDepositSubmissionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    status?: EnumPaymentAttemptStatusFieldUpdateOperationsInput | $Enums.PaymentAttemptStatus
+    gatewayReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    gatewayPayload?: NullableJsonNullValueInput | InputJsonValue
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reservation?: StockReservationUpdateOneRequiredWithoutPaymentAttemptsNestedInput
+    order?: OrderUpdateOneWithoutPaymentAttemptsNestedInput
+  }
+
+  export type PaymentAttemptUncheckedUpdateWithoutBankDepositSubmissionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reservationId?: StringFieldUpdateOperationsInput | string
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    status?: EnumPaymentAttemptStatusFieldUpdateOperationsInput | $Enums.PaymentAttemptStatus
+    gatewayReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    gatewayPayload?: NullableJsonNullValueInput | InputJsonValue
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpsertWithoutReviewedBankDepositsInput = {
+    update: XOR<UserUpdateWithoutReviewedBankDepositsInput, UserUncheckedUpdateWithoutReviewedBankDepositsInput>
+    create: XOR<UserCreateWithoutReviewedBankDepositsInput, UserUncheckedCreateWithoutReviewedBankDepositsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutReviewedBankDepositsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutReviewedBankDepositsInput, UserUncheckedUpdateWithoutReviewedBankDepositsInput>
+  }
+
+  export type UserUpdateWithoutReviewedBankDepositsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordResetTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordResetExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerificationOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationAttempts?: IntFieldUpdateOperationsInput | number
+    emailVerificationLastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedRole?: RoleUpdateOneWithoutUsersNestedInput
+    addresses?: AddressUpdateManyWithoutUserNestedInput
+    orders?: OrderUpdateManyWithoutUserNestedInput
+    wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
+    savedLists?: SavedListUpdateManyWithoutUserNestedInput
+    savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    cart?: CartUpdateOneWithoutUserNestedInput
+    reservations?: StockReservationUpdateManyWithoutUserNestedInput
+    backInStockAlerts?: BackInStockAlertUpdateManyWithoutUserNestedInput
+    createdBanners?: HomepageBannerUpdateManyWithoutCreatedByNestedInput
+    updatedBanners?: HomepageBannerUpdateManyWithoutUpdatedByNestedInput
+    promotionRedemptions?: PromotionRedemptionUpdateManyWithoutCustomerNestedInput
+    invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
+    importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
+    importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutReviewedBankDepositsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordResetTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordResetExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerificationOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationAttempts?: IntFieldUpdateOperationsInput | number
+    emailVerificationLastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    addresses?: AddressUncheckedUpdateManyWithoutUserNestedInput
+    orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
+    wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
+    savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
+    savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    cart?: CartUncheckedUpdateOneWithoutUserNestedInput
+    reservations?: StockReservationUncheckedUpdateManyWithoutUserNestedInput
+    backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutUserNestedInput
+    createdBanners?: HomepageBannerUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedBanners?: HomepageBannerUncheckedUpdateManyWithoutUpdatedByNestedInput
+    promotionRedemptions?: PromotionRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
+    invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+    importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
+    importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
   }
 
   export type PromotionCodeCreateWithoutPromotionInput = {
@@ -96330,6 +95965,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutPromotionInput = {
@@ -96365,6 +96001,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutPromotionInput = {
@@ -96757,7 +96394,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -96797,7 +96433,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -96926,7 +96561,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -96966,7 +96600,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -97319,7 +96952,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -97330,6 +96962,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutPromotionRedemptionsInput = {
@@ -97357,7 +96990,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -97368,6 +97000,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutPromotionRedemptionsInput = {
@@ -97408,6 +97041,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutPromotionRedemptionsInput = {
@@ -97443,6 +97077,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutOrderInput
     returnRequests?: OrderReturnRequestUncheckedCreateNestedManyWithoutOrderInput
     refundRecords?: RefundRecordUncheckedCreateNestedManyWithoutOrderInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutPromotionRedemptionsInput = {
@@ -97594,7 +97229,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -97605,6 +97239,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPromotionRedemptionsInput = {
@@ -97632,7 +97267,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -97643,6 +97277,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type OrderUpsertWithoutPromotionRedemptionsInput = {
@@ -97689,6 +97324,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutPromotionRedemptionsInput = {
@@ -97724,526 +97360,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
-  }
-
-  export type UserCreateWithoutDocumentsInput = {
-    id?: string
-    email: string
-    phone?: string | null
-    name: string
-    role?: $Enums.UserRole
-    passwordHash?: string | null
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    failedLoginAttempts?: number
-    lockedUntil?: Date | string | null
-    passwordResetTokenHash?: string | null
-    passwordResetExpiresAt?: Date | string | null
-    isEmailVerified?: boolean
-    emailVerificationOtpHash?: string | null
-    emailVerificationExpiresAt?: Date | string | null
-    emailVerificationAttempts?: number
-    emailVerificationLastSentAt?: Date | string | null
-    assignedRole?: RoleCreateNestedOneWithoutUsersInput
-    addresses?: AddressCreateNestedManyWithoutUserInput
-    orders?: OrderCreateNestedManyWithoutUserInput
-    wishlist?: WishlistItemCreateNestedManyWithoutUserInput
-    savedLists?: SavedListCreateNestedManyWithoutUserInput
-    savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
-    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
-    cart?: CartCreateNestedOneWithoutUserInput
-    reservations?: StockReservationCreateNestedManyWithoutUserInput
-    backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutUserInput
-    createdBanners?: HomepageBannerCreateNestedManyWithoutCreatedByInput
-    updatedBanners?: HomepageBannerCreateNestedManyWithoutUpdatedByInput
-    promotionRedemptions?: PromotionRedemptionCreateNestedManyWithoutCustomerInput
-    invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
-    importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
-    importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
-  }
-
-  export type UserUncheckedCreateWithoutDocumentsInput = {
-    id?: string
-    email: string
-    phone?: string | null
-    name: string
-    role?: $Enums.UserRole
-    roleId?: string | null
-    passwordHash?: string | null
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    failedLoginAttempts?: number
-    lockedUntil?: Date | string | null
-    passwordResetTokenHash?: string | null
-    passwordResetExpiresAt?: Date | string | null
-    isEmailVerified?: boolean
-    emailVerificationOtpHash?: string | null
-    emailVerificationExpiresAt?: Date | string | null
-    emailVerificationAttempts?: number
-    emailVerificationLastSentAt?: Date | string | null
-    addresses?: AddressUncheckedCreateNestedManyWithoutUserInput
-    orders?: OrderUncheckedCreateNestedManyWithoutUserInput
-    wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
-    savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
-    savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
-    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-    cart?: CartUncheckedCreateNestedOneWithoutUserInput
-    reservations?: StockReservationUncheckedCreateNestedManyWithoutUserInput
-    backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutUserInput
-    createdBanners?: HomepageBannerUncheckedCreateNestedManyWithoutCreatedByInput
-    updatedBanners?: HomepageBannerUncheckedCreateNestedManyWithoutUpdatedByInput
-    promotionRedemptions?: PromotionRedemptionUncheckedCreateNestedManyWithoutCustomerInput
-    invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
-    importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
-    importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
-  }
-
-  export type UserCreateOrConnectWithoutDocumentsInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutDocumentsInput, UserUncheckedCreateWithoutDocumentsInput>
-  }
-
-  export type ExtractedStationeryItemCreateWithoutDocumentInput = {
-    id?: string
-    rawText: string
-    itemDescription: string
-    quantity?: number
-    unit?: string | null
-    confidence?: $Enums.ItemConfidence
-    confidenceScore?: number
-    extractionConfidence?: number
-    matchConfidence?: number
-    matchReason?: string | null
-    matchedVariantId?: string | null
-    candidateProductIds?: ExtractedStationeryItemCreatecandidateProductIdsInput | string[]
-    status?: $Enums.MatchStatus
-    isConfirmed?: boolean
-    confirmedProductId?: string | null
-    confirmedVariantId?: string | null
-    confirmedQuantity?: number | null
-    isSubstituted?: boolean
-    createdAt?: Date | string
-    matchedProduct?: ProductCreateNestedOneWithoutMatchedUploadItemsInput
-  }
-
-  export type ExtractedStationeryItemUncheckedCreateWithoutDocumentInput = {
-    id?: string
-    rawText: string
-    itemDescription: string
-    quantity?: number
-    unit?: string | null
-    confidence?: $Enums.ItemConfidence
-    confidenceScore?: number
-    extractionConfidence?: number
-    matchConfidence?: number
-    matchReason?: string | null
-    matchedProductId?: string | null
-    matchedVariantId?: string | null
-    candidateProductIds?: ExtractedStationeryItemCreatecandidateProductIdsInput | string[]
-    status?: $Enums.MatchStatus
-    isConfirmed?: boolean
-    confirmedProductId?: string | null
-    confirmedVariantId?: string | null
-    confirmedQuantity?: number | null
-    isSubstituted?: boolean
-    createdAt?: Date | string
-  }
-
-  export type ExtractedStationeryItemCreateOrConnectWithoutDocumentInput = {
-    where: ExtractedStationeryItemWhereUniqueInput
-    create: XOR<ExtractedStationeryItemCreateWithoutDocumentInput, ExtractedStationeryItemUncheckedCreateWithoutDocumentInput>
-  }
-
-  export type ExtractedStationeryItemCreateManyDocumentInputEnvelope = {
-    data: ExtractedStationeryItemCreateManyDocumentInput | ExtractedStationeryItemCreateManyDocumentInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type UserUpsertWithoutDocumentsInput = {
-    update: XOR<UserUpdateWithoutDocumentsInput, UserUncheckedUpdateWithoutDocumentsInput>
-    create: XOR<UserCreateWithoutDocumentsInput, UserUncheckedCreateWithoutDocumentsInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutDocumentsInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutDocumentsInput, UserUncheckedUpdateWithoutDocumentsInput>
-  }
-
-  export type UserUpdateWithoutDocumentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
-    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
-    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    passwordResetTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
-    passwordResetExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerificationOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
-    emailVerificationExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerificationAttempts?: IntFieldUpdateOperationsInput | number
-    emailVerificationLastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    assignedRole?: RoleUpdateOneWithoutUsersNestedInput
-    addresses?: AddressUpdateManyWithoutUserNestedInput
-    orders?: OrderUpdateManyWithoutUserNestedInput
-    wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
-    savedLists?: SavedListUpdateManyWithoutUserNestedInput
-    savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
-    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
-    cart?: CartUpdateOneWithoutUserNestedInput
-    reservations?: StockReservationUpdateManyWithoutUserNestedInput
-    backInStockAlerts?: BackInStockAlertUpdateManyWithoutUserNestedInput
-    createdBanners?: HomepageBannerUpdateManyWithoutCreatedByNestedInput
-    updatedBanners?: HomepageBannerUpdateManyWithoutUpdatedByNestedInput
-    promotionRedemptions?: PromotionRedemptionUpdateManyWithoutCustomerNestedInput
-    invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
-    importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
-    importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutDocumentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
-    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
-    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
-    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    passwordResetTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
-    passwordResetExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerificationOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
-    emailVerificationExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailVerificationAttempts?: IntFieldUpdateOperationsInput | number
-    emailVerificationLastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    addresses?: AddressUncheckedUpdateManyWithoutUserNestedInput
-    orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
-    wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
-    savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
-    savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
-    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-    cart?: CartUncheckedUpdateOneWithoutUserNestedInput
-    reservations?: StockReservationUncheckedUpdateManyWithoutUserNestedInput
-    backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutUserNestedInput
-    createdBanners?: HomepageBannerUncheckedUpdateManyWithoutCreatedByNestedInput
-    updatedBanners?: HomepageBannerUncheckedUpdateManyWithoutUpdatedByNestedInput
-    promotionRedemptions?: PromotionRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
-    invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
-    importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
-    importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
-  }
-
-  export type ExtractedStationeryItemUpsertWithWhereUniqueWithoutDocumentInput = {
-    where: ExtractedStationeryItemWhereUniqueInput
-    update: XOR<ExtractedStationeryItemUpdateWithoutDocumentInput, ExtractedStationeryItemUncheckedUpdateWithoutDocumentInput>
-    create: XOR<ExtractedStationeryItemCreateWithoutDocumentInput, ExtractedStationeryItemUncheckedCreateWithoutDocumentInput>
-  }
-
-  export type ExtractedStationeryItemUpdateWithWhereUniqueWithoutDocumentInput = {
-    where: ExtractedStationeryItemWhereUniqueInput
-    data: XOR<ExtractedStationeryItemUpdateWithoutDocumentInput, ExtractedStationeryItemUncheckedUpdateWithoutDocumentInput>
-  }
-
-  export type ExtractedStationeryItemUpdateManyWithWhereWithoutDocumentInput = {
-    where: ExtractedStationeryItemScalarWhereInput
-    data: XOR<ExtractedStationeryItemUpdateManyMutationInput, ExtractedStationeryItemUncheckedUpdateManyWithoutDocumentInput>
-  }
-
-  export type UploadedDocumentCreateWithoutExtractedItemsInput = {
-    id?: string
-    sessionId?: string | null
-    fileName: string
-    fileUrl: string
-    storagePath?: string | null
-    fileSizeBytes: number
-    fileType: string
-    pageCount?: number
-    status?: $Enums.DocumentStatus
-    isSimulatedOCR?: boolean
-    ocrProvider?: string | null
-    customerNotes?: string | null
-    processingError?: string | null
-    attempts?: number
-    processedAt?: Date | string | null
-    confirmedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user?: UserCreateNestedOneWithoutDocumentsInput
-  }
-
-  export type UploadedDocumentUncheckedCreateWithoutExtractedItemsInput = {
-    id?: string
-    userId?: string | null
-    sessionId?: string | null
-    fileName: string
-    fileUrl: string
-    storagePath?: string | null
-    fileSizeBytes: number
-    fileType: string
-    pageCount?: number
-    status?: $Enums.DocumentStatus
-    isSimulatedOCR?: boolean
-    ocrProvider?: string | null
-    customerNotes?: string | null
-    processingError?: string | null
-    attempts?: number
-    processedAt?: Date | string | null
-    confirmedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type UploadedDocumentCreateOrConnectWithoutExtractedItemsInput = {
-    where: UploadedDocumentWhereUniqueInput
-    create: XOR<UploadedDocumentCreateWithoutExtractedItemsInput, UploadedDocumentUncheckedCreateWithoutExtractedItemsInput>
-  }
-
-  export type ProductCreateWithoutMatchedUploadItemsInput = {
-    id?: string
-    name: string
-    slug: string
-    sku: string
-    barcode?: string | null
-    description: string
-    shortDescription: string
-    priceCents: number
-    compareAtPriceCents?: number | null
-    costPriceCents?: number | null
-    stockQuantity?: number
-    lowStockThreshold?: number
-    isActive?: boolean
-    isFeatured?: boolean
-    isNewArrival?: boolean
-    isBestSeller?: boolean
-    images?: ProductCreateimagesInput | string[]
-    tags?: ProductCreatetagsInput | string[]
-    rating?: number
-    reviewCount?: number
-    specifications?: JsonNullValueInput | InputJsonValue
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    category: CategoryCreateNestedOneWithoutProductsInput
-    subcategory?: CategoryCreateNestedOneWithoutSubProductsInput
-    brand: BrandCreateNestedOneWithoutProductsInput
-    variants?: ProductVariantCreateNestedManyWithoutProductInput
-    globalSku?: GlobalSkuCreateNestedOneWithoutProductInput
-    movements?: InventoryMovementCreateNestedManyWithoutProductInput
-    orderItems?: OrderItemCreateNestedManyWithoutProductInput
-    packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
-    savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
-    cartItems?: CartItemCreateNestedManyWithoutProductInput
-    reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
-    backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutProductInput
-    promotions?: PromotionProductCreateNestedManyWithoutProductInput
-  }
-
-  export type ProductUncheckedCreateWithoutMatchedUploadItemsInput = {
-    id?: string
-    name: string
-    slug: string
-    sku: string
-    barcode?: string | null
-    description: string
-    shortDescription: string
-    categoryId: string
-    subcategoryId?: string | null
-    brandId: string
-    priceCents: number
-    compareAtPriceCents?: number | null
-    costPriceCents?: number | null
-    stockQuantity?: number
-    lowStockThreshold?: number
-    isActive?: boolean
-    isFeatured?: boolean
-    isNewArrival?: boolean
-    isBestSeller?: boolean
-    images?: ProductCreateimagesInput | string[]
-    tags?: ProductCreatetagsInput | string[]
-    rating?: number
-    reviewCount?: number
-    specifications?: JsonNullValueInput | InputJsonValue
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    variants?: ProductVariantUncheckedCreateNestedManyWithoutProductInput
-    globalSku?: GlobalSkuUncheckedCreateNestedOneWithoutProductInput
-    movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
-    orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
-    packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
-    savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
-    cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
-    reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
-    backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutProductInput
-    promotions?: PromotionProductUncheckedCreateNestedManyWithoutProductInput
-  }
-
-  export type ProductCreateOrConnectWithoutMatchedUploadItemsInput = {
-    where: ProductWhereUniqueInput
-    create: XOR<ProductCreateWithoutMatchedUploadItemsInput, ProductUncheckedCreateWithoutMatchedUploadItemsInput>
-  }
-
-  export type UploadedDocumentUpsertWithoutExtractedItemsInput = {
-    update: XOR<UploadedDocumentUpdateWithoutExtractedItemsInput, UploadedDocumentUncheckedUpdateWithoutExtractedItemsInput>
-    create: XOR<UploadedDocumentCreateWithoutExtractedItemsInput, UploadedDocumentUncheckedCreateWithoutExtractedItemsInput>
-    where?: UploadedDocumentWhereInput
-  }
-
-  export type UploadedDocumentUpdateToOneWithWhereWithoutExtractedItemsInput = {
-    where?: UploadedDocumentWhereInput
-    data: XOR<UploadedDocumentUpdateWithoutExtractedItemsInput, UploadedDocumentUncheckedUpdateWithoutExtractedItemsInput>
-  }
-
-  export type UploadedDocumentUpdateWithoutExtractedItemsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    fileName?: StringFieldUpdateOperationsInput | string
-    fileUrl?: StringFieldUpdateOperationsInput | string
-    storagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    fileSizeBytes?: IntFieldUpdateOperationsInput | number
-    fileType?: StringFieldUpdateOperationsInput | string
-    pageCount?: IntFieldUpdateOperationsInput | number
-    status?: EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFieldUpdateOperationsInput | boolean
-    ocrProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    processingError?: NullableStringFieldUpdateOperationsInput | string | null
-    attempts?: IntFieldUpdateOperationsInput | number
-    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneWithoutDocumentsNestedInput
-  }
-
-  export type UploadedDocumentUncheckedUpdateWithoutExtractedItemsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
-    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    fileName?: StringFieldUpdateOperationsInput | string
-    fileUrl?: StringFieldUpdateOperationsInput | string
-    storagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    fileSizeBytes?: IntFieldUpdateOperationsInput | number
-    fileType?: StringFieldUpdateOperationsInput | string
-    pageCount?: IntFieldUpdateOperationsInput | number
-    status?: EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFieldUpdateOperationsInput | boolean
-    ocrProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    processingError?: NullableStringFieldUpdateOperationsInput | string | null
-    attempts?: IntFieldUpdateOperationsInput | number
-    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ProductUpsertWithoutMatchedUploadItemsInput = {
-    update: XOR<ProductUpdateWithoutMatchedUploadItemsInput, ProductUncheckedUpdateWithoutMatchedUploadItemsInput>
-    create: XOR<ProductCreateWithoutMatchedUploadItemsInput, ProductUncheckedCreateWithoutMatchedUploadItemsInput>
-    where?: ProductWhereInput
-  }
-
-  export type ProductUpdateToOneWithWhereWithoutMatchedUploadItemsInput = {
-    where?: ProductWhereInput
-    data: XOR<ProductUpdateWithoutMatchedUploadItemsInput, ProductUncheckedUpdateWithoutMatchedUploadItemsInput>
-  }
-
-  export type ProductUpdateWithoutMatchedUploadItemsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
-    sku?: StringFieldUpdateOperationsInput | string
-    barcode?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: StringFieldUpdateOperationsInput | string
-    shortDescription?: StringFieldUpdateOperationsInput | string
-    priceCents?: IntFieldUpdateOperationsInput | number
-    compareAtPriceCents?: NullableIntFieldUpdateOperationsInput | number | null
-    costPriceCents?: NullableIntFieldUpdateOperationsInput | number | null
-    stockQuantity?: IntFieldUpdateOperationsInput | number
-    lowStockThreshold?: IntFieldUpdateOperationsInput | number
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isFeatured?: BoolFieldUpdateOperationsInput | boolean
-    isNewArrival?: BoolFieldUpdateOperationsInput | boolean
-    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
-    images?: ProductUpdateimagesInput | string[]
-    tags?: ProductUpdatetagsInput | string[]
-    rating?: FloatFieldUpdateOperationsInput | number
-    reviewCount?: IntFieldUpdateOperationsInput | number
-    specifications?: JsonNullValueInput | InputJsonValue
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
-    subcategory?: CategoryUpdateOneWithoutSubProductsNestedInput
-    brand?: BrandUpdateOneRequiredWithoutProductsNestedInput
-    variants?: ProductVariantUpdateManyWithoutProductNestedInput
-    globalSku?: GlobalSkuUpdateOneWithoutProductNestedInput
-    movements?: InventoryMovementUpdateManyWithoutProductNestedInput
-    orderItems?: OrderItemUpdateManyWithoutProductNestedInput
-    packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
-    savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
-    cartItems?: CartItemUpdateManyWithoutProductNestedInput
-    reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
-    backInStockAlerts?: BackInStockAlertUpdateManyWithoutProductNestedInput
-    promotions?: PromotionProductUpdateManyWithoutProductNestedInput
-  }
-
-  export type ProductUncheckedUpdateWithoutMatchedUploadItemsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
-    sku?: StringFieldUpdateOperationsInput | string
-    barcode?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: StringFieldUpdateOperationsInput | string
-    shortDescription?: StringFieldUpdateOperationsInput | string
-    categoryId?: StringFieldUpdateOperationsInput | string
-    subcategoryId?: NullableStringFieldUpdateOperationsInput | string | null
-    brandId?: StringFieldUpdateOperationsInput | string
-    priceCents?: IntFieldUpdateOperationsInput | number
-    compareAtPriceCents?: NullableIntFieldUpdateOperationsInput | number | null
-    costPriceCents?: NullableIntFieldUpdateOperationsInput | number | null
-    stockQuantity?: IntFieldUpdateOperationsInput | number
-    lowStockThreshold?: IntFieldUpdateOperationsInput | number
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isFeatured?: BoolFieldUpdateOperationsInput | boolean
-    isNewArrival?: BoolFieldUpdateOperationsInput | boolean
-    isBestSeller?: BoolFieldUpdateOperationsInput | boolean
-    images?: ProductUpdateimagesInput | string[]
-    tags?: ProductUpdatetagsInput | string[]
-    rating?: FloatFieldUpdateOperationsInput | number
-    reviewCount?: IntFieldUpdateOperationsInput | number
-    specifications?: JsonNullValueInput | InputJsonValue
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    variants?: ProductVariantUncheckedUpdateManyWithoutProductNestedInput
-    globalSku?: GlobalSkuUncheckedUpdateOneWithoutProductNestedInput
-    movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
-    orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
-    packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
-    savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
-    cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
-    reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
-    backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutProductNestedInput
-    promotions?: PromotionProductUncheckedUpdateManyWithoutProductNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type UserCreateWithoutWishlistInput = {
@@ -98270,7 +97387,6 @@ export namespace Prisma {
     orders?: OrderCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -98282,6 +97398,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutWishlistInput = {
@@ -98308,7 +97425,6 @@ export namespace Prisma {
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -98320,6 +97436,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutWishlistInput = {
@@ -98359,7 +97476,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
@@ -98399,7 +97515,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
@@ -98447,7 +97562,6 @@ export namespace Prisma {
     orders?: OrderUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -98459,6 +97573,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWishlistInput = {
@@ -98485,7 +97600,6 @@ export namespace Prisma {
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -98497,6 +97611,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type ProductUpsertWithoutWishlistItemsInput = {
@@ -98542,7 +97657,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
@@ -98582,7 +97696,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
@@ -98614,7 +97727,6 @@ export namespace Prisma {
     orders?: OrderCreateNestedManyWithoutUserInput
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -98626,6 +97738,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutSavedStationeryListsInput = {
@@ -98652,7 +97765,6 @@ export namespace Prisma {
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -98664,6 +97776,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutSavedStationeryListsInput = {
@@ -98706,7 +97819,6 @@ export namespace Prisma {
     orders?: OrderUpdateManyWithoutUserNestedInput
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -98718,6 +97830,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSavedStationeryListsInput = {
@@ -98744,7 +97857,6 @@ export namespace Prisma {
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -98756,6 +97868,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserCreateWithoutSavedListsInput = {
@@ -98782,7 +97895,6 @@ export namespace Prisma {
     orders?: OrderCreateNestedManyWithoutUserInput
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -98794,6 +97906,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutSavedListsInput = {
@@ -98820,7 +97933,6 @@ export namespace Prisma {
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -98832,6 +97944,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutSavedListsInput = {
@@ -98900,7 +98013,6 @@ export namespace Prisma {
     orders?: OrderUpdateManyWithoutUserNestedInput
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -98912,6 +98024,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSavedListsInput = {
@@ -98938,7 +98051,6 @@ export namespace Prisma {
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -98950,6 +98062,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type SavedListItemUpsertWithWhereUniqueWithoutSavedListInput = {
@@ -99021,7 +98134,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
@@ -99061,7 +98173,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
@@ -99144,7 +98255,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
@@ -99184,7 +98294,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
@@ -99217,7 +98326,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -99228,6 +98336,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedBannersInput = {
@@ -99255,7 +98364,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -99266,6 +98374,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedBannersInput = {
@@ -99298,7 +98407,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -99309,6 +98417,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutUpdatedBannersInput = {
@@ -99336,7 +98445,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -99347,6 +98455,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutUpdatedBannersInput = {
@@ -99390,7 +98499,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -99401,6 +98509,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedBannersInput = {
@@ -99428,7 +98537,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -99439,6 +98547,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUpsertWithoutUpdatedBannersInput = {
@@ -99477,7 +98586,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -99488,6 +98596,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUpdatedBannersInput = {
@@ -99515,7 +98624,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -99526,6 +98634,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserCreateWithoutAuditLogsInput = {
@@ -99553,7 +98662,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
     reservations?: StockReservationCreateNestedManyWithoutUserInput
@@ -99564,6 +98672,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -99591,7 +98700,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
     reservations?: StockReservationUncheckedCreateNestedManyWithoutUserInput
@@ -99602,6 +98710,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -99645,7 +98754,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
     reservations?: StockReservationUpdateManyWithoutUserNestedInput
@@ -99656,6 +98764,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -99683,7 +98792,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
     reservations?: StockReservationUncheckedUpdateManyWithoutUserNestedInput
@@ -99694,6 +98802,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserCreateWithoutCartInput = {
@@ -99721,7 +98830,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     reservations?: StockReservationCreateNestedManyWithoutUserInput
@@ -99732,6 +98840,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutCartInput = {
@@ -99759,7 +98868,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     reservations?: StockReservationUncheckedCreateNestedManyWithoutUserInput
@@ -99770,6 +98878,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutCartInput = {
@@ -99841,7 +98950,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     reservations?: StockReservationUpdateManyWithoutUserNestedInput
@@ -99852,6 +98960,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCartInput = {
@@ -99879,7 +98988,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     reservations?: StockReservationUncheckedUpdateManyWithoutUserNestedInput
@@ -99890,6 +98998,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type CartItemUpsertWithWhereUniqueWithoutCartInput = {
@@ -99961,7 +99070,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     reservationItems?: StockReservationItemCreateNestedManyWithoutProductInput
@@ -100001,7 +99109,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     reservationItems?: StockReservationItemUncheckedCreateNestedManyWithoutProductInput
@@ -100125,7 +99232,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     reservationItems?: StockReservationItemUpdateManyWithoutProductNestedInput
@@ -100165,7 +99271,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     reservationItems?: StockReservationItemUncheckedUpdateManyWithoutProductNestedInput
@@ -100245,7 +99350,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -100256,6 +99360,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutBackInStockAlertsInput = {
@@ -100283,7 +99388,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -100294,6 +99398,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutBackInStockAlertsInput = {
@@ -100333,7 +99438,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -100373,7 +99477,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -100422,7 +99525,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -100433,6 +99535,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBackInStockAlertsInput = {
@@ -100460,7 +99563,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -100471,6 +99573,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type ProductUpsertWithoutBackInStockAlertsInput = {
@@ -100516,7 +99619,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -100556,7 +99658,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -100883,7 +99984,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -100894,6 +99994,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionCreateNestedManyWithoutCustomerInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutInvitationsSentInput = {
@@ -100921,7 +100022,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -100932,6 +100032,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionUncheckedCreateNestedManyWithoutCustomerInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutInvitationsSentInput = {
@@ -101012,7 +100113,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -101023,6 +100123,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionUpdateManyWithoutCustomerNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInvitationsSentInput = {
@@ -101050,7 +100151,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -101061,6 +100161,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserCreateWithoutAssignedRoleInput = {
@@ -101087,7 +100188,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -101099,6 +100199,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutAssignedRoleInput = {
@@ -101125,7 +100226,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -101137,6 +100237,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutAssignedRoleInput = {
@@ -101480,7 +100581,6 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemCreateNestedManyWithoutProductInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
@@ -101520,7 +100620,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
     orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     packItems?: SchoolPackItemUncheckedCreateNestedManyWithoutProductInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedCreateNestedManyWithoutMatchedProductInput
     wishlistItems?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
     savedListItems?: SavedListItemUncheckedCreateNestedManyWithoutProductInput
     cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
@@ -101617,7 +100716,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -101657,7 +100755,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -101738,7 +100835,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -101749,6 +100845,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionCreateNestedManyWithoutCustomerInput
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutImportPreviewsInput = {
@@ -101776,7 +100873,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -101787,6 +100883,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionUncheckedCreateNestedManyWithoutCustomerInput
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutImportPreviewsInput = {
@@ -101882,7 +100979,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -101893,6 +100989,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionUpdateManyWithoutCustomerNestedInput
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutImportPreviewsInput = {
@@ -101920,7 +101017,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -101931,6 +101027,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type ProductImportBatchUpsertWithWhereUniqueWithoutPreviewInput = {
@@ -101974,7 +101071,6 @@ export namespace Prisma {
     wishlist?: WishlistItemCreateNestedManyWithoutUserInput
     savedLists?: SavedListCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
@@ -101985,6 +101081,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionCreateNestedManyWithoutCustomerInput
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserUncheckedCreateWithoutImportBatchesInput = {
@@ -102012,7 +101109,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
     savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
     savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
-    documents?: UploadedDocumentUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
@@ -102023,6 +101119,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionUncheckedCreateNestedManyWithoutCustomerInput
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
   }
 
   export type UserCreateOrConnectWithoutImportBatchesInput = {
@@ -102133,7 +101230,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -102144,6 +101240,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionUpdateManyWithoutCustomerNestedInput
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutImportBatchesInput = {
@@ -102171,7 +101268,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -102182,6 +101278,7 @@ export namespace Prisma {
     promotionRedemptions?: PromotionRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type ProductImportPreviewUpsertWithoutBatchesInput = {
@@ -102417,27 +101514,6 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type UploadedDocumentCreateManyUserInput = {
-    id?: string
-    sessionId?: string | null
-    fileName: string
-    fileUrl: string
-    storagePath?: string | null
-    fileSizeBytes: number
-    fileType: string
-    pageCount?: number
-    status?: $Enums.DocumentStatus
-    isSimulatedOCR?: boolean
-    ocrProvider?: string | null
-    customerNotes?: string | null
-    processingError?: string | null
-    attempts?: number
-    processedAt?: Date | string | null
-    confirmedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
   export type AuditLogCreateManyUserInput = {
     id?: string
     action: string
@@ -102492,6 +101568,7 @@ export namespace Prisma {
     imageAltText: string
     buttonText?: string | null
     buttonLink?: string | null
+    placement?: string | null
     sortOrder?: number
     status?: $Enums.BannerStatus
     startAt?: Date | string | null
@@ -102511,6 +101588,7 @@ export namespace Prisma {
     imageAltText: string
     buttonText?: string | null
     buttonLink?: string | null
+    placement?: string | null
     sortOrder?: number
     status?: $Enums.BannerStatus
     startAt?: Date | string | null
@@ -102572,6 +101650,26 @@ export namespace Prisma {
     failedRows?: number
     startedAt?: Date | string | null
     completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BankDepositSubmissionCreateManyReviewedByInput = {
+    id?: string
+    orderId: string
+    paymentAttemptId?: string | null
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -102654,6 +101752,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutUserInput = {
@@ -102689,6 +101788,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateManyWithoutUserInput = {
@@ -102781,71 +101881,6 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     itemProductIds?: SavedStationeryListUpdateitemProductIdsInput | string[]
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type UploadedDocumentUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    fileName?: StringFieldUpdateOperationsInput | string
-    fileUrl?: StringFieldUpdateOperationsInput | string
-    storagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    fileSizeBytes?: IntFieldUpdateOperationsInput | number
-    fileType?: StringFieldUpdateOperationsInput | string
-    pageCount?: IntFieldUpdateOperationsInput | number
-    status?: EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFieldUpdateOperationsInput | boolean
-    ocrProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    processingError?: NullableStringFieldUpdateOperationsInput | string | null
-    attempts?: IntFieldUpdateOperationsInput | number
-    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    extractedItems?: ExtractedStationeryItemUpdateManyWithoutDocumentNestedInput
-  }
-
-  export type UploadedDocumentUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    fileName?: StringFieldUpdateOperationsInput | string
-    fileUrl?: StringFieldUpdateOperationsInput | string
-    storagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    fileSizeBytes?: IntFieldUpdateOperationsInput | number
-    fileType?: StringFieldUpdateOperationsInput | string
-    pageCount?: IntFieldUpdateOperationsInput | number
-    status?: EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFieldUpdateOperationsInput | boolean
-    ocrProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    processingError?: NullableStringFieldUpdateOperationsInput | string | null
-    attempts?: IntFieldUpdateOperationsInput | number
-    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    extractedItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutDocumentNestedInput
-  }
-
-  export type UploadedDocumentUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    fileName?: StringFieldUpdateOperationsInput | string
-    fileUrl?: StringFieldUpdateOperationsInput | string
-    storagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    fileSizeBytes?: IntFieldUpdateOperationsInput | number
-    fileType?: StringFieldUpdateOperationsInput | string
-    pageCount?: IntFieldUpdateOperationsInput | number
-    status?: EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
-    isSimulatedOCR?: BoolFieldUpdateOperationsInput | boolean
-    ocrProvider?: NullableStringFieldUpdateOperationsInput | string | null
-    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    processingError?: NullableStringFieldUpdateOperationsInput | string | null
-    attempts?: IntFieldUpdateOperationsInput | number
-    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -102996,6 +102031,7 @@ export namespace Prisma {
     imageAltText?: StringFieldUpdateOperationsInput | string
     buttonText?: NullableStringFieldUpdateOperationsInput | string | null
     buttonLink?: NullableStringFieldUpdateOperationsInput | string | null
+    placement?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
     status?: EnumBannerStatusFieldUpdateOperationsInput | $Enums.BannerStatus
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -103015,6 +102051,7 @@ export namespace Prisma {
     imageAltText?: StringFieldUpdateOperationsInput | string
     buttonText?: NullableStringFieldUpdateOperationsInput | string | null
     buttonLink?: NullableStringFieldUpdateOperationsInput | string | null
+    placement?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
     status?: EnumBannerStatusFieldUpdateOperationsInput | $Enums.BannerStatus
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -103034,6 +102071,7 @@ export namespace Prisma {
     imageAltText?: StringFieldUpdateOperationsInput | string
     buttonText?: NullableStringFieldUpdateOperationsInput | string | null
     buttonLink?: NullableStringFieldUpdateOperationsInput | string | null
+    placement?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
     status?: EnumBannerStatusFieldUpdateOperationsInput | $Enums.BannerStatus
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -103053,6 +102091,7 @@ export namespace Prisma {
     imageAltText?: StringFieldUpdateOperationsInput | string
     buttonText?: NullableStringFieldUpdateOperationsInput | string | null
     buttonLink?: NullableStringFieldUpdateOperationsInput | string | null
+    placement?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
     status?: EnumBannerStatusFieldUpdateOperationsInput | $Enums.BannerStatus
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -103072,6 +102111,7 @@ export namespace Prisma {
     imageAltText?: StringFieldUpdateOperationsInput | string
     buttonText?: NullableStringFieldUpdateOperationsInput | string | null
     buttonLink?: NullableStringFieldUpdateOperationsInput | string | null
+    placement?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
     status?: EnumBannerStatusFieldUpdateOperationsInput | $Enums.BannerStatus
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -103091,6 +102131,7 @@ export namespace Prisma {
     imageAltText?: StringFieldUpdateOperationsInput | string
     buttonText?: NullableStringFieldUpdateOperationsInput | string | null
     buttonLink?: NullableStringFieldUpdateOperationsInput | string | null
+    placement?: NullableStringFieldUpdateOperationsInput | string | null
     sortOrder?: IntFieldUpdateOperationsInput | number
     status?: EnumBannerStatusFieldUpdateOperationsInput | $Enums.BannerStatus
     startAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -103272,6 +102313,66 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type BankDepositSubmissionUpdateWithoutReviewedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: OrderUpdateOneRequiredWithoutBankDepositSubmissionsNestedInput
+    paymentAttempt?: PaymentAttemptUpdateOneWithoutBankDepositSubmissionsNestedInput
+  }
+
+  export type BankDepositSubmissionUncheckedUpdateWithoutReviewedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    paymentAttemptId?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    paymentAttemptId?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CategoryCreateManyParentInput = {
     id?: string
     name: string
@@ -103425,7 +102526,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -103465,7 +102565,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -103533,7 +102632,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -103573,7 +102671,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -103687,7 +102784,6 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
@@ -103727,7 +102823,6 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     packItems?: SchoolPackItemUncheckedUpdateManyWithoutProductNestedInput
-    matchedUploadItems?: ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductNestedInput
     wishlistItems?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
     savedListItems?: SavedListItemUncheckedUpdateManyWithoutProductNestedInput
     cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
@@ -103808,29 +102903,6 @@ export namespace Prisma {
     defaultQuantity?: number
     unitPriceCents: number
     substituteProductIds?: SchoolPackItemCreatesubstituteProductIdsInput | string[]
-    createdAt?: Date | string
-  }
-
-  export type ExtractedStationeryItemCreateManyMatchedProductInput = {
-    id?: string
-    documentId: string
-    rawText: string
-    itemDescription: string
-    quantity?: number
-    unit?: string | null
-    confidence?: $Enums.ItemConfidence
-    confidenceScore?: number
-    extractionConfidence?: number
-    matchConfidence?: number
-    matchReason?: string | null
-    matchedVariantId?: string | null
-    candidateProductIds?: ExtractedStationeryItemCreatecandidateProductIdsInput | string[]
-    status?: $Enums.MatchStatus
-    isConfirmed?: boolean
-    confirmedProductId?: string | null
-    confirmedVariantId?: string | null
-    confirmedQuantity?: number | null
-    isSubstituted?: boolean
     createdAt?: Date | string
   }
 
@@ -104038,75 +103110,6 @@ export namespace Prisma {
     defaultQuantity?: IntFieldUpdateOperationsInput | number
     unitPriceCents?: IntFieldUpdateOperationsInput | number
     substituteProductIds?: SchoolPackItemUpdatesubstituteProductIdsInput | string[]
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ExtractedStationeryItemUpdateWithoutMatchedProductInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    rawText?: StringFieldUpdateOperationsInput | string
-    itemDescription?: StringFieldUpdateOperationsInput | string
-    quantity?: IntFieldUpdateOperationsInput | number
-    unit?: NullableStringFieldUpdateOperationsInput | string | null
-    confidence?: EnumItemConfidenceFieldUpdateOperationsInput | $Enums.ItemConfidence
-    confidenceScore?: FloatFieldUpdateOperationsInput | number
-    extractionConfidence?: FloatFieldUpdateOperationsInput | number
-    matchConfidence?: FloatFieldUpdateOperationsInput | number
-    matchReason?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    candidateProductIds?: ExtractedStationeryItemUpdatecandidateProductIdsInput | string[]
-    status?: EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
-    isConfirmed?: BoolFieldUpdateOperationsInput | boolean
-    confirmedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedQuantity?: NullableIntFieldUpdateOperationsInput | number | null
-    isSubstituted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    document?: UploadedDocumentUpdateOneRequiredWithoutExtractedItemsNestedInput
-  }
-
-  export type ExtractedStationeryItemUncheckedUpdateWithoutMatchedProductInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    documentId?: StringFieldUpdateOperationsInput | string
-    rawText?: StringFieldUpdateOperationsInput | string
-    itemDescription?: StringFieldUpdateOperationsInput | string
-    quantity?: IntFieldUpdateOperationsInput | number
-    unit?: NullableStringFieldUpdateOperationsInput | string | null
-    confidence?: EnumItemConfidenceFieldUpdateOperationsInput | $Enums.ItemConfidence
-    confidenceScore?: FloatFieldUpdateOperationsInput | number
-    extractionConfidence?: FloatFieldUpdateOperationsInput | number
-    matchConfidence?: FloatFieldUpdateOperationsInput | number
-    matchReason?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    candidateProductIds?: ExtractedStationeryItemUpdatecandidateProductIdsInput | string[]
-    status?: EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
-    isConfirmed?: BoolFieldUpdateOperationsInput | boolean
-    confirmedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedQuantity?: NullableIntFieldUpdateOperationsInput | number | null
-    isSubstituted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ExtractedStationeryItemUncheckedUpdateManyWithoutMatchedProductInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    documentId?: StringFieldUpdateOperationsInput | string
-    rawText?: StringFieldUpdateOperationsInput | string
-    itemDescription?: StringFieldUpdateOperationsInput | string
-    quantity?: IntFieldUpdateOperationsInput | number
-    unit?: NullableStringFieldUpdateOperationsInput | string | null
-    confidence?: EnumItemConfidenceFieldUpdateOperationsInput | $Enums.ItemConfidence
-    confidenceScore?: FloatFieldUpdateOperationsInput | number
-    extractionConfidence?: FloatFieldUpdateOperationsInput | number
-    matchConfidence?: FloatFieldUpdateOperationsInput | number
-    matchReason?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    candidateProductIds?: ExtractedStationeryItemUpdatecandidateProductIdsInput | string[]
-    status?: EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
-    isConfirmed?: BoolFieldUpdateOperationsInput | boolean
-    confirmedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedQuantity?: NullableIntFieldUpdateOperationsInput | number | null
-    isSubstituted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -104554,11 +103557,48 @@ export namespace Prisma {
   export type RefundRecordCreateManyOrderInput = {
     id?: string
     amountCents: number
+    currency?: string
     method: string
+    status?: $Enums.RefundStatus
     reference?: string | null
+    externalReference?: string | null
+    idempotencyKey?: string | null
+    payloadHash?: string | null
     reason: string
+    failureReason?: string | null
+    maskedAccountNumber?: string | null
+    encryptedBankDetails?: string | null
     processedBy?: string | null
+    processedById?: string | null
+    requestedById?: string | null
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    completedById?: string | null
+    completedAt?: Date | string | null
+    orderReturnRequestId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BankDepositSubmissionCreateManyOrderInput = {
+    id?: string
+    paymentAttemptId?: string | null
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type PromotionRedemptionUpdateWithoutOrderInput = {
@@ -104645,6 +103685,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     reservation?: StockReservationUpdateOneRequiredWithoutPaymentAttemptsNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutPaymentAttemptNestedInput
   }
 
   export type PaymentAttemptUncheckedUpdateWithoutOrderInput = {
@@ -104660,6 +103701,7 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutPaymentAttemptNestedInput
   }
 
   export type PaymentAttemptUncheckedUpdateManyWithoutOrderInput = {
@@ -104749,6 +103791,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     items?: OrderReturnItemUpdateManyWithoutReturnRequestNestedInput
+    refundRecords?: RefundRecordUpdateManyWithoutOrderReturnRequestNestedInput
   }
 
   export type OrderReturnRequestUncheckedUpdateWithoutOrderInput = {
@@ -104760,6 +103803,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     items?: OrderReturnItemUncheckedUpdateManyWithoutReturnRequestNestedInput
+    refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderReturnRequestNestedInput
   }
 
   export type OrderReturnRequestUncheckedUpdateManyWithoutOrderInput = {
@@ -104775,31 +103819,142 @@ export namespace Prisma {
   export type RefundRecordUpdateWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
     reference?: NullableStringFieldUpdateOperationsInput | string | null
+    externalReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadHash?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    encryptedBankDetails?: NullableStringFieldUpdateOperationsInput | string | null
     processedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    processedById?: NullableStringFieldUpdateOperationsInput | string | null
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedById?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    orderReturnRequest?: OrderReturnRequestUpdateOneWithoutRefundRecordsNestedInput
   }
 
   export type RefundRecordUncheckedUpdateWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
     reference?: NullableStringFieldUpdateOperationsInput | string | null
+    externalReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadHash?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    encryptedBankDetails?: NullableStringFieldUpdateOperationsInput | string | null
     processedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    processedById?: NullableStringFieldUpdateOperationsInput | string | null
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedById?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    orderReturnRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RefundRecordUncheckedUpdateManyWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
     amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
     reference?: NullableStringFieldUpdateOperationsInput | string | null
+    externalReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadHash?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    encryptedBankDetails?: NullableStringFieldUpdateOperationsInput | string | null
     processedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    processedById?: NullableStringFieldUpdateOperationsInput | string | null
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedById?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    orderReturnRequestId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BankDepositSubmissionUpdateWithoutOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentAttempt?: PaymentAttemptUpdateOneWithoutBankDepositSubmissionsNestedInput
+    reviewedBy?: UserUpdateOneWithoutReviewedBankDepositsNestedInput
+  }
+
+  export type BankDepositSubmissionUncheckedUpdateWithoutOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    paymentAttemptId?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BankDepositSubmissionUncheckedUpdateManyWithoutOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    paymentAttemptId?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OrderReturnItemCreateManyOrderItemInput = {
@@ -104862,6 +104017,33 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type RefundRecordCreateManyOrderReturnRequestInput = {
+    id?: string
+    orderId: string
+    amountCents: number
+    currency?: string
+    method: string
+    status?: $Enums.RefundStatus
+    reference?: string | null
+    externalReference?: string | null
+    idempotencyKey?: string | null
+    payloadHash?: string | null
+    reason: string
+    failureReason?: string | null
+    maskedAccountNumber?: string | null
+    encryptedBankDetails?: string | null
+    processedBy?: string | null
+    processedById?: string | null
+    requestedById?: string | null
+    approvedById?: string | null
+    approvedAt?: Date | string | null
+    completedById?: string | null
+    completedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type OrderReturnItemUpdateWithoutReturnRequestInput = {
     id?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
@@ -104896,6 +104078,87 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RefundRecordUpdateWithoutOrderReturnRequestInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    method?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    externalReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadHash?: NullableStringFieldUpdateOperationsInput | string | null
+    reason?: StringFieldUpdateOperationsInput | string
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    encryptedBankDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    processedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    processedById?: NullableStringFieldUpdateOperationsInput | string | null
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedById?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: OrderUpdateOneRequiredWithoutRefundRecordsNestedInput
+  }
+
+  export type RefundRecordUncheckedUpdateWithoutOrderReturnRequestInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    method?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    externalReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadHash?: NullableStringFieldUpdateOperationsInput | string | null
+    reason?: StringFieldUpdateOperationsInput | string
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    encryptedBankDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    processedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    processedById?: NullableStringFieldUpdateOperationsInput | string | null
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedById?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RefundRecordUncheckedUpdateManyWithoutOrderReturnRequestInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    method?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    externalReference?: NullableStringFieldUpdateOperationsInput | string | null
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    payloadHash?: NullableStringFieldUpdateOperationsInput | string | null
+    reason?: StringFieldUpdateOperationsInput | string
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    maskedAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    encryptedBankDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    processedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    processedById?: NullableStringFieldUpdateOperationsInput | string | null
+    requestedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedById?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StockReservationItemCreateManyReservationInput = {
@@ -104962,6 +104225,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneWithoutPaymentAttemptsNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutPaymentAttemptNestedInput
   }
 
   export type PaymentAttemptUncheckedUpdateWithoutReservationInput = {
@@ -104977,6 +104241,7 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutPaymentAttemptNestedInput
   }
 
   export type PaymentAttemptUncheckedUpdateManyWithoutReservationInput = {
@@ -104990,6 +104255,86 @@ export namespace Prisma {
     idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
     gatewayPayload?: NullableJsonNullValueInput | InputJsonValue
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BankDepositSubmissionCreateManyPaymentAttemptInput = {
+    id?: string
+    orderId: string
+    receiptStorageKey: string
+    originalFilename: string
+    fileSizeBytes: number
+    mimeType: string
+    fileHashSha256?: string | null
+    referenceNumber: string
+    depositDate: Date | string
+    amountCents: number
+    customerNotes?: string | null
+    status?: $Enums.BankDepositStatus
+    rejectionReason?: string | null
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BankDepositSubmissionUpdateWithoutPaymentAttemptInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: OrderUpdateOneRequiredWithoutBankDepositSubmissionsNestedInput
+    reviewedBy?: UserUpdateOneWithoutReviewedBankDepositsNestedInput
+  }
+
+  export type BankDepositSubmissionUncheckedUpdateWithoutPaymentAttemptInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BankDepositSubmissionUncheckedUpdateManyWithoutPaymentAttemptInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    receiptStorageKey?: StringFieldUpdateOperationsInput | string
+    originalFilename?: StringFieldUpdateOperationsInput | string
+    fileSizeBytes?: IntFieldUpdateOperationsInput | number
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileHashSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    referenceNumber?: StringFieldUpdateOperationsInput | string
+    depositDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    amountCents?: IntFieldUpdateOperationsInput | number
+    customerNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumBankDepositStatusFieldUpdateOperationsInput | $Enums.BankDepositStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -105187,6 +104532,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutPromotionInput = {
@@ -105222,6 +104568,7 @@ export namespace Prisma {
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutOrderNestedInput
     returnRequests?: OrderReturnRequestUncheckedUpdateManyWithoutOrderNestedInput
     refundRecords?: RefundRecordUncheckedUpdateManyWithoutOrderNestedInput
+    bankDepositSubmissions?: BankDepositSubmissionUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateManyWithoutPromotionInput = {
@@ -105288,98 +104635,6 @@ export namespace Prisma {
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
     discountAmount?: IntFieldUpdateOperationsInput | number
     redeemedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ExtractedStationeryItemCreateManyDocumentInput = {
-    id?: string
-    rawText: string
-    itemDescription: string
-    quantity?: number
-    unit?: string | null
-    confidence?: $Enums.ItemConfidence
-    confidenceScore?: number
-    extractionConfidence?: number
-    matchConfidence?: number
-    matchReason?: string | null
-    matchedProductId?: string | null
-    matchedVariantId?: string | null
-    candidateProductIds?: ExtractedStationeryItemCreatecandidateProductIdsInput | string[]
-    status?: $Enums.MatchStatus
-    isConfirmed?: boolean
-    confirmedProductId?: string | null
-    confirmedVariantId?: string | null
-    confirmedQuantity?: number | null
-    isSubstituted?: boolean
-    createdAt?: Date | string
-  }
-
-  export type ExtractedStationeryItemUpdateWithoutDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    rawText?: StringFieldUpdateOperationsInput | string
-    itemDescription?: StringFieldUpdateOperationsInput | string
-    quantity?: IntFieldUpdateOperationsInput | number
-    unit?: NullableStringFieldUpdateOperationsInput | string | null
-    confidence?: EnumItemConfidenceFieldUpdateOperationsInput | $Enums.ItemConfidence
-    confidenceScore?: FloatFieldUpdateOperationsInput | number
-    extractionConfidence?: FloatFieldUpdateOperationsInput | number
-    matchConfidence?: FloatFieldUpdateOperationsInput | number
-    matchReason?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    candidateProductIds?: ExtractedStationeryItemUpdatecandidateProductIdsInput | string[]
-    status?: EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
-    isConfirmed?: BoolFieldUpdateOperationsInput | boolean
-    confirmedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedQuantity?: NullableIntFieldUpdateOperationsInput | number | null
-    isSubstituted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    matchedProduct?: ProductUpdateOneWithoutMatchedUploadItemsNestedInput
-  }
-
-  export type ExtractedStationeryItemUncheckedUpdateWithoutDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    rawText?: StringFieldUpdateOperationsInput | string
-    itemDescription?: StringFieldUpdateOperationsInput | string
-    quantity?: IntFieldUpdateOperationsInput | number
-    unit?: NullableStringFieldUpdateOperationsInput | string | null
-    confidence?: EnumItemConfidenceFieldUpdateOperationsInput | $Enums.ItemConfidence
-    confidenceScore?: FloatFieldUpdateOperationsInput | number
-    extractionConfidence?: FloatFieldUpdateOperationsInput | number
-    matchConfidence?: FloatFieldUpdateOperationsInput | number
-    matchReason?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    candidateProductIds?: ExtractedStationeryItemUpdatecandidateProductIdsInput | string[]
-    status?: EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
-    isConfirmed?: BoolFieldUpdateOperationsInput | boolean
-    confirmedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedQuantity?: NullableIntFieldUpdateOperationsInput | number | null
-    isSubstituted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ExtractedStationeryItemUncheckedUpdateManyWithoutDocumentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    rawText?: StringFieldUpdateOperationsInput | string
-    itemDescription?: StringFieldUpdateOperationsInput | string
-    quantity?: IntFieldUpdateOperationsInput | number
-    unit?: NullableStringFieldUpdateOperationsInput | string | null
-    confidence?: EnumItemConfidenceFieldUpdateOperationsInput | $Enums.ItemConfidence
-    confidenceScore?: FloatFieldUpdateOperationsInput | number
-    extractionConfidence?: FloatFieldUpdateOperationsInput | number
-    matchConfidence?: FloatFieldUpdateOperationsInput | number
-    matchReason?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    matchedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    candidateProductIds?: ExtractedStationeryItemUpdatecandidateProductIdsInput | string[]
-    status?: EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
-    isConfirmed?: BoolFieldUpdateOperationsInput | boolean
-    confirmedProductId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedVariantId?: NullableStringFieldUpdateOperationsInput | string | null
-    confirmedQuantity?: NullableIntFieldUpdateOperationsInput | number | null
-    isSubstituted?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SavedListItemCreateManySavedListInput = {
@@ -105582,7 +104837,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
@@ -105594,6 +104848,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedRoleInput = {
@@ -105620,7 +104875,6 @@ export namespace Prisma {
     wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
     savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
     savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
-    documents?: UploadedDocumentUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
@@ -105632,6 +104886,7 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutAssignedRoleInput = {

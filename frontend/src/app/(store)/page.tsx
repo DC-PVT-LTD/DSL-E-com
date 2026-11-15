@@ -1,6 +1,5 @@
-import React from 'react';
-import { EditorialHero } from '@/components/home/EditorialHero';
+import HomeStorefrontPage from './home/page';
 
 export default function StoreHomePage() {
-  return <EditorialHero />;
+  return <HomeStorefrontPage />;
 }

@@ -71,6 +71,15 @@ export class LocalStorageDriver implements StorageDriver {
 
     await fs.writeFile(destinationPath, file.buffer);
 
+    // In local development, safely mirror to frontend/public/uploads so Next.js can serve it synchronously
+    try {
+      const frontendUploadDir = path.resolve(process.cwd(), '..', 'frontend', 'public', 'uploads', folder);
+      await fs.mkdir(frontendUploadDir, { recursive: true });
+      await fs.writeFile(path.join(frontendUploadDir, safeFileName), file.buffer);
+    } catch {
+      // Non-blocking in production or container environments
+    }
+
     const relativePath = path
       .relative(this.baseUploadDir, destinationPath)
       .replace(/\\/g, '/');

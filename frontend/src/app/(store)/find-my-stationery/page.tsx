@@ -20,6 +20,7 @@ import {
   ChevronDown,
   RotateCcw,
   Package,
+  Sparkles,
 } from 'lucide-react';
 import { recommendationService } from '@/services/recommendationService';
 import {
@@ -28,17 +29,72 @@ import {
   RecommendationSubstitute,
   RecommendationConfig,
 } from '@/types/recommendations';
-import { formatLKR, rupeesToCents } from '@/lib/currency';
+import { formatLKR } from '@/lib/currency';
 import { useCartStore } from '@/services/cartStore';
 import { Product } from '@/types/product';
 import { productService } from '@/services/productService';
+import { INITIAL_PRODUCTS } from '@/mocks/products';
+
+// Authoritative local image lookup cache for true product photos
+const PRODUCT_IMAGE_BY_SKU = new Map<string, string>();
+const PRODUCT_IMAGE_BY_ID = new Map<string, string>();
+const PRODUCT_IMAGE_BY_NAME = new Map<string, string>();
+
+for (const p of INITIAL_PRODUCTS) {
+  const img = p.images?.[0];
+  if (img) {
+    if (p.sku) PRODUCT_IMAGE_BY_SKU.set(p.sku.toLowerCase().trim(), img);
+    if (p.id) PRODUCT_IMAGE_BY_ID.set(p.id.toLowerCase().trim(), img);
+    if (p.name) PRODUCT_IMAGE_BY_NAME.set(p.name.toLowerCase().trim(), img);
+  }
+}
+
+function getProductThumbnail(
+  productName: string,
+  categoryName?: string,
+  imageUrl?: string | null,
+  sku?: string,
+  productId?: string
+): string {
+  // 1. Direct image URL provided by backend or item
+  if (imageUrl && imageUrl.trim().length > 0) {
+    return imageUrl;
+  }
+
+  // 2. Lookup by SKU
+  if (sku) {
+    const bySku = PRODUCT_IMAGE_BY_SKU.get(sku.toLowerCase().trim());
+    if (bySku) return bySku;
+  }
+
+  // 3. Lookup by Product ID
+  if (productId) {
+    const byId = PRODUCT_IMAGE_BY_ID.get(productId.toLowerCase().trim());
+    if (byId) return byId;
+  }
+
+  // 4. Lookup by exact product name
+  if (productName) {
+    const byName = PRODUCT_IMAGE_BY_NAME.get(productName.toLowerCase().trim());
+    if (byName) return byName;
+
+    // 5. Partial / fuzzy name match in catalogue
+    const lowerName = productName.toLowerCase();
+    for (const [name, img] of PRODUCT_IMAGE_BY_NAME.entries()) {
+      if (lowerName.includes(name) || name.includes(lowerName)) {
+        return img;
+      }
+    }
+  }
+
+  // 6. Clean real product fallback from catalogue
+  return 'https://www.dsl.lk/media/img/1722854176.jpg';
+}
 
 interface PurposeCardData {
   id: StationeryPurpose;
   title: string;
   subtitle: string;
-  bgColor: string;
-  borderColor: string;
   imageSrc: string;
 }
 
@@ -47,40 +103,30 @@ const PURPOSE_CARDS: PurposeCardData[] = [
     id: 'school',
     title: 'School Student',
     subtitle: 'School student stage, school & A/L',
-    bgColor: '#FFF0C7',
-    borderColor: '#F6DE95',
     imageSrc: '/images/find-my-stationery/school_student.svg',
   },
   {
     id: 'art_craft',
     title: 'Art & Craft Enthusiast',
-    subtitle: 'Cuts craft and pottery supplies',
-    bgColor: '#FFE0CB',
-    borderColor: '#F6C6A5',
+    subtitle: 'Colouring, sketching & DIY supplies',
     imageSrc: '/images/find-my-stationery/art_craft.svg',
   },
   {
     id: 'university',
     title: 'University & College',
-    subtitle: 'University & College essentials',
-    bgColor: '#DDF5E4',
-    borderColor: '#BEE7C8',
+    subtitle: 'Campus lectures & tutorials',
     imageSrc: '/images/find-my-stationery/university.svg',
   },
   {
     id: 'office',
     title: 'Office & Business',
     subtitle: 'Filing, copiers & desk essentials',
-    bgColor: '#DCEBFF',
-    borderColor: '#BAD5F7',
     imageSrc: '/images/find-my-stationery/office_business.svg',
   },
   {
     id: 'gift',
     title: 'Stationery Gift Pack',
-    subtitle: 'Curated stationery gift pack',
-    bgColor: '#FCE0EF',
-    borderColor: '#F3C4DF',
+    subtitle: 'Curated premium stationery sets',
     imageSrc: '/images/find-my-stationery/gift_pack.svg',
   },
 ];
@@ -88,8 +134,6 @@ const PURPOSE_CARDS: PurposeCardData[] = [
 interface GradeOption {
   id: string;
   label: string;
-  bgColor: string;
-  borderColor: string;
   iconSrc: string;
 }
 
@@ -97,71 +141,41 @@ const GRADE_OPTIONS: GradeOption[] = [
   {
     id: 'Grade 1-2',
     label: 'Grade 1–2',
-    bgColor: '#D7F5D9',
-    borderColor: '#B7E6BA',
     iconSrc: '/images/find-my-stationery/grade_1_2.png',
   },
   {
     id: 'Grade 3-9',
     label: 'Grade 3–9',
-    bgColor: '#FFE0CB',
-    borderColor: '#F6C6A5',
     iconSrc: '/images/find-my-stationery/grade_3_9.png',
   },
   {
     id: 'O/L (Grade 10-11)',
     label: 'O/L (Grade 10–11)',
-    bgColor: '#FFF0B9',
-    borderColor: '#F5DE88',
     iconSrc: '/images/find-my-stationery/grade_ol.png',
   },
   {
     id: 'A/L Science',
     label: 'A/L Science',
-    bgColor: '#D8EDFF',
-    borderColor: '#B8DBF7',
     iconSrc: '/images/find-my-stationery/grade_al_science.png',
   },
   {
     id: 'A/L Commerce',
     label: 'A/L Commerce',
-    bgColor: '#E9DCFF',
-    borderColor: '#D5C0F6',
     iconSrc: '/images/find-my-stationery/grade_al_commerce.png',
   },
 ];
 
-function getProductThumbnail(productName: string, categoryName?: string, imageUrl?: string): string {
-  if (imageUrl) return imageUrl;
-  const lower = `${productName} ${categoryName || ''}`.toLowerCase();
-  if (lower.includes('book') || lower.includes('cr') || lower.includes('pad') || lower.includes('exercise')) {
-    return '/images/find-my-stationery/product_books.png';
-  }
-  if (lower.includes('pen') || lower.includes('pencil') || lower.includes('ballpoint') || lower.includes('gel') || lower.includes('drawing')) {
-    return '/images/find-my-stationery/product_pens.png';
-  }
-  if (lower.includes('geometry') || lower.includes('box') || lower.includes('math') || lower.includes('compass') || lower.includes('ruler')) {
-    return '/images/find-my-stationery/product_geometry.png';
-  }
-  if (lower.includes('highlighter') || lower.includes('marker') || lower.includes('color')) {
-    return '/images/find-my-stationery/product_highlighters.png';
-  }
-  if (lower.includes('glue') || lower.includes('scissor') || lower.includes('tape') || lower.includes('craft') || lower.includes('art') || lower.includes('paint') || lower.includes('clay')) {
-    return '/images/find-my-stationery/product_craft.png';
-  }
-  return '/images/find-my-stationery/product_books.png';
-}
+
 
 export default function FindMyStationeryPage() {
   const addItem = useCartStore((state) => state.addItem);
   const setDrawerOpen = useCartStore((state) => state.setDrawerOpen);
 
-  const [config, setConfig] = useState<RecommendationConfig | null>(null);
+  const [, setConfig] = useState<RecommendationConfig | null>(null);
 
   // Criteria State
   const [selectedPurpose, setSelectedPurpose] = useState<StationeryPurpose>('school');
   const [selectedGrade, setSelectedGrade] = useState('Grade 3-9');
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(['General Writing', 'Mathematics']);
   const [selectedStudyArea, setSelectedStudyArea] = useState('Engineering & STEM');
   const [selectedOfficeScale, setSelectedOfficeScale] = useState('individual');
   const [selectedActivityType, setSelectedActivityType] = useState('Water Colour Painting');
@@ -180,7 +194,7 @@ export default function FindMyStationeryPage() {
 
   const basketSectionRef = useRef<HTMLDivElement>(null);
 
-  // Initial load: Fetch recommendations so basket is immediately pre-populated matching the mockup
+  // Initial load: Fetch recommendations so basket is immediately pre-populated
   useEffect(() => {
     async function init() {
       try {
@@ -226,7 +240,6 @@ export default function FindMyStationeryPage() {
       const res = await recommendationService.getRecommendations({
         purpose: selectedPurpose,
         grade: selectedPurpose === 'school' ? selectedGrade : undefined,
-        subjects: selectedPurpose === 'school' ? selectedSubjects : undefined,
         studyArea: selectedPurpose === 'university' ? selectedStudyArea : undefined,
         officeScale: selectedPurpose === 'office' ? selectedOfficeScale : undefined,
         activityType: selectedPurpose === 'art_craft' ? selectedActivityType : undefined,
@@ -306,7 +319,6 @@ export default function FindMyStationeryPage() {
     setErrorMessage(null);
 
     try {
-      // 1. Authoritative server check
       const validation = await recommendationService.validateBasket(
         basketItems.map((item) => ({
           productId: item.productId,
@@ -320,7 +332,6 @@ export default function FindMyStationeryPage() {
         setServerWarnings(validation.warnings);
       }
 
-      // If price changed or unavailable items, sync state
       if (!validation.isValid) {
         setBasketItems((prev) =>
           prev
@@ -340,7 +351,6 @@ export default function FindMyStationeryPage() {
         return;
       }
 
-      // 2. Add each confirmed item to cart
       for (const item of basketItems) {
         let product: Product;
         try {
@@ -386,12 +396,10 @@ export default function FindMyStationeryPage() {
     }
   };
 
-  // Download PDF / Print list
   const handleDownloadPdf = () => {
     window.print();
   };
 
-  // Share List
   const handleShareList = () => {
     if (typeof window !== 'undefined') {
       const url = `${window.location.origin}/find-my-stationery?purpose=${selectedPurpose}&grade=${encodeURIComponent(selectedGrade)}&budget=${budgetRupees}`;
@@ -403,41 +411,31 @@ export default function FindMyStationeryPage() {
   };
 
   return (
-    <div className="w-full min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8 font-nunito text-[#17234B]">
+    <div className="w-full min-h-screen py-8 sm:py-14 px-4 sm:px-6 lg:px-10 xl:px-14 bg-gradient-to-b from-[#F7FAFF] via-white to-[#EAF4FF]/40 text-[#09285C]">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#17234B] text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-bold animate-fade-in">
-          <CheckCircle2 className="w-4 h-4 text-[#7CE0C3]" />
+        <div className="fixed bottom-6 right-6 z-50 bg-[#09285C] text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-bold animate-fade-in border border-blue-900/40">
+          <CheckCircle2 className="w-4 h-4 text-[#16A34A]" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="w-full max-w-7xl xl:max-w-[1520px] mx-auto space-y-8 sm:space-y-12">
         {/* ========================================================= */}
-        {/* HERO SECTION */}
+        {/* HERO SECTION (DSL ENTERPRISES THEME)                      */}
         {/* ========================================================= */}
         <div className="text-center space-y-3">
-          {/* Yellow Badge */}
-          <div className="inline-flex items-center gap-2 bg-[#FFE79A] text-[#17234B] text-xs font-black px-4 py-1.5 rounded-full shadow-xs">
-            <div className="relative w-5 h-5 shrink-0">
-              <Image
-                src="/images/find-my-stationery/star_badge.png"
-                alt="Star"
-                fill
-                className="object-contain"
-              />
-            </div>
-            <span className="tracking-wide">SMART RECOMMENDATION WIZARD</span>
+          <div className="inline-flex items-center gap-2 bg-[#EAF4FF] text-[#0866E8] text-xs font-black px-4 py-1.5 rounded-full border border-[#0866E8]/20 shadow-2xs">
+            <Sparkles className="w-4 h-4 text-[#FFD84D]" />
+            <span className="tracking-wider uppercase">Smart Recommendation Wizard</span>
           </div>
 
-          {/* Heading */}
-          <h1 className="font-fredoka text-fredoka-gradient font-bold text-4xl sm:text-5xl md:text-6xl tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-black text-[#09285C] tracking-tight">
             Find My Stationery
           </h1>
 
-          {/* Subtitle */}
-          <p className="font-nunito font-semibold text-xs sm:text-sm md:text-base text-[#17234B] max-w-2xl mx-auto leading-relaxed">
-            Select your learning stage, school stage, or office purpose. We configure the right mix
+          <p className="text-xs sm:text-sm md:text-base text-[#64748B] max-w-2xl mx-auto leading-relaxed">
+            Select your learning stage, school stage, or office persona. We configure the ideal mix
             of CR books, writing pens, and geometry essentials tailored to your budget.
           </p>
         </div>
@@ -451,14 +449,19 @@ export default function FindMyStationeryPage() {
         )}
 
         {/* ========================================================= */}
-        {/* WIZARD QUESTIONNAIRE SECTION */}
+        {/* WIZARD QUESTIONNAIRE SECTION                              */}
         {/* ========================================================= */}
-        <div className="space-y-7">
+        <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 lg:p-10 shadow-xs space-y-8">
           {/* 1. WHO ARE YOU SHOPPING FOR? */}
-          <div className="space-y-3">
-            <h2 className="font-nunito font-extrabold text-xs sm:text-sm text-[#17234B] uppercase tracking-wider">
-              1. WHO ARE YOU SHOPPING FOR?
-            </h2>
+          <div className="space-y-3.5">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-[#0866E8] text-white text-xs font-black flex items-center justify-center">
+                1
+              </span>
+              <h2 className="text-xs sm:text-sm font-black text-[#09285C] uppercase tracking-wider">
+                Who Are You Shopping For?
+              </h2>
+            </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               {PURPOSE_CARDS.map((card) => {
@@ -468,32 +471,39 @@ export default function FindMyStationeryPage() {
                     key={card.id}
                     type="button"
                     onClick={() => setSelectedPurpose(card.id)}
-                    style={{ backgroundColor: card.bgColor }}
-                    className={`relative rounded-3xl p-4 sm:p-5 flex flex-col items-center text-center cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-md ${
+                    className={`relative rounded-3xl p-4 sm:p-5 flex flex-col items-center text-center cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
                       isSelected
-                        ? 'ring-4 ring-[#0875D1]/30 border-2 border-[#0875D1] shadow-lg'
-                        : 'border-2 border-transparent shadow-xs'
+                        ? 'border-2 border-[#0866E8] bg-[#EAF4FF]/40 shadow-lg shadow-[#0866E8]/10 ring-4 ring-[#0866E8]/15'
+                        : 'border border-slate-200/80 bg-white hover:border-[#0866E8]/40 shadow-2xs'
                     }`}
                   >
-                    {/* Illustration */}
-                    <div className="relative w-16 h-14 sm:w-20 sm:h-16 mb-2">
+                    {/* Illustration Container */}
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#F7FAFF] border border-slate-100 flex items-center justify-center p-2.5 mb-2.5 relative">
                       <Image
                         src={card.imageSrc}
                         alt={card.title}
-                        fill
+                        width={64}
+                        height={64}
                         className="object-contain"
                       />
                     </div>
 
                     {/* Title */}
-                    <h3 className="font-nunito font-extrabold text-xs sm:text-sm text-[#17234B] leading-tight">
+                    <h3 className="font-black text-xs sm:text-sm text-[#09285C] leading-tight">
                       {card.title}
                     </h3>
 
                     {/* Subtitle */}
-                    <p className="font-nunito font-medium text-[10px] sm:text-[11px] text-[#796D68] leading-tight mt-1 line-clamp-2">
+                    <p className="text-[10px] sm:text-[11px] text-[#64748B] leading-tight mt-1 line-clamp-2">
                       {card.subtitle}
                     </p>
+
+                    {/* Selected badge */}
+                    {isSelected && (
+                      <span className="mt-2 text-[10px] font-bold text-[#0866E8] bg-white border border-[#0866E8]/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                        <Check className="w-3 h-3 text-[#0866E8]" /> Selected
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -502,10 +512,15 @@ export default function FindMyStationeryPage() {
 
           {/* 2. SELECT SCHOOL GRADE LEVEL (or conditional criterion) */}
           {selectedPurpose === 'school' && (
-            <div className="space-y-3 animate-fade-in">
-              <h2 className="font-nunito font-extrabold text-xs sm:text-sm text-[#17234B] uppercase tracking-wider">
-                2. SELECT SCHOOL GRADE LEVEL
-              </h2>
+            <div className="space-y-3.5 pt-4 border-t border-slate-100 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[#0866E8] text-white text-xs font-black flex items-center justify-center">
+                  2
+                </span>
+                <h2 className="text-xs sm:text-sm font-black text-[#09285C] uppercase tracking-wider">
+                  Select School Grade Level
+                </h2>
+              </div>
 
               <div className="flex flex-wrap gap-2.5 sm:gap-3">
                 {GRADE_OPTIONS.map((grade) => {
@@ -515,18 +530,18 @@ export default function FindMyStationeryPage() {
                       key={grade.id}
                       type="button"
                       onClick={() => setSelectedGrade(grade.id)}
-                      style={{ backgroundColor: grade.bgColor }}
-                      className={`rounded-full px-4 sm:px-5 py-2.5 flex items-center gap-2.5 font-nunito font-extrabold text-xs sm:text-sm text-[#17234B] cursor-pointer transition-all duration-150 hover:scale-105 ${
+                      className={`rounded-2xl px-4 sm:px-5 py-2.5 flex items-center gap-2.5 font-bold text-xs sm:text-sm cursor-pointer transition-all duration-150 hover:scale-102 ${
                         isSelected
-                          ? 'ring-3 ring-[#0875D1]/30 border-2 border-[#0875D1] shadow-sm'
-                          : 'border-2 border-black/5'
+                          ? 'bg-[#09285C] text-white border-2 border-[#09285C] shadow-md shadow-[#09285C]/15 ring-2 ring-[#0866E8]/20'
+                          : 'bg-white border border-slate-200/90 text-[#09285C] hover:bg-[#F7FAFF] hover:border-[#0866E8]/40 shadow-2xs'
                       }`}
                     >
                       <div className="relative w-6 h-6 shrink-0">
                         <Image
                           src={grade.iconSrc}
                           alt={grade.label}
-                          fill
+                          width={24}
+                          height={24}
                           className="object-contain"
                         />
                       </div>
@@ -538,12 +553,17 @@ export default function FindMyStationeryPage() {
             </div>
           )}
 
-          {/* Conditional Criteria for other purposes */}
+          {/* Conditional Criteria for other personas */}
           {selectedPurpose === 'university' && (
-            <div className="space-y-3 animate-fade-in">
-              <h2 className="font-nunito font-extrabold text-xs sm:text-sm text-[#17234B] uppercase tracking-wider">
-                2. SELECT STUDY AREA / DEGREE FIELD
-              </h2>
+            <div className="space-y-3.5 pt-4 border-t border-slate-100 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[#0866E8] text-white text-xs font-black flex items-center justify-center">
+                  2
+                </span>
+                <h2 className="text-xs sm:text-sm font-black text-[#09285C] uppercase tracking-wider">
+                  Select Study Area / Degree Field
+                </h2>
+              </div>
               <div className="flex flex-wrap gap-2.5">
                 {[
                   'Engineering & STEM',
@@ -556,10 +576,10 @@ export default function FindMyStationeryPage() {
                     key={area}
                     type="button"
                     onClick={() => setSelectedStudyArea(area)}
-                    className={`rounded-full px-4 py-2 font-nunito font-bold text-xs transition-all ${
+                    className={`rounded-2xl px-4 py-2 font-bold text-xs transition-all ${
                       selectedStudyArea === area
-                        ? 'bg-[#DDF5E4] text-[#17234B] border-2 border-[#0875D1] ring-2 ring-[#0875D1]/20'
-                        : 'bg-white border border-[#F0DCCB] text-[#17234B] hover:bg-slate-50'
+                        ? 'bg-[#09285C] text-white border-2 border-[#09285C] shadow-sm'
+                        : 'bg-white border border-slate-200 text-[#09285C] hover:bg-[#F7FAFF]'
                     }`}
                   >
                     {area}
@@ -570,10 +590,15 @@ export default function FindMyStationeryPage() {
           )}
 
           {selectedPurpose === 'office' && (
-            <div className="space-y-3 animate-fade-in">
-              <h2 className="font-nunito font-extrabold text-xs sm:text-sm text-[#17234B] uppercase tracking-wider">
-                2. OFFICE USAGE SCOPE
-              </h2>
+            <div className="space-y-3.5 pt-4 border-t border-slate-100 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[#0866E8] text-white text-xs font-black flex items-center justify-center">
+                  2
+                </span>
+                <h2 className="text-xs sm:text-sm font-black text-[#09285C] uppercase tracking-wider">
+                  Office Usage Scope
+                </h2>
+              </div>
               <div className="flex flex-wrap gap-2.5">
                 {[
                   { id: 'individual', label: 'Individual Desk' },
@@ -584,10 +609,10 @@ export default function FindMyStationeryPage() {
                     key={item.id}
                     type="button"
                     onClick={() => setSelectedOfficeScale(item.id)}
-                    className={`rounded-full px-5 py-2 font-nunito font-bold text-xs transition-all ${
+                    className={`rounded-2xl px-5 py-2 font-bold text-xs transition-all ${
                       selectedOfficeScale === item.id
-                        ? 'bg-[#DCEBFF] text-[#17234B] border-2 border-[#0875D1] ring-2 ring-[#0875D1]/20'
-                        : 'bg-white border border-[#F0DCCB] text-[#17234B] hover:bg-slate-50'
+                        ? 'bg-[#09285C] text-white border-2 border-[#09285C] shadow-sm'
+                        : 'bg-white border border-slate-200 text-[#09285C] hover:bg-[#F7FAFF]'
                     }`}
                   >
                     {item.label}
@@ -598,10 +623,15 @@ export default function FindMyStationeryPage() {
           )}
 
           {selectedPurpose === 'art_craft' && (
-            <div className="space-y-3 animate-fade-in">
-              <h2 className="font-nunito font-extrabold text-xs sm:text-sm text-[#17234B] uppercase tracking-wider">
-                2. PRIMARY ART OR CRAFT ACTIVITY
-              </h2>
+            <div className="space-y-3.5 pt-4 border-t border-slate-100 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[#0866E8] text-white text-xs font-black flex items-center justify-center">
+                  2
+                </span>
+                <h2 className="text-xs sm:text-sm font-black text-[#09285C] uppercase tracking-wider">
+                  Primary Art or Craft Activity
+                </h2>
+              </div>
               <div className="flex flex-wrap gap-2.5">
                 {[
                   'Water Colour Painting',
@@ -614,10 +644,10 @@ export default function FindMyStationeryPage() {
                     key={act}
                     type="button"
                     onClick={() => setSelectedActivityType(act)}
-                    className={`rounded-full px-4 py-2 font-nunito font-bold text-xs transition-all ${
+                    className={`rounded-2xl px-4 py-2 font-bold text-xs transition-all ${
                       selectedActivityType === act
-                        ? 'bg-[#FFE0CB] text-[#17234B] border-2 border-[#0875D1] ring-2 ring-[#0875D1]/20'
-                        : 'bg-white border border-[#F0DCCB] text-[#17234B] hover:bg-slate-50'
+                        ? 'bg-[#09285C] text-white border-2 border-[#09285C] shadow-sm'
+                        : 'bg-white border border-slate-200 text-[#09285C] hover:bg-[#F7FAFF]'
                     }`}
                   >
                     {act}
@@ -628,10 +658,15 @@ export default function FindMyStationeryPage() {
           )}
 
           {selectedPurpose === 'gift' && (
-            <div className="space-y-3 animate-fade-in">
-              <h2 className="font-nunito font-extrabold text-xs sm:text-sm text-[#17234B] uppercase tracking-wider">
-                2. GIFTING OCCASION
-              </h2>
+            <div className="space-y-3.5 pt-4 border-t border-slate-100 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[#0866E8] text-white text-xs font-black flex items-center justify-center">
+                  2
+                </span>
+                <h2 className="text-xs sm:text-sm font-black text-[#09285C] uppercase tracking-wider">
+                  Gifting Occasion
+                </h2>
+              </div>
               <div className="flex flex-wrap gap-2.5">
                 {[
                   'Birthday Gift',
@@ -644,10 +679,10 @@ export default function FindMyStationeryPage() {
                     key={occ}
                     type="button"
                     onClick={() => setSelectedOccasion(occ)}
-                    className={`rounded-full px-4 py-2 font-nunito font-bold text-xs transition-all ${
+                    className={`rounded-2xl px-4 py-2 font-bold text-xs transition-all ${
                       selectedOccasion === occ
-                        ? 'bg-[#FCE0EF] text-[#17234B] border-2 border-[#0875D1] ring-2 ring-[#0875D1]/20'
-                        : 'bg-white border border-[#F0DCCB] text-[#17234B] hover:bg-slate-50'
+                        ? 'bg-[#09285C] text-white border-2 border-[#09285C] shadow-sm'
+                        : 'bg-white border border-slate-200 text-[#09285C] hover:bg-[#F7FAFF]'
                     }`}
                   >
                     {occ}
@@ -658,19 +693,25 @@ export default function FindMyStationeryPage() {
           )}
 
           {/* 3. TARGET BUDGET IN LKR (OPTIONAL) */}
-          <div className="space-y-3">
-            <h2 className="font-nunito font-extrabold text-xs sm:text-sm text-[#17234B] uppercase tracking-wider">
-              3. TARGET BUDGET IN LKR (OPTIONAL)
-            </h2>
+          <div className="space-y-3.5 pt-4 border-t border-slate-100">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-[#0866E8] text-white text-xs font-black flex items-center justify-center">
+                3
+              </span>
+              <h2 className="text-xs sm:text-sm font-black text-[#09285C] uppercase tracking-wider">
+                Target Budget in LKR (Optional)
+              </h2>
+            </div>
 
-            <div className="flex flex-col lg:flex-row items-center gap-3.5 sm:gap-6 w-full">
+            <div className="flex flex-col lg:flex-row items-center gap-4 sm:gap-6 w-full">
               <div className="flex items-center gap-3 sm:gap-4 w-full flex-1">
                 {/* Coin Purse Icon */}
-                <div className="relative w-9 h-9 sm:w-11 sm:h-11 shrink-0">
+                <div className="w-11 h-11 rounded-2xl bg-[#EAF4FF] border border-[#0866E8]/20 flex items-center justify-center p-2 shrink-0">
                   <Image
                     src="/images/find-my-stationery/coin_purse.png"
                     alt="Coin Purse"
-                    fill
+                    width={28}
+                    height={28}
                     className="object-contain"
                   />
                 </div>
@@ -684,59 +725,53 @@ export default function FindMyStationeryPage() {
                     step="500"
                     value={budgetRupees}
                     onChange={(e) => setBudgetRupees(Number(e.target.value))}
-                    className="pastel-slider w-full"
+                    className="w-full accent-[#0866E8] h-2 bg-slate-200 rounded-full cursor-pointer"
                     aria-label="Target Budget"
                   />
                 </div>
 
                 {/* Selected Amount Pill */}
-                <div className="shrink-0 bg-white border border-[#F0DCCB] px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl shadow-xs font-nunito font-extrabold text-xs sm:text-base text-[#17234B]">
+                <div className="shrink-0 bg-[#F7FAFF] border border-slate-200 px-4 py-2 rounded-2xl shadow-2xs font-black text-sm sm:text-base text-[#09285C]">
                   Rs. {budgetRupees.toLocaleString()}
                 </div>
               </div>
 
               {/* Info Card with Coins */}
-              <div className="shrink-0 bg-white/85 border border-[#F0DCCB] rounded-2xl px-3.5 py-2 flex items-center gap-2.5 shadow-xs w-full lg:w-auto justify-center lg:justify-start">
-                <div className="relative w-6 h-6 sm:w-7 sm:h-7 shrink-0">
+              <div className="shrink-0 bg-[#F7FAFF] border border-slate-200/80 rounded-2xl px-4 py-2 flex items-center gap-2.5 shadow-2xs w-full lg:w-auto justify-center lg:justify-start">
+                <div className="w-6 h-6 shrink-0 relative">
                   <Image
                     src="/images/find-my-stationery/gold_coins.png"
                     alt="Gold Coins"
-                    fill
+                    width={24}
+                    height={24}
                     className="object-contain"
                   />
                 </div>
-                <span className="font-nunito font-semibold text-[11px] sm:text-xs text-[#796D68]">
-                  Set your budget and we&apos;ll recommend the best value mix.
+                <span className="font-semibold text-xs text-[#64748B]">
+                  Set your budget and we&apos;ll configure the best value mix.
                 </span>
               </div>
             </div>
           </div>
 
           {/* Large CTA Button */}
-          <div className="pt-2 text-center">
+          <div className="pt-4 text-center">
             <button
               type="button"
               onClick={handleGenerate}
               disabled={isLoading}
-              className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-[#0084FF] to-[#0066CC] hover:from-[#0074e6] hover:to-[#005bb5] text-white font-nunito font-extrabold text-base sm:text-lg px-8 sm:px-10 py-3.5 sm:py-4 rounded-full shadow-lg shadow-blue-500/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-3 bg-[#0866E8] hover:bg-[#005cd9] text-white font-bold text-sm sm:text-base px-8 sm:px-10 py-3.5 sm:py-4 rounded-full shadow-lg shadow-[#0866E8]/25 hover:shadow-xl active:scale-95 transition-all cursor-pointer disabled:opacity-50"
             >
               {isLoading ? (
                 <>
                   <RefreshCw className="w-5 h-5 animate-spin text-white" />
-                  <span>Configuring Basket...</span>
+                  <span>Configuring Recommended Basket...</span>
                 </>
               ) : (
                 <>
-                  <div className="relative w-7 h-7 shrink-0">
-                    <Image
-                      src="/images/find-my-stationery/star_badge.png"
-                      alt="Star"
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
+                  <Sparkles className="w-5 h-5 text-[#FFD84D]" />
                   <span>Generate Recommended Basket</span>
-                  <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+                  <ArrowRight className="w-5 h-5" />
                 </>
               )}
             </button>
@@ -744,34 +779,35 @@ export default function FindMyStationeryPage() {
         </div>
 
         {/* ========================================================= */}
-        {/* DECORATIVE TRANSITION */}
+        {/* DECORATIVE TRANSITION                                     */}
         {/* ========================================================= */}
-        <div className="flex flex-col items-center justify-center gap-1 text-[#7AB8FF] pt-2">
+        <div className="flex flex-col items-center justify-center gap-1 text-[#0866E8]/60 pt-2">
           <ChevronDown className="w-6 h-6 stroke-[3] -mb-3 animate-bounce" />
           <ChevronDown className="w-6 h-6 stroke-[3]" />
         </div>
 
         {/* ========================================================= */}
-        {/* RECOMMENDED BASKET SECTION */}
+        {/* RECOMMENDED BASKET SECTION (DSL ENTERPRISES THEME)        */}
         {/* ========================================================= */}
         <div ref={basketSectionRef} className="space-y-6 pt-2">
           {/* Banner */}
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-3.5 bg-gradient-to-r from-[#FFE3EC] via-[#EAE5FC] to-[#DCEBFF] border border-white/70 shadow-xs rounded-full px-6 py-3">
-              <div className="relative w-8 h-8 shrink-0">
+            <div className="inline-flex items-center gap-3 bg-[#EAF4FF] border border-[#0866E8]/20 shadow-2xs rounded-full px-6 py-2.5">
+              <div className="w-6 h-6 shrink-0 relative">
                 <Image
                   src="/images/find-my-stationery/clipboard.png"
                   alt="Clipboard"
-                  fill
+                  width={24}
+                  height={24}
                   className="object-contain"
                 />
               </div>
-              <h2 className="font-nunito font-extrabold text-lg sm:text-2xl text-[#17234B]">
+              <h2 className="font-black text-lg sm:text-2xl text-[#09285C]">
                 Your Recommended Basket
               </h2>
             </div>
 
-            <p className="font-nunito font-semibold text-xs sm:text-sm text-[#796D68]">
+            <p className="font-semibold text-xs sm:text-sm text-[#64748B]">
               A personalized stationery list based on your selections.
             </p>
           </div>
@@ -794,16 +830,16 @@ export default function FindMyStationeryPage() {
           {/* Two-Column Grid: Left (Recommended Items) vs Right (Basket Summary) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* LEFT COLUMN: RECOMMENDED ITEMS */}
-            <div className="lg:col-span-8 bg-white/95 backdrop-blur-xs rounded-3xl border border-[#F0DCCB] p-5 sm:p-6 shadow-xs space-y-4">
+            <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-7 shadow-xs space-y-4">
               {/* Header */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#F0DCCB]/60">
-                <h3 className="font-nunito font-extrabold text-base sm:text-lg text-[#17234B]">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <h3 className="font-black text-base sm:text-lg text-[#09285C]">
                   Recommended Items ({basketItems.length})
                 </h3>
 
-                <div className="inline-flex items-center gap-1.5 bg-[#E8F1FC] text-[#0875D1] text-xs font-bold px-3.5 py-1.5 rounded-full">
+                <div className="inline-flex items-center gap-1.5 bg-[#EAF4FF] text-[#0866E8] text-xs font-bold px-3.5 py-1.5 rounded-full border border-[#0866E8]/20">
                   <span>
-                    🎓 For{' '}
+                    For{' '}
                     {selectedPurpose === 'school'
                       ? selectedGrade
                       : selectedPurpose.replace('_', ' & ')}{' '}
@@ -816,52 +852,56 @@ export default function FindMyStationeryPage() {
               {basketItems.length === 0 ? (
                 <div className="py-12 text-center space-y-3">
                   <Package className="w-10 h-10 text-slate-300 mx-auto" />
-                  <h4 className="font-nunito font-extrabold text-sm text-[#17234B]">
+                  <h4 className="font-black text-sm text-[#09285C]">
                     No items in this basket
                   </h4>
-                  <p className="font-nunito text-xs text-[#796D68]">
+                  <p className="text-xs text-[#64748B]">
                     Click &ldquo;Generate Recommended Basket&rdquo; above to match stationery for
                     your selections.
                   </p>
                   <button
                     type="button"
                     onClick={handleGenerate}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white text-xs font-extrabold rounded-xl shadow-xs"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#0866E8] text-white text-xs font-bold rounded-xl shadow-xs"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Generate Now</span>
                   </button>
                 </div>
               ) : (
-                <div className="divide-y divide-[#F0DCCB]/50">
+                <div className="divide-y divide-slate-100">
                   {basketItems.map((item, idx) => {
                     const thumb = getProductThumbnail(
                       item.productName,
                       item.categoryName,
-                      (item as any).imageUrl
+                      item.imageUrl || (item as any).imageUrl,
+                      item.sku,
+                      item.productId
                     );
                     return (
                       <div
                         key={`${item.productId}-${idx}`}
-                        className="py-3.5 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                        className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
                       >
                         {/* Left: Thumbnail & Details */}
                         <div className="flex items-center gap-3.5 flex-1 min-w-0">
-                          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#FFF8EF] border border-[#F0DCCB]/60 shrink-0 overflow-hidden p-1.5 flex items-center justify-center">
+                          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white border border-slate-200/80 shadow-2xs shrink-0 overflow-hidden p-1.5 flex items-center justify-center relative">
                             <Image
                               src={thumb}
                               alt={item.productName}
-                              fill
-                              className="object-contain p-1"
+                              width={56}
+                              height={56}
+                              className="w-full h-full object-contain"
+                              unoptimized={thumb.startsWith('http')}
                             />
                           </div>
 
                           <div className="min-w-0 flex-1">
-                            <h4 className="font-nunito font-extrabold text-xs sm:text-sm text-[#17234B] truncate">
+                            <h4 className="font-black text-xs sm:text-sm text-[#09285C] truncate">
                               {item.productName}
                             </h4>
-                            <p className="font-nunito font-semibold text-[11px] text-[#796D68] mt-0.5">
-                              {item.categoryName || 'School Essentials'} • SKU: {item.sku}
+                            <p className="text-[11px] text-[#64748B] mt-0.5">
+                              {item.categoryName || 'Stationery'} • SKU: {item.sku}
                             </p>
 
                             {/* Substitutes trigger */}
@@ -869,7 +909,7 @@ export default function FindMyStationeryPage() {
                               <button
                                 type="button"
                                 onClick={() => setActiveSubstituteIndex(idx)}
-                                className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[#0875D1] hover:underline mt-1"
+                                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0866E8] hover:underline mt-1 cursor-pointer"
                               >
                                 <RefreshCw className="w-2.5 h-2.5" />
                                 <span>{item.substitutes.length} Alternative(s)</span>
@@ -882,18 +922,18 @@ export default function FindMyStationeryPage() {
                         <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 shrink-0 pt-2 sm:pt-0">
                           {/* Unit / Line Price */}
                           <div className="text-left sm:text-right min-w-[70px]">
-                            <span className="font-nunito font-extrabold text-sm sm:text-base text-[#17234B]">
+                            <span className="font-black text-sm sm:text-base text-[#09285C]">
                               Rs. {(item.subtotalCents / 100).toLocaleString()}
                             </span>
                             {item.quantity > 1 && (
-                              <span className="block text-[10px] text-[#796D68] font-medium">
+                              <span className="block text-[10px] text-[#64748B] font-medium">
                                 Rs. {(item.unitPriceCents / 100).toLocaleString()} each
                               </span>
                             )}
                           </div>
 
                           {/* Quantity Stepper */}
-                          <div className="flex items-center border border-[#F0DCCB] rounded-xl overflow-hidden bg-white shadow-2xs">
+                          <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
                             <button
                               type="button"
                               onClick={() => handleUpdateQty(idx, item.quantity - 1)}
@@ -903,7 +943,7 @@ export default function FindMyStationeryPage() {
                             >
                               <Minus className="w-3.5 h-3.5" />
                             </button>
-                            <span className="px-2.5 font-nunito font-extrabold text-xs text-[#17234B] min-w-[24px] text-center">
+                            <span className="px-2.5 font-black text-xs text-[#09285C] min-w-[24px] text-center">
                               {item.quantity}
                             </span>
                             <button
@@ -921,8 +961,8 @@ export default function FindMyStationeryPage() {
                           <button
                             type="button"
                             onClick={() => handleRemoveItem(idx)}
-                            className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                            title="Remove"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                            title="Remove item"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -935,41 +975,42 @@ export default function FindMyStationeryPage() {
             </div>
 
             {/* RIGHT COLUMN: BASKET SUMMARY */}
-            <div className="lg:col-span-4 bg-[#F8F6FE] border border-[#E4DCFA] rounded-3xl p-5 sm:p-6 shadow-xs space-y-4 lg:sticky lg:top-24">
+            <div className="lg:col-span-4 bg-[#F7FAFF] border border-slate-200/80 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4 lg:sticky lg:top-24">
               {/* Header */}
               <div className="flex items-center gap-2.5 pb-2">
-                <div className="relative w-7 h-7 shrink-0">
+                <div className="w-7 h-7 shrink-0 relative">
                   <Image
                     src="/images/find-my-stationery/shopping_basket.png"
                     alt="Shopping Basket"
-                    fill
+                    width={28}
+                    height={28}
                     className="object-contain"
                   />
                 </div>
-                <h3 className="font-nunito font-extrabold text-base sm:text-lg text-[#17234B]">
+                <h3 className="font-black text-base sm:text-lg text-[#09285C]">
                   Basket Summary
                 </h3>
               </div>
 
               {/* Breakdown */}
-              <div className="space-y-2.5 text-xs font-nunito font-bold">
-                <div className="flex items-center justify-between text-[#17234B]">
-                  <span className="font-medium text-[#796D68]">Items ({totalItemCount})</span>
+              <div className="space-y-2.5 text-xs font-bold">
+                <div className="flex items-center justify-between text-[#09285C]">
+                  <span className="font-medium text-[#64748B]">Items ({totalItemCount})</span>
                   <span>Rs. {(currentTotalCents / 100).toLocaleString()}</span>
                 </div>
 
-                <div className="flex items-center justify-between text-[#19A875]">
-                  <span>Estimated Discount</span>
+                <div className="flex items-center justify-between text-emerald-600">
+                  <span>Estimated Bundle Discount</span>
                   <span>- Rs. {(estimatedDiscountCents / 100).toLocaleString()}</span>
                 </div>
               </div>
 
               {/* Total Pill Container */}
-              <div className="bg-[#EFE8FF] rounded-2xl p-4 flex items-center justify-between my-3">
-                <span className="font-nunito font-extrabold text-xs sm:text-sm text-[#17234B]">
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between my-3 shadow-2xs">
+                <span className="font-bold text-xs sm:text-sm text-[#09285C]">
                   Total (Est.)
                 </span>
-                <span className="font-nunito font-black text-lg sm:text-xl text-[#17234B]">
+                <span className="font-black text-lg sm:text-xl text-[#09285C]">
                   Rs. {(finalTotalCents / 100).toLocaleString()}
                 </span>
               </div>
@@ -981,7 +1022,7 @@ export default function FindMyStationeryPage() {
                   type="button"
                   onClick={handleAddToCart}
                   disabled={isValidating || basketItems.length === 0}
-                  className="w-full bg-gradient-to-r from-[#FF7E9C] to-[#F85786] hover:from-[#ff6d8f] hover:to-[#eb4776] text-white font-nunito font-extrabold py-3.5 px-6 rounded-2xl shadow-md shadow-pink-500/20 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] disabled:opacity-50 text-xs sm:text-sm"
+                  className="w-full bg-[#09285C] hover:bg-[#0866E8] text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-[#09285C]/20 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 text-xs sm:text-sm"
                 >
                   {isValidating ? (
                     <>
@@ -1005,9 +1046,9 @@ export default function FindMyStationeryPage() {
                 <button
                   type="button"
                   onClick={handleDownloadPdf}
-                  className="w-full bg-white hover:bg-slate-50 text-[#0875D1] border-2 border-[#B8DBF7] font-nunito font-extrabold py-3 px-6 rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-all text-xs"
+                  className="w-full bg-white hover:bg-slate-50 text-[#09285C] border border-slate-200 font-bold py-3 px-6 rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-all text-xs"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-4 h-4 text-[#0866E8]" />
                   <span>Download List (PDF)</span>
                 </button>
 
@@ -1015,9 +1056,9 @@ export default function FindMyStationeryPage() {
                 <button
                   type="button"
                   onClick={handleShareList}
-                  className="w-full bg-white hover:bg-slate-50 text-[#6B46C1] border-2 border-[#D5C0F6] font-nunito font-extrabold py-3 px-6 rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-all text-xs"
+                  className="w-full bg-white hover:bg-slate-50 text-[#0866E8] border border-slate-200 font-bold py-3 px-6 rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-all text-xs"
                 >
-                  <Share2 className="w-4 h-4" />
+                  <Share2 className="w-4 h-4 text-[#0866E8]" />
                   <span>Share List</span>
                 </button>
               </div>
@@ -1027,17 +1068,17 @@ export default function FindMyStationeryPage() {
       </div>
 
       {/* ========================================================= */}
-      {/* SUBSTITUTE SELECTION MODAL */}
+      {/* SUBSTITUTE SELECTION MODAL                                */}
       {/* ========================================================= */}
       {activeSubstituteIndex !== null && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 max-w-lg w-full p-6 space-y-4 shadow-xl text-xs animate-scale-up font-nunito">
+        <div className="fixed inset-0 z-50 bg-[#09285C]/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-lg w-full p-6 space-y-4 shadow-2xl text-xs animate-scale-up">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <h3 className="font-extrabold text-sm text-[#17234B]">
+                <h3 className="font-black text-sm text-[#09285C]">
                   Select Compatible Alternative
                 </h3>
-                <p className="text-[11px] text-[#796D68]">
+                <p className="text-[11px] text-[#64748B]">
                   Replacing &ldquo;{basketItems[activeSubstituteIndex]?.productName}&rdquo;
                 </p>
               </div>
@@ -1054,21 +1095,40 @@ export default function FindMyStationeryPage() {
               {basketItems[activeSubstituteIndex]?.substitutes?.map((sub) => {
                 const diffCents =
                   sub.priceCents - basketItems[activeSubstituteIndex].unitPriceCents;
+                const subThumb = getProductThumbnail(
+                  sub.name,
+                  undefined,
+                  sub.imageUrl,
+                  sub.sku,
+                  sub.id
+                );
                 return (
                   <div
                     key={sub.id}
-                    className="p-3.5 rounded-2xl border border-[#F0DCCB] hover:border-[#0875D1] hover:bg-blue-50/30 transition-all flex items-center justify-between gap-3"
+                    className="p-3 rounded-2xl border border-slate-200 hover:border-[#0866E8] hover:bg-[#EAF4FF]/30 transition-all flex items-center justify-between gap-3"
                   >
-                    <div>
-                      <h4 className="font-extrabold text-[#17234B] text-xs">{sub.name}</h4>
-                      <span className="text-[10px] text-[#796D68]">
-                        SKU: {sub.sku} • Stock: {sub.stockQuantity}
-                      </span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-11 h-11 rounded-xl bg-white border border-slate-200/80 shadow-2xs shrink-0 overflow-hidden p-1 flex items-center justify-center relative">
+                        <Image
+                          src={subThumb}
+                          alt={sub.name}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-contain"
+                          unoptimized={subThumb.startsWith('http')}
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-black text-[#09285C] text-xs truncate">{sub.name}</h4>
+                        <span className="text-[10px] text-[#64748B] block">
+                          SKU: {sub.sku} • Stock: {sub.stockQuantity}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
                       <div className="text-right">
-                        <span className="font-extrabold text-[#17234B] block text-xs">
+                        <span className="font-black text-[#09285C] block text-xs">
                           {formatLKR(sub.priceCents)}
                         </span>
                         <span
@@ -1091,7 +1151,7 @@ export default function FindMyStationeryPage() {
                       <button
                         type="button"
                         onClick={() => handleSelectSubstitute(activeSubstituteIndex, sub)}
-                        className="px-3.5 py-1.5 bg-[#0066CC] hover:bg-[#0052a3] text-white font-extrabold rounded-xl text-[11px] cursor-pointer"
+                        className="px-3.5 py-1.5 bg-[#0866E8] hover:bg-[#005cd9] text-white font-bold rounded-xl text-[11px] cursor-pointer"
                       >
                         Choose
                       </button>

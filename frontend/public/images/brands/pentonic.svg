@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 50" width="160" height="50">
+  <rect width="160" height="50" rx="8" fill="#18181B" />
+  <text x="80" y="32" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="18" fill="#F4F4F5" text-anchor="middle" letter-spacing="3.5">PENTONIC</text>
+  <circle cx="106" cy="17" r="2.5" fill="#06B6D4" />
+</svg>

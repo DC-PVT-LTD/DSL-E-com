@@ -11,9 +11,11 @@ class BannerService {
   /**
    * Fetch active banners for public store homepage hero section.
    */
-  public async getHomepageBanners(): Promise<HomepageBanner[]> {
+  public async getHomepageBanners(placement?: string): Promise<HomepageBanner[]> {
     try {
-      const res = await apiClient.get<BackendApiResponse<HomepageBanner[]>>('banners/homepage');
+      const res = placement
+        ? await apiClient.get<BackendApiResponse<HomepageBanner[]>>('banners/homepage', { params: { placement } })
+        : await apiClient.get<BackendApiResponse<HomepageBanner[]>>('banners/homepage');
       if (res && res.data) {
         return res.data;
       }
@@ -25,15 +27,17 @@ class BannerService {
   }
 
   /**
-   * Admin: List all banners with optional status or search query.
+   * Admin: List all banners with optional status, search query, or placement.
    */
   public async getAdminBanners(params?: {
     status?: BannerStatus;
     search?: string;
+    placement?: string;
   }): Promise<HomepageBanner[]> {
     const queryParams: Record<string, string> = {};
     if (params?.status) queryParams.status = params.status;
     if (params?.search && params.search.trim()) queryParams.search = params.search.trim();
+    if (params?.placement && params.placement.trim()) queryParams.placement = params.placement.trim();
 
     const res = await apiClient.get<BackendApiResponse<HomepageBanner[]>>('admin/banners', {
       params: queryParams,

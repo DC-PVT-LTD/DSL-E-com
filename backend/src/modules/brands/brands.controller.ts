@@ -11,7 +11,9 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -68,6 +70,43 @@ export class BrandsController {
     @Query(createZodPipe(brandQuerySchema)) query: BrandQueryDto
   ) {
     return this.brandsService.findAll(query);
+  }
+
+  @ApiTags('Admin API', 'Brands')
+  @Get('admin/analytics')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Get brand analytics and product count distribution',
+    description: 'Returns real database metrics on brand counts, active vs empty brands, and top brands.',
+  })
+  async getBrandAnalytics() {
+    const analytics = await this.brandsService.getAdminAnalytics();
+    return createApiResponse(analytics, 'Brand analytics retrieved successfully');
+  }
+
+  @ApiTags('Admin API', 'Brands', 'Export')
+  @Get('export')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Export brands to CSV or Excel',
+    description: 'Exports all brands with their product counts to CSV or XLSX format.',
+  })
+  async exportBrands(
+    @Query('format') format: 'csv' | 'xlsx',
+    @Query('selectedIds') selectedIdsStr: string,
+    @Res() res: Response
+  ) {
+    const selectedIds = selectedIdsStr ? selectedIdsStr.split(',').filter(Boolean) : undefined;
+    const file = await this.brandsService.exportBrands(format || 'xlsx', selectedIds);
+    res.setHeader('Content-Type', file.mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
+    res.send(file.buffer);
   }
 
   @ApiTags('Brands')

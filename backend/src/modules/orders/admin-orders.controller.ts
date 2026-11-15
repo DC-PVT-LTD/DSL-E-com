@@ -34,8 +34,20 @@ import {
   AdminProcessReturnDto,
   adminProcessRefundSchema,
   AdminProcessRefundDto,
+  adminApproveRefundSchema,
+  AdminApproveRefundDto,
+  adminProcessRefundExecutionSchema,
+  AdminProcessRefundExecutionDto,
+  adminCompleteRefundSchema,
+  AdminCompleteRefundDto,
+  adminRejectRefundSchema,
+  AdminRejectRefundDto,
+  adminFailRefundSchema,
+  AdminFailRefundDto,
   adminAddNoteSchema,
   AdminAddNoteDto,
+  adminReconciliationQuerySchema,
+  AdminReconciliationQueryDto,
 } from './dto/admin-orders.dto';
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { createApiResponse } from '../../common/interfaces/api-response.interface';
@@ -67,6 +79,24 @@ export class AdminOrdersController {
   async getOrders(@Query(createZodPipe(adminOrdersQuerySchema)) query: AdminOrdersQueryDto) {
     const result = await this.adminOrdersService.getOrders(query);
     return createApiResponse(result, 'Orders list retrieved successfully');
+  }
+
+  @Get('reconciliation/summary')
+  @ApiOperation({ summary: 'Get high-level financial reconciliation summary across all orders' })
+  async getFinancialReconciliationSummary(
+    @Query(createZodPipe(adminReconciliationQuerySchema)) query: AdminReconciliationQueryDto
+  ) {
+    const summary = await this.adminOrdersService.getFinancialReconciliationSummary(query);
+    return createApiResponse(summary, 'Financial reconciliation summary retrieved successfully');
+  }
+
+  @Get('reconciliation')
+  @ApiOperation({ summary: 'Get paginated financial reconciliation records with verified audit details' })
+  async getFinancialReconciliation(
+    @Query(createZodPipe(adminReconciliationQuerySchema)) query: AdminReconciliationQueryDto
+  ) {
+    const data = await this.adminOrdersService.getFinancialReconciliation(query);
+    return createApiResponse(data, 'Financial reconciliation records retrieved successfully');
   }
 
   @Get(':id')
@@ -175,9 +205,16 @@ export class AdminOrdersController {
     return createApiResponse(updated, 'Return status processed successfully');
   }
 
+  @Get(':id/refunds')
+  @ApiOperation({ summary: 'Get all refunds and financial balance summary for order' })
+  async getOrderRefunds(@Param('id') id: string) {
+    const data = await this.adminOrdersService.getOrderRefunds(id);
+    return createApiResponse(data, 'Order refunds retrieved successfully');
+  }
+
   @Post(':id/refund')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Record official or manual refund for order' })
+  @ApiOperation({ summary: 'Record official or manual refund request for order' })
   async processRefund(
     @Param('id') id: string,
     @Body(createZodPipe(adminProcessRefundSchema)) dto: AdminProcessRefundDto,
@@ -186,6 +223,76 @@ export class AdminOrdersController {
     const user = (req as any).user;
     const refund = await this.adminOrdersService.processRefund(id, dto, user);
     return createApiResponse(refund, 'Refund recorded and processed successfully');
+  }
+
+  @Post(':id/refunds/:refundId/approve')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Authorize a requested refund' })
+  async approveRefund(
+    @Param('id') id: string,
+    @Param('refundId') refundId: string,
+    @Body(createZodPipe(adminApproveRefundSchema)) dto: AdminApproveRefundDto,
+    @Req() req: Request
+  ) {
+    const user = (req as any).user;
+    const refund = await this.adminOrdersService.approveRefund(id, refundId, dto, user);
+    return createApiResponse(refund, 'Refund approved successfully');
+  }
+
+  @Post(':id/refunds/:refundId/process')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Transition refund to processing/in-flight status' })
+  async processRefundExecution(
+    @Param('id') id: string,
+    @Param('refundId') refundId: string,
+    @Body(createZodPipe(adminProcessRefundExecutionSchema)) dto: AdminProcessRefundExecutionDto,
+    @Req() req: Request
+  ) {
+    const user = (req as any).user;
+    const refund = await this.adminOrdersService.processRefundExecution(id, refundId, dto, user);
+    return createApiResponse(refund, 'Refund status updated to PROCESSING');
+  }
+
+  @Post(':id/refunds/:refundId/complete')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Confirm execution and complete refund with external reference' })
+  async completeRefund(
+    @Param('id') id: string,
+    @Param('refundId') refundId: string,
+    @Body(createZodPipe(adminCompleteRefundSchema)) dto: AdminCompleteRefundDto,
+    @Req() req: Request
+  ) {
+    const user = (req as any).user;
+    const refund = await this.adminOrdersService.completeRefund(id, refundId, dto, user);
+    return createApiResponse(refund, 'Refund marked completed successfully');
+  }
+
+  @Post(':id/refunds/:refundId/reject')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reject a requested or approved refund' })
+  async rejectRefund(
+    @Param('id') id: string,
+    @Param('refundId') refundId: string,
+    @Body(createZodPipe(adminRejectRefundSchema)) dto: AdminRejectRefundDto,
+    @Req() req: Request
+  ) {
+    const user = (req as any).user;
+    const refund = await this.adminOrdersService.rejectRefund(id, refundId, dto, user);
+    return createApiResponse(refund, 'Refund rejected successfully');
+  }
+
+  @Post(':id/refunds/:refundId/fail')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Mark an in-flight refund as failed' })
+  async failRefund(
+    @Param('id') id: string,
+    @Param('refundId') refundId: string,
+    @Body(createZodPipe(adminFailRefundSchema)) dto: AdminFailRefundDto,
+    @Req() req: Request
+  ) {
+    const user = (req as any).user;
+    const refund = await this.adminOrdersService.failRefund(id, refundId, dto, user);
+    return createApiResponse(refund, 'Refund marked as failed');
   }
 
   @Get(':id/audit-history')

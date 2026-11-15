@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 50" width="160" height="50">
+  <rect width="160" height="50" rx="8" fill="#4338CA" />
+  <polygon points="18,36 18,14 40,36" fill="#A5B4FC" opacity="0.9" />
+  <polygon points="22,33 22,22 33,33" fill="#4338CA" />
+  <text x="48" y="32" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="18" fill="#FFFFFF" letter-spacing="2">GEOMMY</text>
+</svg>

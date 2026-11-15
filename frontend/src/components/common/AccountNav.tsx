@@ -26,36 +26,68 @@ export const AccountNav: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-[#C6E7FF]/60 p-4 space-y-1 shadow-sm">
-      <div className="px-3.5 py-2 text-[11px] font-bold text-[#292525]/50 uppercase tracking-wider">
-        My Account
-      </div>
-      {links.map((link) => {
-        const Icon = link.icon;
-        const isActive = pathname === link.href;
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all ${
-              isActive
-                ? 'bg-[#0066CC] text-white shadow-xs'
-                : 'text-[#292525]/80 hover:bg-[#FFFDF0] hover:text-[#0066CC]'
-            }`}
-          >
-            <Icon className="w-4 h-4" />
-            <span>{link.label}</span>
-          </Link>
-        );
-      })}
-      <div className="pt-2 border-t border-[#C6E7FF]/30">
+    <div>
+      {/* Mobile Horizontal Tabs */}
+      <div className="lg:hidden flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none mb-6">
+        {links.map((link) => {
+          const Icon = link.icon;
+          const isActive = pathname === link.href;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold shrink-0 transition-all ${
+                isActive
+                  ? 'bg-[#0866E8] text-white shadow-xs'
+                  : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/70'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span>{link.label}</span>
+            </Link>
+          );
+        })}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200/60 shrink-0 cursor-pointer"
         >
-          <LogOut className="w-4 h-4" />
-          <span>Sign Out</span>
+          <LogOut className="w-3.5 h-3.5" />
+          <span>Exit</span>
         </button>
+      </div>
+
+      {/* Desktop Vertical Menu */}
+      <div className="hidden lg:block bg-white rounded-3xl border border-slate-100 p-4 space-y-1 shadow-xs">
+        <div className="px-3.5 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+          My Account
+        </div>
+        {links.map((link) => {
+          const Icon = link.icon;
+          const isActive = pathname === link.href;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                isActive
+                  ? 'bg-[#0866E8] text-white shadow-xs'
+                  : 'text-slate-700 hover:bg-slate-50 hover:text-[#0866E8]'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{link.label}</span>
+            </Link>
+          );
+        })}
+        <div className="pt-2 border-t border-slate-100">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign Out</span>
+          </button>
+        </div>
       </div>
     </div>
   );

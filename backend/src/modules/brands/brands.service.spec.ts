@@ -21,6 +21,7 @@ describe('BrandsService', () => {
         count: vi.fn(),
         findMany: vi.fn(),
       },
+      $queryRaw: vi.fn(),
     };
 
     service = new BrandsService(mockPrisma as unknown as PrismaService);
@@ -90,6 +91,45 @@ describe('BrandsService', () => {
 
       const result = await service.delete('brand-empty');
       expect(result.id).toBe('brand-empty');
+    });
+  });
+
+  describe('getAdminAnalytics', () => {
+    it('returns calculated brand metrics and rankings from database', async () => {
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([{ total: 13, featured: 7 }])
+        .mockResolvedValueOnce([{ withProducts: 10, empty: 3 }])
+        .mockResolvedValueOnce([{ id: 'b-speed', name: 'Speed', count: 40 }]);
+
+      const res = await service.getAdminAnalytics();
+      expect(res.totalBrands).toBe(13);
+      expect(res.featuredBrands).toBe(7);
+      expect(res.brandsWithProducts).toBe(10);
+      expect(res.emptyBrands).toBe(3);
+      expect(res.topBrands[0].name).toBe('Speed');
+    });
+  });
+
+  describe('exportBrands', () => {
+    it('generates formatted CSV and XLSX exports for brands', async () => {
+      mockPrisma.brand.findMany.mockResolvedValueOnce([
+        {
+          id: 'brand-speed',
+          name: 'Speed',
+          slug: 'speed',
+          originCountry: 'Sri Lanka',
+          featured: true,
+          description: 'Quality stationery',
+          createdAt: new Date('2026-01-01'),
+          _count: { products: 40 },
+        },
+      ]);
+
+      const res = await service.exportBrands('csv');
+      expect(res.filename).toContain('dsl-brands-');
+      expect(res.filename).toContain('.csv');
+      expect(res.buffer.toString()).toContain('brand-speed');
+      expect(res.buffer.toString()).toContain('Speed');
     });
   });
 });

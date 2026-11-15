@@ -3,10 +3,12 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  ConflictException,
   Logger,
   Inject,
   Optional,
 } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   AdminOrdersQueryDto,
@@ -18,15 +20,25 @@ import {
   AdminCreateReturnDto,
   AdminProcessReturnDto,
   AdminProcessRefundDto,
+  AdminApproveRefundDto,
+  AdminProcessRefundExecutionDto,
+  AdminCompleteRefundDto,
+  AdminRejectRefundDto,
+  AdminFailRefundDto,
   AdminAddNoteDto,
+  AdminReconciliationQueryDto,
 } from './dto/admin-orders.dto';
 import {
   OrderStatus,
   PaymentStatus,
+  PaymentMethod,
+  PaymentAttemptStatus,
   ReturnStatus,
   ReturnItemStatus,
+  RefundStatus,
   InventoryChangeReason,
   UserRole,
+  Prisma,
 } from '../../generated/prisma';
 import { createPaginationMeta } from '../../common/pagination/pagination.util';
 import { OrdersGateway } from './orders.gateway';
@@ -55,7 +67,7 @@ export class AdminOrdersService {
     @Optional() @Inject(OrdersGateway) private readonly ordersGateway?: OrdersGateway,
     @Optional() @Inject(InventoryGateway) private readonly inventoryGateway?: InventoryGateway,
     @Optional() @Inject(NotificationsService) private readonly notificationsService?: NotificationsService
-  ) {}
+  ) { }
 
   /**
    * Retrieves aggregated dashboard order statistics.
@@ -222,10 +234,18 @@ export class AdminOrdersService {
         returnRequests: {
           include: {
             items: true,
+            refundRecords: {
+              orderBy: { createdAt: 'desc' },
+            },
           },
           orderBy: { createdAt: 'desc' },
         },
         refundRecords: {
+          include: {
+            orderReturnRequest: {
+              select: { id: true, returnNumber: true, status: true },
+            },
+          },
           orderBy: { createdAt: 'desc' },
         },
       },
@@ -247,10 +267,13 @@ export class AdminOrdersService {
       }
     }
 
+    const financialSummary = await this.calculateRefundableBalance(this.prisma as any, order);
+
     return {
       ...order,
       customerNotes,
       schoolPacksSnapshot,
+      financialSummary,
     };
   }
 
@@ -292,30 +315,63 @@ export class AdminOrdersService {
         });
 
         if (!alreadyRestored && order.items && order.items.length > 0) {
-          for (const item of order.items) {
-            if (item.variantId) {
-              await tx.productVariant.update({
-                where: { id: item.variantId },
-                data: { stockQuantity: { increment: item.quantity } },
-              });
-            }
+          // 1. Collect unique Product and Variant IDs
+          const productIds = order.items.map((it) => it.productId).filter(Boolean);
+          const variantIds = order.items.map((it) => it.variantId).filter(Boolean) as string[];
 
-            const currentProd = await tx.product.findUnique({
-              where: { id: item.productId },
-              select: { stockQuantity: true },
-            });
+          const uniqueSortedProductIds = Array.from(new Set(productIds)).sort();
+          const uniqueSortedVariantIds = Array.from(new Set(variantIds)).sort();
+
+          // 2. Deterministic lock acquisition: Products first (ORDER BY id ASC)
+          const runningProductStock = new Map<string, number>();
+          for (const pId of uniqueSortedProductIds) {
+            const lockedProds = await tx.$queryRaw<Array<{ id: string; stockQuantity: number }>>`
+              SELECT id, "stockQuantity" FROM "Product" WHERE id = ${pId} FOR UPDATE
+            `;
+            if (lockedProds && lockedProds.length > 0) {
+              runningProductStock.set(pId, lockedProds[0].stockQuantity);
+            }
+          }
+
+          // 3. Deterministic lock acquisition: Variants second (ORDER BY id ASC)
+          const runningVariantStock = new Map<string, number>();
+          for (const vId of uniqueSortedVariantIds) {
+            const lockedVars = await tx.$queryRaw<Array<{ id: string; stockQuantity: number }>>`
+              SELECT id, "stockQuantity" FROM "ProductVariant" WHERE id = ${vId} FOR UPDATE
+            `;
+            if (lockedVars && lockedVars.length > 0) {
+              runningVariantStock.set(vId, lockedVars[0].stockQuantity);
+            }
+          }
+
+          // 4. Increment stock and record sequential inventory movements
+          for (const item of order.items) {
+            const prevProdQty = runningProductStock.get(item.productId) ?? 0;
+            const newProdQty = prevProdQty + item.quantity;
+            runningProductStock.set(item.productId, newProdQty);
 
             await tx.product.update({
               where: { id: item.productId },
               data: { stockQuantity: { increment: item.quantity } },
             });
 
+            if (item.variantId) {
+              const prevVarQty = runningVariantStock.get(item.variantId) ?? 0;
+              const newVarQty = prevVarQty + item.quantity;
+              runningVariantStock.set(item.variantId, newVarQty);
+
+              await tx.productVariant.update({
+                where: { id: item.variantId },
+                data: { stockQuantity: { increment: item.quantity } },
+              });
+            }
+
             await tx.inventoryMovement.create({
               data: {
                 productId: item.productId,
                 variantId: item.variantId || null,
-                previousQuantity: currentProd?.stockQuantity ?? 0,
-                newQuantity: (currentProd?.stockQuantity ?? 0) + item.quantity,
+                previousQuantity: prevProdQty,
+                newQuantity: newProdQty,
                 changeAmount: item.quantity,
                 reason: InventoryChangeReason.RESTOCK,
                 note: restoreNotePattern,
@@ -885,14 +941,81 @@ export class AdminOrdersService {
     }
 
     const updated = await this.prisma.$transaction(async (tx) => {
+      // 0. Deterministic lock acquisition: Order row FIRST
+      const lockedOrders = await tx.$queryRaw<Array<{
+        id: string;
+        orderNumber: string;
+        totalCents: number;
+        paymentMethod: PaymentMethod;
+        paymentStatus: PaymentStatus;
+        orderStatus: OrderStatus;
+        notes: string | null;
+        customerEmail: string;
+        customerName: string;
+      }>>`
+        SELECT id, "orderNumber", "totalCents", "paymentMethod", "paymentStatus", "orderStatus", "notes", "customerEmail", "customerName"
+        FROM "Order" WHERE id = ${id} FOR UPDATE
+      `;
+      if (!lockedOrders || lockedOrders.length === 0) {
+        throw new NotFoundException(`Order "${id}" not found`);
+      }
+      const lockedOrder = lockedOrders[0];
+
+      if (lockedOrder.orderStatus === OrderStatus.CANCELLED) {
+        throw new BadRequestException(`Order ${lockedOrder.orderNumber} is already cancelled`);
+      }
+
+      if (lockedOrder.orderStatus === OrderStatus.DELIVERED) {
+        throw new BadRequestException(`Delivered order ${lockedOrder.orderNumber} cannot be cancelled; please create a return request instead.`);
+      }
+
       // Restore inventory if requested and not previously restored
       if (dto.restoreInventory && order.items && order.items.length > 0) {
+        // 1. Collect unique Product and Variant IDs
+        const productIds = order.items.map((it) => it.productId).filter(Boolean);
+        const variantIds = order.items.map((it) => it.variantId).filter(Boolean) as string[];
+
+        const uniqueSortedProductIds = Array.from(new Set(productIds)).sort();
+        const uniqueSortedVariantIds = Array.from(new Set(variantIds)).sort();
+
+        // 2. Deterministic lock acquisition: Products first (ORDER BY id ASC)
+        const runningProductStock = new Map<string, number>();
+        for (const pId of uniqueSortedProductIds) {
+          const lockedProds = await tx.$queryRaw<Array<{ id: string; stockQuantity: number }>>`
+            SELECT id, "stockQuantity" FROM "Product" WHERE id = ${pId} FOR UPDATE
+          `;
+          if (lockedProds && lockedProds.length > 0) {
+            runningProductStock.set(pId, lockedProds[0].stockQuantity);
+          }
+        }
+
+        // 3. Deterministic lock acquisition: Variants second (ORDER BY id ASC)
+        const runningVariantStock = new Map<string, number>();
+        for (const vId of uniqueSortedVariantIds) {
+          const lockedVars = await tx.$queryRaw<Array<{ id: string; stockQuantity: number }>>`
+            SELECT id, "stockQuantity" FROM "ProductVariant" WHERE id = ${vId} FOR UPDATE
+          `;
+          if (lockedVars && lockedVars.length > 0) {
+            runningVariantStock.set(vId, lockedVars[0].stockQuantity);
+          }
+        }
+
+        // 4. Increment stock and record sequential inventory movements
         for (const item of order.items) {
+          const prevProdQty = runningProductStock.get(item.productId) ?? 0;
+          const newProdQty = prevProdQty + item.quantity;
+          runningProductStock.set(item.productId, newProdQty);
+
           await tx.product.update({
             where: { id: item.productId },
             data: { stockQuantity: { increment: item.quantity } },
           });
+
           if (item.variantId) {
+            const prevVarQty = runningVariantStock.get(item.variantId) ?? 0;
+            const newVarQty = prevVarQty + item.quantity;
+            runningVariantStock.set(item.variantId, newVarQty);
+
             await tx.productVariant.update({
               where: { id: item.variantId },
               data: { stockQuantity: { increment: item.quantity } },
@@ -903,42 +1026,80 @@ export class AdminOrdersService {
             data: {
               productId: item.productId,
               variantId: item.variantId || null,
-              previousQuantity: 0,
-              newQuantity: item.quantity,
+              previousQuantity: prevProdQty,
+              newQuantity: newProdQty,
               changeAmount: item.quantity,
               reason: InventoryChangeReason.RESTOCK,
-              note: `Restored stock from cancelled order ${order.orderNumber}`,
+              note: `Restored stock from cancelled order ${lockedOrder.orderNumber}`,
               performedById: actor?.id || 'STAFF',
             },
           });
         }
       }
 
-      // Record refund if requested and order was paid
-      let newPaymentStatus = order.paymentStatus;
-      if (dto.processRefund && (order.paymentStatus === PaymentStatus.PAID)) {
+      // Handle cancellation refund if requested
+      if (dto.processRefund) {
+        if (!actor?.id || !actor.id.trim()) {
+          throw new BadRequestException('Authenticated admin identity is required to cancel an order with refund.');
+        }
+
+        if (lockedOrder.paymentMethod === PaymentMethod.CASH_ON_DELIVERY) {
+          throw new BadRequestException(
+            'Cannot process cancellation refund: Cash on Delivery orders cannot be refunded without verified courier remittance.'
+          );
+        }
+        if (lockedOrder.paymentMethod === PaymentMethod.KOKO_BNPL) {
+          throw new BadRequestException(
+            'Cannot process cancellation refund: Koko BNPL gateway refund integration is not implemented.'
+          );
+        }
+
+        const bal = await this.calculateRefundableBalance(tx, lockedOrder);
+        if (bal.verifiedCollectedCents === 0) {
+          throw new BadRequestException(
+            `Cannot process cancellation refund: No verified payment collection exists for order ${lockedOrder.orderNumber}.`
+          );
+        }
+
+        if (bal.availableRefundBalanceCents <= 0) {
+          throw new BadRequestException(
+            `Cannot process cancellation refund: No remaining refundable balance exists for order ${lockedOrder.orderNumber}.`
+          );
+        }
+
+        const cancelRefundPayload = {
+          amountCents: bal.availableRefundBalanceCents,
+          method: lockedOrder.paymentMethod,
+          reason: `Cancellation refund: ${dto.reason}`,
+        };
+
         await tx.refundRecord.create({
           data: {
-            orderId: order.id,
-            amountCents: order.totalCents,
-            method: 'CANCELLATION_REFUND',
-            reference: `REF-CANC-${order.orderNumber}`,
-            reason: dto.reason,
-            processedBy: actor?.name || 'Staff',
+            orderId: lockedOrder.id,
+            amountCents: bal.availableRefundBalanceCents,
+            currency: 'LKR',
+            method: lockedOrder.paymentMethod,
+            status: RefundStatus.REQUESTED,
+            reference: `REF-CANC-${lockedOrder.orderNumber}`,
+            reason: `Cancellation refund: ${dto.reason}`,
+            processedBy: actor.name || 'Staff',
+            processedById: actor.id,
+            requestedById: actor.id,
+            idempotencyKey: `cancel-${lockedOrder.id}`,
+            payloadHash: this.computeRefundPayloadHash(cancelRefundPayload),
           },
         });
-        newPaymentStatus = PaymentStatus.REFUNDED;
       }
 
       // Record Audit Log
       await tx.orderAuditLog.create({
         data: {
-          orderId: order.id,
+          orderId: lockedOrder.id,
           adminId: actor?.id || null,
           adminName: actor?.name || 'Staff Administrator',
           action: 'ORDER_CANCELLED',
           fieldChanged: 'orderStatus',
-          previousValue: order.orderStatus,
+          previousValue: lockedOrder.orderStatus,
           newValue: OrderStatus.CANCELLED,
           reason: dto.reason,
         },
@@ -948,8 +1109,7 @@ export class AdminOrdersService {
         where: { id },
         data: {
           orderStatus: OrderStatus.CANCELLED,
-          paymentStatus: newPaymentStatus,
-          notes: order.notes ? `${order.notes} | [Cancelled: ${dto.reason}]` : `[Cancelled: ${dto.reason}]`,
+          notes: lockedOrder.notes ? `${lockedOrder.notes} | [Cancelled: ${dto.reason}]` : `[Cancelled: ${dto.reason}]`,
         },
         include: {
           items: true,
@@ -994,6 +1154,9 @@ export class AdminOrdersService {
       where: { orderId },
       include: {
         items: true,
+        refundRecords: {
+          orderBy: { createdAt: 'desc' },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -1015,9 +1178,67 @@ export class AdminOrdersService {
       throw new NotFoundException(`Order "${orderId}" not found`);
     }
 
+    if (order.orderStatus !== OrderStatus.DELIVERED) {
+      throw new BadRequestException(
+        `Returns can only be requested for orders with DELIVERED status. Order ${order.orderNumber} is currently in status "${order.orderStatus}".`
+      );
+    }
+
     const returnNumber = `RET-${order.orderNumber}-${Date.now().toString().slice(-4)}`;
 
     const returnReq = await this.prisma.$transaction(async (tx) => {
+      // 1. Acquire an exclusive row-level lock on the parent Order row.
+      // This serializes return quantity validation and creation for the same order across concurrent connections.
+      const lockedOrders = await tx.$queryRaw<Array<{ id: string; orderStatus: OrderStatus }>>`
+        SELECT id, "orderStatus" FROM "Order" WHERE id = ${order.id} FOR UPDATE
+      `;
+      if (!lockedOrders || lockedOrders.length === 0) {
+        throw new NotFoundException(`Order "${orderId}" not found`);
+      }
+
+      const lockedOrder = lockedOrders[0];
+      if (lockedOrder.orderStatus !== OrderStatus.DELIVERED) {
+        throw new BadRequestException(
+          `Returns can only be requested for orders with DELIVERED status. Order ${order.orderNumber} is currently in status "${lockedOrder.orderStatus}".`
+        );
+      }
+
+      // Re-fetch order items inside transaction to ensure fresh order items state
+      const fetchedItems = await tx.orderItem.findMany({
+        where: { orderId: order.id },
+      });
+      const orderItems = (fetchedItems && fetchedItems.length > 0) ? fetchedItems : (order.items || []);
+
+      // Find all existing return requests for this order that are not REJECTED (under the acquired lock)
+      const existingReturns = await tx.orderReturnRequest.findMany({
+        where: {
+          orderId: order.id,
+          status: { in: [ReturnStatus.PENDING, ReturnStatus.APPROVED, ReturnStatus.COMPLETED] },
+        },
+        include: { items: true },
+      });
+
+      for (const it of dto.items) {
+        const matched = orderItems.find((oi) => oi.id === it.orderItemId);
+        if (!matched) {
+          throw new BadRequestException(
+            `Order item "${it.orderItemId}" not found in order ${order.orderNumber}.`
+          );
+        }
+
+        const previouslyReturnedQty = existingReturns
+          .flatMap((r) => r.items)
+          .filter((ri) => ri.orderItemId === it.orderItemId)
+          .reduce((sum, ri) => sum + ri.quantity, 0);
+
+        const remainingEligibleQty = matched.quantity - previouslyReturnedQty;
+        if (it.quantity > remainingEligibleQty) {
+          throw new BadRequestException(
+            `Cannot return ${it.quantity} unit(s) of "${matched.productName}". Only ${remainingEligibleQty} eligible unit(s) remaining (ordered: ${matched.quantity}, already requested/returned: ${previouslyReturnedQty}).`
+          );
+        }
+      }
+
       const created = await tx.orderReturnRequest.create({
         data: {
           orderId: order.id,
@@ -1026,7 +1247,7 @@ export class AdminOrdersService {
           reason: dto.reason,
           items: {
             create: dto.items.map((it) => {
-              const matched = order.items.find((oi) => oi.id === it.orderItemId);
+              const matched = orderItems.find((oi) => oi.id === it.orderItemId);
               return {
                 orderItemId: it.orderItemId,
                 productName: matched?.productName || 'Order Product',
@@ -1087,54 +1308,94 @@ export class AdminOrdersService {
     }
 
     const updated = await this.prisma.$transaction(async (tx) => {
-      let targetStatus = returnReq.status;
-      let itemStatus: ReturnItemStatus = ReturnItemStatus.PENDING;
+      // 1. Enforce return state machine transitions
+      const current = await tx.orderReturnRequest.findUnique({
+        where: { id: returnId },
+        include: { items: true, order: true },
+      });
+      if (!current || current.orderId !== orderId) {
+        throw new NotFoundException(`Return request "${returnId}" not found for this order`);
+      }
+
+      if (current.status === ReturnStatus.COMPLETED) {
+        throw new BadRequestException(
+          `Return request "${current.returnNumber}" has already been completed and cannot be processed again.`
+        );
+      }
+      if (current.status === ReturnStatus.REJECTED) {
+        throw new BadRequestException(
+          `Return request "${current.returnNumber}" has already been rejected and cannot be modified.`
+        );
+      }
+
+      let expectedStatus: ReturnStatus;
+      let targetStatus: ReturnStatus;
+      let itemStatus: ReturnItemStatus;
 
       if (dto.action === 'APPROVE') {
+        if (current.status !== ReturnStatus.PENDING) {
+          throw new BadRequestException(
+            `Cannot approve return request in status "${current.status}". Only PENDING requests can be approved.`
+          );
+        }
+        expectedStatus = ReturnStatus.PENDING;
         targetStatus = ReturnStatus.APPROVED;
         itemStatus = ReturnItemStatus.APPROVED;
       } else if (dto.action === 'REJECT') {
+        if (current.status !== ReturnStatus.PENDING) {
+          throw new BadRequestException(
+            `Cannot reject return request in status "${current.status}". Only PENDING requests can be rejected.`
+          );
+        }
+        expectedStatus = ReturnStatus.PENDING;
         targetStatus = ReturnStatus.REJECTED;
         itemStatus = ReturnItemStatus.REJECTED;
       } else if (dto.action === 'CONFIRM_RECEIVED') {
+        if (current.status !== ReturnStatus.APPROVED) {
+          throw new BadRequestException(
+            `Return request "${current.returnNumber}" must be in APPROVED status before confirming receipt. Current status: ${current.status}.`
+          );
+        }
+        expectedStatus = ReturnStatus.APPROVED;
         targetStatus = ReturnStatus.COMPLETED;
         itemStatus = ReturnItemStatus.RECEIVED;
-
-        // If restocking returned products
-        if (dto.restockItems) {
-          for (const item of returnReq.items) {
-            const orderItem = await tx.orderItem.findUnique({ where: { id: item.orderItemId } });
-            if (orderItem) {
-              await tx.product.update({
-                where: { id: orderItem.productId },
-                data: { stockQuantity: { increment: item.quantity } },
-              });
-              if (orderItem.variantId) {
-                await tx.productVariant.update({
-                  where: { id: orderItem.variantId },
-                  data: { stockQuantity: { increment: item.quantity } },
-                });
-              }
-
-              await tx.inventoryMovement.create({
-                data: {
-                  productId: orderItem.productId,
-                  variantId: orderItem.variantId || null,
-                  previousQuantity: 0,
-                  newQuantity: item.quantity,
-                  changeAmount: item.quantity,
-                  reason: InventoryChangeReason.RESTOCK,
-                  note: `Restocked from Return ${returnReq.returnNumber}`,
-                  performedById: actor?.id || 'STAFF',
-                },
-              });
-            }
-          }
-        }
+      } else {
+        throw new BadRequestException(`Unsupported return action "${(dto as any).action}".`);
       }
 
+      // 2. Concurrency-safe atomic conditional update to claim this state transition
+      const atomicClaim = await tx.orderReturnRequest.updateMany({
+        where: {
+          id: returnId,
+          orderId,
+          status: expectedStatus,
+        },
+        data: {
+          status: targetStatus,
+          rejectionReason: dto.action === 'REJECT' ? dto.rejectionReason : current.rejectionReason,
+        },
+      });
+
+      if (atomicClaim.count === 0) {
+        const fresh = await tx.orderReturnRequest.findUnique({ where: { id: returnId } });
+        if (fresh?.status === ReturnStatus.COMPLETED) {
+          throw new BadRequestException(
+            `Return request "${current.returnNumber}" has already been completed and cannot be processed again.`
+          );
+        }
+        if (fresh?.status === ReturnStatus.REJECTED) {
+          throw new BadRequestException(
+            `Return request "${current.returnNumber}" has already been rejected and cannot be modified.`
+          );
+        }
+        throw new BadRequestException(
+          `Invalid return status transition. Return "${current.returnNumber}" is currently in status "${fresh?.status}".`
+        );
+      }
+
+      // 3. Update return items
       await tx.orderReturnItem.updateMany({
-        where: { returnRequestId: returnReq.id },
+        where: { returnRequestId: current.id },
         data: {
           status: itemStatus,
           rejectionReason: dto.action === 'REJECT' ? dto.rejectionReason : null,
@@ -1142,11 +1403,107 @@ export class AdminOrdersService {
         },
       });
 
+      // 4. Restock inventory if and only if restockItems is true
+      if (dto.action === 'CONFIRM_RECEIVED' && dto.restockItems) {
+        // Filter items that have not yet been received
+        const restockableItems = current.items.filter((it) => !it.receivedAt);
+        if (restockableItems.length > 0) {
+          // 1. Fetch order items for these return items
+          const orderItemIds = Array.from(new Set(restockableItems.map((it) => it.orderItemId)));
+          let orderItems = await tx.orderItem.findMany({
+            where: { id: { in: orderItemIds } },
+          });
+          if (!orderItems || orderItems.length === 0) {
+            orderItems = [];
+            for (const oiId of orderItemIds) {
+              const oi = await tx.orderItem.findUnique({ where: { id: oiId } });
+              if (oi) orderItems.push(oi);
+            }
+          }
+          const orderItemMap = new Map(orderItems.map((oi) => [oi.id, oi]));
+
+          // 2. Collect unique Product IDs and Variant IDs
+          const productIds: string[] = [];
+          const variantIds: string[] = [];
+          for (const retItem of restockableItems) {
+            const oi = orderItemMap.get(retItem.orderItemId);
+            if (oi) {
+              if (oi.productId) productIds.push(oi.productId);
+              if (oi.variantId) variantIds.push(oi.variantId);
+            }
+          }
+
+          const uniqueSortedProductIds = Array.from(new Set(productIds)).sort();
+          const uniqueSortedVariantIds = Array.from(new Set(variantIds)).sort();
+
+          // 3. Acquire Product locks in deterministic ascending order
+          const runningProductStock = new Map<string, number>();
+          for (const pId of uniqueSortedProductIds) {
+            const lockedProds = await tx.$queryRaw<Array<{ id: string; stockQuantity: number }>>`
+              SELECT id, "stockQuantity" FROM "Product" WHERE id = ${pId} FOR UPDATE
+            `;
+            if (lockedProds && lockedProds.length > 0) {
+              runningProductStock.set(pId, lockedProds[0].stockQuantity);
+            }
+          }
+
+          // 4. Acquire ProductVariant locks in deterministic ascending order
+          const runningVariantStock = new Map<string, number>();
+          for (const vId of uniqueSortedVariantIds) {
+            const lockedVars = await tx.$queryRaw<Array<{ id: string; stockQuantity: number }>>`
+              SELECT id, "stockQuantity" FROM "ProductVariant" WHERE id = ${vId} FOR UPDATE
+            `;
+            if (lockedVars && lockedVars.length > 0) {
+              runningVariantStock.set(vId, lockedVars[0].stockQuantity);
+            }
+          }
+
+          // 5. Apply increments and create movements
+          for (const item of restockableItems) {
+            const orderItem = orderItemMap.get(item.orderItemId);
+            if (!orderItem) continue;
+
+            const prevProdQty = runningProductStock.get(orderItem.productId) ?? 0;
+            const newProdQty = prevProdQty + item.quantity;
+            runningProductStock.set(orderItem.productId, newProdQty);
+
+            await tx.product.update({
+              where: { id: orderItem.productId },
+              data: { stockQuantity: { increment: item.quantity } },
+            });
+
+            if (orderItem.variantId) {
+              const prevVarQty = runningVariantStock.get(orderItem.variantId) ?? 0;
+              const newVarQty = prevVarQty + item.quantity;
+              runningVariantStock.set(orderItem.variantId, newVarQty);
+
+              await tx.productVariant.update({
+                where: { id: orderItem.variantId },
+                data: { stockQuantity: { increment: item.quantity } },
+              });
+            }
+
+            await tx.inventoryMovement.create({
+              data: {
+                productId: orderItem.productId,
+                variantId: orderItem.variantId || null,
+                previousQuantity: prevProdQty,
+                newQuantity: newProdQty,
+                changeAmount: item.quantity,
+                reason: InventoryChangeReason.RESTOCK,
+                note: `Restocked from Return ${current.returnNumber}`,
+                performedById: actor?.id || 'STAFF',
+              },
+            });
+          }
+        }
+      }
+
       const res = await tx.orderReturnRequest.update({
-        where: { id: returnReq.id },
+        where: { id: current.id },
         data: {
           status: targetStatus,
-          rejectionReason: dto.action === 'REJECT' ? dto.rejectionReason : returnReq.rejectionReason,
+          rejectionReason: dto.action === 'REJECT' ? dto.rejectionReason : current.rejectionReason,
         },
         include: { items: true },
       });
@@ -1158,13 +1515,13 @@ export class AdminOrdersService {
           adminName: actor?.name || 'Staff Administrator',
           action: 'RETURN_DECISION',
           fieldChanged: 'returnStatus',
-          previousValue: returnReq.status,
+          previousValue: current.status,
           newValue: targetStatus,
-          reason: dto.rejectionReason || `Staff executed return action ${dto.action}`,
+          reason: dto.action === 'REJECT' ? dto.rejectionReason : `Staff executed return action ${dto.action}`,
         },
       });
 
-      return res;
+      return res!;
     });
 
     if (this.notificationsService && returnReq.order) {
@@ -1193,90 +1550,798 @@ export class AdminOrdersService {
   }
 
   /**
-   * Processes manual or verified refund recording.
+   * Authoritative calculation of verified collected funds, reserved refunds, and available balance.
+   */
+  async calculateRefundableBalance(
+    tx: Prisma.TransactionClient,
+    order: {
+      id: string;
+      totalCents: number;
+      paymentMethod: PaymentMethod;
+      paymentStatus: PaymentStatus;
+    }
+  ) {
+    let verifiedCollectedCents = 0;
+
+    if (order.paymentMethod === PaymentMethod.CARD_PAYHERE) {
+      const attempts = await tx.paymentAttempt.findMany({
+        where: {
+          orderId: order.id,
+          status: PaymentAttemptStatus.SUCCEEDED,
+          gatewayReference: { not: null },
+        },
+        select: {
+          amountCents: true,
+          gatewayReference: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      const seenRefs = new Set<string>();
+      for (const att of attempts) {
+        const ref = att.gatewayReference?.trim();
+        if (ref && !seenRefs.has(ref)) {
+          seenRefs.add(ref);
+          verifiedCollectedCents += att.amountCents;
+        }
+      }
+    } else if (order.paymentMethod === PaymentMethod.BANK_TRANSFER) {
+      // A bank transfer contributes zero verified collected funds unless an authorized verification
+      // process has recorded a valid deposit transaction reference in PaymentAttempt.gatewayReference
+      const attempts = await tx.paymentAttempt.findMany({
+        where: {
+          orderId: order.id,
+          status: PaymentAttemptStatus.SUCCEEDED,
+          gatewayReference: { not: null },
+        },
+        select: {
+          amountCents: true,
+          gatewayReference: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      const seenRefs = new Set<string>();
+      for (const att of attempts) {
+        const ref = att.gatewayReference?.trim();
+        if (ref && !seenRefs.has(ref)) {
+          seenRefs.add(ref);
+          verifiedCollectedCents += att.amountCents;
+        }
+      }
+    } else if (order.paymentMethod === PaymentMethod.CASH_ON_DELIVERY) {
+      // COD refunds are strictly blocked until courier remittance reconciliation exists
+      verifiedCollectedCents = 0;
+    } else if (order.paymentMethod === PaymentMethod.KOKO_BNPL) {
+      // Koko refunds are strictly blocked
+      verifiedCollectedCents = 0;
+    }
+
+    const eligibleRefundBaseCents = Math.min(order.totalCents, verifiedCollectedCents);
+
+    const completedAggregate = await tx.refundRecord.aggregate({
+      where: {
+        orderId: order.id,
+        status: RefundStatus.COMPLETED,
+      },
+      _sum: { amountCents: true },
+    });
+    const completedRefundsCents = completedAggregate._sum.amountCents ?? 0;
+
+    const reservedAggregate = await tx.refundRecord.aggregate({
+      where: {
+        orderId: order.id,
+        status: { in: [RefundStatus.REQUESTED, RefundStatus.APPROVED, RefundStatus.PROCESSING] },
+      },
+      _sum: { amountCents: true },
+    });
+    const reservedRefundsCents = reservedAggregate._sum.amountCents ?? 0;
+
+    const availableRefundBalanceCents = Math.max(
+      0,
+      eligibleRefundBaseCents - completedRefundsCents - reservedRefundsCents
+    );
+
+    return {
+      verifiedCollectedCents,
+      eligibleRefundBaseCents,
+      completedRefundsCents,
+      reservedRefundsCents,
+      availableRefundBalanceCents,
+    };
+  }
+
+  private computeRefundPayloadHash(dto: {
+    amountCents: number;
+    method: string;
+    reason: string;
+    orderReturnRequestId?: string | null;
+  }): string {
+    const canonical = JSON.stringify({
+      amountCents: dto.amountCents,
+      method: dto.method.trim().toUpperCase(),
+      orderReturnRequestId: dto.orderReturnRequestId || null,
+      reason: dto.reason.trim(),
+    });
+    return crypto.createHash('sha256').update(canonical).digest('hex');
+  }
+
+  /**
+   * Retrieves all refunds and financial calculation summary for an order.
+   */
+  async getOrderRefunds(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        refundRecords: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+    if (!order) {
+      throw new NotFoundException(`Order "${orderId}" not found`);
+    }
+
+    const bal = await this.calculateRefundableBalance(this.prisma as any, order);
+
+    return {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      orderTotalCents: order.totalCents,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      ...bal,
+      refundRecords: order.refundRecords,
+    };
+  }
+
+  /**
+   * Processes manual or verified refund request recording with strict row locking and validation.
    */
   async processRefund(
     orderId: string,
     dto: AdminProcessRefundDto,
     actor?: { id?: string; name?: string }
   ) {
-    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
-    if (!order) {
-      throw new NotFoundException(`Order "${orderId}" not found`);
+    if (!actor?.id || !actor.id.trim()) {
+      throw new BadRequestException('Authenticated admin identity is required to request a refund.');
     }
 
-    if (dto.amountCents > order.totalCents) {
-      throw new BadRequestException(
-        `Refund amount (Rs. ${(dto.amountCents / 100).toFixed(2)}) cannot exceed order grand total (Rs. ${(order.totalCents / 100).toFixed(2)})`
-      );
+    if (!Number.isInteger(dto.amountCents) || dto.amountCents <= 0) {
+      throw new BadRequestException('Refund amount must be a positive integer in cents.');
     }
+
+    const incomingHash = this.computeRefundPayloadHash(dto);
 
     const refund = await this.prisma.$transaction(async (tx) => {
+      // 1. Acquire Order row lock FIRST using SELECT ... FOR UPDATE
+      const lockedOrders = await tx.$queryRaw<Array<{
+        id: string;
+        orderNumber: string;
+        totalCents: number;
+        paymentMethod: PaymentMethod;
+        paymentStatus: PaymentStatus;
+        orderStatus: OrderStatus;
+        customerEmail: string;
+        customerName: string;
+      }>>`
+        SELECT id, "orderNumber", "totalCents", "paymentMethod", "paymentStatus", "orderStatus", "customerEmail", "customerName"
+        FROM "Order" WHERE id = ${orderId} FOR UPDATE
+      `;
+
+      if (!lockedOrders || lockedOrders.length === 0) {
+        throw new NotFoundException(`Order "${orderId}" not found`);
+      }
+      const order = lockedOrders[0];
+
+      // 2. Reject unsupported methods
+      if (order.paymentMethod === PaymentMethod.CASH_ON_DELIVERY) {
+        throw new BadRequestException(
+          'Cash on Delivery refunds are blocked because cash collection cannot be verified without courier remittance records.'
+        );
+      }
+      if (order.paymentMethod === PaymentMethod.KOKO_BNPL) {
+        throw new BadRequestException(
+          'Koko BNPL refunds are currently blocked because Koko gateway integration is not implemented.'
+        );
+      }
+
+      // 3. Idempotency Check inside lock
+      if (dto.idempotencyKey) {
+        const existing = await tx.refundRecord.findUnique({
+          where: {
+            orderId_idempotencyKey: {
+              orderId: order.id,
+              idempotencyKey: dto.idempotencyKey,
+            },
+          },
+        });
+
+        if (existing) {
+          if (existing.payloadHash && existing.payloadHash === incomingHash) {
+            // Idempotent replay: return existing record without double-reservation
+            return {
+              refund: existing,
+              orderNumber: order.orderNumber,
+            };
+          } else {
+            throw new ConflictException(
+              `Idempotency key "${dto.idempotencyKey}" has already been used with a different refund payload on this order.`
+            );
+          }
+        }
+      }
+
+      // 3b. Validate linked Return Request if specified
+      if (dto.orderReturnRequestId) {
+        const returnReq = await tx.orderReturnRequest.findUnique({
+          where: { id: dto.orderReturnRequestId },
+          include: { items: true },
+        });
+
+        if (!returnReq || returnReq.orderId !== order.id) {
+          throw new BadRequestException(
+            `Return request "${dto.orderReturnRequestId}" not found for order ${order.orderNumber}.`
+          );
+        }
+
+        if (returnReq.status === ReturnStatus.REJECTED) {
+          throw new BadRequestException(
+            `Cannot process refund for return request "${returnReq.returnNumber}" because it was rejected.`
+          );
+        }
+
+        if (returnReq.status === ReturnStatus.PENDING) {
+          throw new BadRequestException(
+            `Cannot process refund for return request "${returnReq.returnNumber}" because it is still PENDING. Only APPROVED or COMPLETED returns can be refunded.`
+          );
+        }
+
+        const existingReturnRefund = await tx.refundRecord.findFirst({
+          where: {
+            orderReturnRequestId: returnReq.id,
+            status: {
+              in: [
+                RefundStatus.REQUESTED,
+                RefundStatus.APPROVED,
+                RefundStatus.PROCESSING,
+                RefundStatus.COMPLETED,
+              ],
+            },
+          },
+        });
+
+        if (existingReturnRefund) {
+          throw new BadRequestException(
+            `Return request "${returnReq.returnNumber}" already has an active or completed refund (${existingReturnRefund.id}). A return cannot be refunded more than once.`
+          );
+        }
+      }
+
+      // 4. Calculate Authoritative Refundable Balance
+      const bal = await this.calculateRefundableBalance(tx, order);
+
+      if (order.paymentMethod === PaymentMethod.BANK_TRANSFER && bal.verifiedCollectedCents === 0) {
+        throw new BadRequestException(
+          'Bank transfer refund cannot be authorized because no verified deposit reference exists for this order.'
+        );
+      }
+
+      if (bal.verifiedCollectedCents === 0) {
+        throw new BadRequestException(
+          `Refund rejected: No verified collected payment exists for order ${order.orderNumber}.`
+        );
+      }
+
+      if (dto.amountCents > bal.availableRefundBalanceCents) {
+        throw new BadRequestException(
+          `Refund amount (Rs. ${(dto.amountCents / 100).toFixed(2)}) exceeds available refundable balance (Rs. ${(bal.availableRefundBalanceCents / 100).toFixed(2)}).`
+        );
+      }
+
+      // 5. Create RefundRecord in REQUESTED status (reserving balance)
       const created = await tx.refundRecord.create({
         data: {
           orderId: order.id,
           amountCents: dto.amountCents,
+          currency: 'LKR',
           method: dto.method,
+          status: RefundStatus.REQUESTED,
           reference: dto.reference || `REF-${Date.now()}`,
+          idempotencyKey: dto.idempotencyKey || null,
+          payloadHash: incomingHash,
           reason: dto.reason,
-          processedBy: actor?.name || 'Staff',
+          maskedAccountNumber: dto.maskedAccountNumber || null,
+          processedBy: actor.name || 'Staff',
+          processedById: actor.id,
+          requestedById: actor.id,
+          orderReturnRequestId: dto.orderReturnRequestId || null,
         },
       });
 
-      await tx.order.update({
-        where: { id: order.id },
+      // 6. Record Audit Log
+      await tx.orderAuditLog.create({
         data: {
-          paymentStatus: PaymentStatus.REFUNDED,
+          orderId: order.id,
+          adminId: actor.id,
+          adminName: actor.name || 'Staff Administrator',
+          action: 'REFUND_REQUESTED',
+          fieldChanged: 'refundStatus',
+          previousValue: 'NONE',
+          newValue: RefundStatus.REQUESTED,
+          reason: `Refund requested: Rs. ${(dto.amountCents / 100).toFixed(2)} via ${dto.method}. Reason: ${dto.reason}`,
+        },
+      });
+
+      return {
+        refund: created,
+        orderNumber: order.orderNumber,
+      };
+    });
+
+    if (this.ordersGateway) {
+      this.ordersGateway.broadcastOrderEvent('order.refund.updated', {
+        orderId,
+        orderNumber: refund.orderNumber,
+        event: 'order.refund.updated',
+        timestamp: new Date().toISOString(),
+        data: refund.refund,
+        actor,
+      });
+    }
+
+    return refund.refund;
+  }
+
+  /**
+   * Approves a requested refund.
+   */
+  async approveRefund(
+    orderId: string,
+    refundId: string,
+    dto: AdminApproveRefundDto,
+    actor?: { id?: string; name?: string }
+  ) {
+    if (!actor?.id || !actor.id.trim()) {
+      throw new BadRequestException('Authenticated admin identity is required to approve a refund.');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const lockedOrders = await tx.$queryRaw<Array<{ id: string; orderNumber: string }>>`
+        SELECT id, "orderNumber" FROM "Order" WHERE id = ${orderId} FOR UPDATE
+      `;
+      if (!lockedOrders || lockedOrders.length === 0) {
+        throw new NotFoundException(`Order "${orderId}" not found`);
+      }
+
+      const refund = await tx.refundRecord.findUnique({
+        where: { id: refundId },
+      });
+      if (!refund || refund.orderId !== orderId) {
+        throw new NotFoundException(`Refund "${refundId}" not found for order "${orderId}"`);
+      }
+
+      // Legacy or untracked requester identity guard
+      if (!refund.requestedById) {
+        throw new BadRequestException(
+          `Legacy or untracked refund "${refundId}" cannot be approved without verifiable requester identity. Manual review is required.`
+        );
+      }
+
+      // Segregation of duties: requester cannot approve their own refund
+      if (actor.id === refund.requestedById) {
+        throw new ForbiddenException(
+          `Segregation of duties violation: The original refund requester (${actor.id}) cannot approve their own refund request.`
+        );
+      }
+
+      if (refund.status !== RefundStatus.REQUESTED) {
+        throw new BadRequestException(
+          `Invalid state transition: Cannot approve refund with current status "${refund.status}". Only REQUESTED refunds can be approved.`
+        );
+      }
+
+      const updated = await tx.refundRecord.update({
+        where: { id: refundId },
+        data: {
+          status: RefundStatus.APPROVED,
+          approvedById: actor.id,
+          approvedAt: new Date(),
         },
       });
 
       await tx.orderAuditLog.create({
         data: {
-          orderId: order.id,
-          adminId: actor?.id || null,
-          adminName: actor?.name || 'Staff Administrator',
-          action: 'REFUND_RECORDED',
-          fieldChanged: 'paymentStatus',
-          previousValue: order.paymentStatus,
-          newValue: PaymentStatus.REFUNDED,
-          reason: `Refund: Rs. ${(dto.amountCents / 100).toFixed(2)} via ${dto.method}. Reason: ${dto.reason}`,
+          orderId,
+          adminId: actor.id,
+          adminName: actor.name || 'Staff Administrator',
+          action: 'REFUND_APPROVED',
+          fieldChanged: 'refundStatus',
+          previousValue: RefundStatus.REQUESTED,
+          newValue: RefundStatus.APPROVED,
+          reason: `Refund approved by ${actor.name || actor.id}. Requester: ${refund.requestedById}. ${dto.notes || ''}`.trim(),
         },
       });
 
-      return created;
+      if (this.ordersGateway) {
+        this.ordersGateway.broadcastOrderEvent('order.refund.updated', {
+          orderId,
+          orderNumber: lockedOrders[0].orderNumber,
+          event: 'order.refund.updated',
+          timestamp: new Date().toISOString(),
+          data: updated,
+          actor,
+        });
+      }
+
+      return updated;
     });
+  }
 
-    if (this.notificationsService) {
-      this.notificationsService.sendRefundNotification({
-        orderNumber: order.orderNumber,
-        customerEmail: order.customerEmail,
-        customerName: order.customerName,
-        amountCents: dto.amountCents,
-        method: dto.method,
-        reference: dto.reference,
-      }).catch((err) => this.logger.error('Failed to dispatch refund notification:', err));
+  /**
+   * Transitions refund to PROCESSING status.
+   */
+  async processRefundExecution(
+    orderId: string,
+    refundId: string,
+    dto: AdminProcessRefundExecutionDto,
+    actor?: { id?: string; name?: string }
+  ) {
+    if (!actor?.id || !actor.id.trim()) {
+      throw new BadRequestException('Authenticated admin identity is required to process refund execution.');
     }
 
-    if (this.ordersGateway) {
-      this.ordersGateway.broadcastOrderEvent('order.refund.updated', {
-        orderId: order.id,
-        orderNumber: order.orderNumber,
-        event: 'order.refund.updated',
-        timestamp: new Date().toISOString(),
-        data: refund,
-        actor,
+    return this.prisma.$transaction(async (tx) => {
+      const lockedOrders = await tx.$queryRaw<Array<{ id: string; orderNumber: string }>>`
+        SELECT id, "orderNumber" FROM "Order" WHERE id = ${orderId} FOR UPDATE
+      `;
+      if (!lockedOrders || lockedOrders.length === 0) {
+        throw new NotFoundException(`Order "${orderId}" not found`);
+      }
+
+      const refund = await tx.refundRecord.findUnique({
+        where: { id: refundId },
       });
-      this.ordersGateway.broadcastOrderEvent('order.payment.updated', {
-        orderId: order.id,
-        orderNumber: order.orderNumber,
-        event: 'order.payment.updated',
-        timestamp: new Date().toISOString(),
-        data: { paymentStatus: PaymentStatus.REFUNDED },
-        actor,
+      if (!refund || refund.orderId !== orderId) {
+        throw new NotFoundException(`Refund "${refundId}" not found for order "${orderId}"`);
+      }
+
+      if (refund.status !== RefundStatus.APPROVED) {
+        throw new BadRequestException(
+          `Invalid state transition: Cannot mark refund processing with current status "${refund.status}". Only APPROVED refunds can be transitioned to PROCESSING.`
+        );
+      }
+
+      const updated = await tx.refundRecord.update({
+        where: { id: refundId },
+        data: {
+          status: RefundStatus.PROCESSING,
+        },
       });
+
+      await tx.orderAuditLog.create({
+        data: {
+          orderId,
+          adminId: actor.id,
+          adminName: actor.name || 'Staff Administrator',
+          action: 'REFUND_PROCESSING',
+          fieldChanged: 'refundStatus',
+          previousValue: RefundStatus.APPROVED,
+          newValue: RefundStatus.PROCESSING,
+          reason: `Refund submitted for execution by ${actor.name || actor.id}. Approver: ${refund.approvedById || 'N/A'}. ${dto.notes || ''}`.trim(),
+        },
+      });
+
+      if (this.ordersGateway) {
+        this.ordersGateway.broadcastOrderEvent('order.refund.updated', {
+          orderId,
+          orderNumber: lockedOrders[0].orderNumber,
+          event: 'order.refund.updated',
+          timestamp: new Date().toISOString(),
+          data: updated,
+          actor,
+        });
+      }
+
+      return updated;
+    });
+  }
+
+  /**
+   * Completes a refund upon verified external execution evidence.
+   */
+  async completeRefund(
+    orderId: string,
+    refundId: string,
+    dto: AdminCompleteRefundDto,
+    actor?: { id?: string; name?: string }
+  ) {
+    if (!actor?.id || !actor.id.trim()) {
+      throw new BadRequestException('Authenticated admin identity is required to complete a refund.');
     }
 
-    return refund;
+    if (!dto.externalReference || !dto.externalReference.trim()) {
+      throw new BadRequestException('External transaction reference is required to complete a refund.');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const lockedOrders = await tx.$queryRaw<Array<{
+        id: string;
+        orderNumber: string;
+        totalCents: number;
+        paymentStatus: PaymentStatus;
+        customerEmail: string;
+        customerName: string;
+      }>>`
+        SELECT id, "orderNumber", "totalCents", "paymentStatus", "customerEmail", "customerName"
+        FROM "Order" WHERE id = ${orderId} FOR UPDATE
+      `;
+      if (!lockedOrders || lockedOrders.length === 0) {
+        throw new NotFoundException(`Order "${orderId}" not found`);
+      }
+      const order = lockedOrders[0];
+
+      const refund = await tx.refundRecord.findUnique({
+        where: { id: refundId },
+      });
+      if (!refund || refund.orderId !== orderId) {
+        throw new NotFoundException(`Refund "${refundId}" not found for order "${orderId}"`);
+      }
+
+      // Legacy or untracked requester identity guard
+      if (!refund.requestedById) {
+        throw new BadRequestException(
+          `Legacy or untracked refund "${refundId}" cannot be completed without verifiable requester identity. Manual review is required.`
+        );
+      }
+
+      // Segregation of duties: requester cannot complete their own refund
+      if (actor.id === refund.requestedById) {
+        throw new ForbiddenException(
+          `Segregation of duties violation: The original refund requester (${actor.id}) cannot complete their own refund.`
+        );
+      }
+
+      if (refund.status !== RefundStatus.PROCESSING) {
+        throw new BadRequestException(
+          `Invalid state transition: Cannot mark refund completed with current status "${refund.status}". Only PROCESSING refunds can be completed with execution evidence.`
+        );
+      }
+
+      const updatedRefund = await tx.refundRecord.update({
+        where: { id: refundId },
+        data: {
+          status: RefundStatus.COMPLETED,
+          externalReference: dto.externalReference.trim(),
+          completedById: actor.id,
+          completedAt: new Date(),
+        },
+      });
+
+      // If refund is linked to a return request, mark associated return items as REFUNDED
+      if (refund.orderReturnRequestId) {
+        await tx.orderReturnItem.updateMany({
+          where: { returnRequestId: refund.orderReturnRequestId },
+          data: { status: ReturnItemStatus.REFUNDED },
+        });
+      }
+
+      // Recalculate total completed refunds including this one
+      const completedAggregate = await tx.refundRecord.aggregate({
+        where: {
+          orderId: order.id,
+          status: RefundStatus.COMPLETED,
+        },
+        _sum: { amountCents: true },
+      });
+      const totalCompletedCents = completedAggregate._sum.amountCents ?? 0;
+
+      const newPaymentStatus =
+        totalCompletedCents >= order.totalCents
+          ? PaymentStatus.REFUNDED
+          : PaymentStatus.PARTIALLY_REFUNDED;
+
+      await tx.order.update({
+        where: { id: order.id },
+        data: { paymentStatus: newPaymentStatus },
+      });
+
+      await tx.orderAuditLog.create({
+        data: {
+          orderId,
+          adminId: actor.id,
+          adminName: actor.name || 'Staff Administrator',
+          action: 'REFUND_COMPLETED',
+          fieldChanged: 'paymentStatus',
+          previousValue: order.paymentStatus,
+          newValue: newPaymentStatus,
+          reason: `Refund of Rs. ${(refund.amountCents / 100).toFixed(2)} completed by ${actor.name || actor.id}. Requester: ${refund.requestedById}. Approver: ${refund.approvedById || 'N/A'}. External ref: ${dto.externalReference.trim()}`,
+        },
+      });
+
+      if (this.notificationsService) {
+        this.notificationsService.sendRefundNotification({
+          orderNumber: order.orderNumber,
+          customerEmail: order.customerEmail,
+          customerName: order.customerName,
+          amountCents: refund.amountCents,
+          method: refund.method,
+          reference: dto.externalReference.trim(),
+        }).catch((err) => this.logger.error('Failed to dispatch refund notification:', err));
+      }
+
+      if (this.ordersGateway) {
+        this.ordersGateway.broadcastOrderEvent('order.refund.updated', {
+          orderId,
+          orderNumber: order.orderNumber,
+          event: 'order.refund.updated',
+          timestamp: new Date().toISOString(),
+          data: updatedRefund,
+          actor,
+        });
+        this.ordersGateway.broadcastOrderEvent('order.payment.updated', {
+          orderId,
+          orderNumber: order.orderNumber,
+          event: 'order.payment.updated',
+          timestamp: new Date().toISOString(),
+          data: { paymentStatus: newPaymentStatus },
+          actor,
+        });
+      }
+
+      return updatedRefund;
+    });
+  }
+
+  /**
+   * Rejects a requested or approved refund.
+   */
+  async rejectRefund(
+    orderId: string,
+    refundId: string,
+    dto: AdminRejectRefundDto,
+    actor?: { id?: string; name?: string }
+  ) {
+    if (!actor?.id || !actor.id.trim()) {
+      throw new BadRequestException('Authenticated admin identity is required to reject a refund.');
+    }
+
+    if (!dto.rejectionReason || !dto.rejectionReason.trim()) {
+      throw new BadRequestException('Rejection reason is required.');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const lockedOrders = await tx.$queryRaw<Array<{ id: string; orderNumber: string }>>`
+        SELECT id, "orderNumber" FROM "Order" WHERE id = ${orderId} FOR UPDATE
+      `;
+      if (!lockedOrders || lockedOrders.length === 0) {
+        throw new NotFoundException(`Order "${orderId}" not found`);
+      }
+
+      const refund = await tx.refundRecord.findUnique({
+        where: { id: refundId },
+      });
+      if (!refund || refund.orderId !== orderId) {
+        throw new NotFoundException(`Refund "${refundId}" not found for order "${orderId}"`);
+      }
+
+      if (
+        refund.status !== RefundStatus.REQUESTED &&
+        refund.status !== RefundStatus.APPROVED
+      ) {
+        throw new BadRequestException(
+          `Invalid state transition: Cannot reject refund with current status "${refund.status}". Only REQUESTED or APPROVED refunds can be rejected.`
+        );
+      }
+
+      const updated = await tx.refundRecord.update({
+        where: { id: refundId },
+        data: {
+          status: RefundStatus.REJECTED,
+          failureReason: dto.rejectionReason.trim(),
+        },
+      });
+
+      await tx.orderAuditLog.create({
+        data: {
+          orderId,
+          adminId: actor.id,
+          adminName: actor.name || 'Staff Administrator',
+          action: 'REFUND_REJECTED',
+          fieldChanged: 'refundStatus',
+          previousValue: refund.status,
+          newValue: RefundStatus.REJECTED,
+          reason: `Refund rejected by ${actor.name || actor.id}. Reason: ${dto.rejectionReason.trim()}`,
+        },
+      });
+
+      if (this.ordersGateway) {
+        this.ordersGateway.broadcastOrderEvent('order.refund.updated', {
+          orderId,
+          orderNumber: lockedOrders[0].orderNumber,
+          event: 'order.refund.updated',
+          timestamp: new Date().toISOString(),
+          data: updated,
+          actor,
+        });
+      }
+
+      return updated;
+    });
+  }
+
+  /**
+   * Marks an in-flight processing refund as failed.
+   */
+  async failRefund(
+    orderId: string,
+    refundId: string,
+    dto: AdminFailRefundDto,
+    actor?: { id?: string; name?: string }
+  ) {
+    if (!actor?.id || !actor.id.trim()) {
+      throw new BadRequestException('Authenticated admin identity is required to fail a refund.');
+    }
+
+    if (!dto.failureReason || !dto.failureReason.trim()) {
+      throw new BadRequestException('Failure reason is required.');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const lockedOrders = await tx.$queryRaw<Array<{ id: string; orderNumber: string }>>`
+        SELECT id, "orderNumber" FROM "Order" WHERE id = ${orderId} FOR UPDATE
+      `;
+      if (!lockedOrders || lockedOrders.length === 0) {
+        throw new NotFoundException(`Order "${orderId}" not found`);
+      }
+
+      const refund = await tx.refundRecord.findUnique({
+        where: { id: refundId },
+      });
+      if (!refund || refund.orderId !== orderId) {
+        throw new NotFoundException(`Refund "${refundId}" not found for order "${orderId}"`);
+      }
+
+      if (refund.status !== RefundStatus.PROCESSING) {
+        throw new BadRequestException(
+          `Invalid state transition: Cannot mark refund failed with current status "${refund.status}". Only PROCESSING refunds can be marked FAILED.`
+        );
+      }
+
+      const updated = await tx.refundRecord.update({
+        where: { id: refundId },
+        data: {
+          status: RefundStatus.FAILED,
+          failureReason: dto.failureReason.trim(),
+        },
+      });
+
+      await tx.orderAuditLog.create({
+        data: {
+          orderId,
+          adminId: actor.id,
+          adminName: actor.name || 'Staff Administrator',
+          action: 'REFUND_FAILED',
+          fieldChanged: 'refundStatus',
+          previousValue: RefundStatus.PROCESSING,
+          newValue: RefundStatus.FAILED,
+          reason: `Refund marked failed by ${actor.name || actor.id}. Reason: ${dto.failureReason.trim()}`,
+        },
+      });
+
+      if (this.ordersGateway) {
+        this.ordersGateway.broadcastOrderEvent('order.refund.updated', {
+          orderId,
+          orderNumber: lockedOrders[0].orderNumber,
+          event: 'order.refund.updated',
+          timestamp: new Date().toISOString(),
+          data: updated,
+          actor,
+        });
+      }
+
+      return updated;
+    });
   }
 
   /**
@@ -1340,6 +2405,388 @@ export class AdminOrdersService {
     }
 
     return note;
+  }
+
+  /**
+   * Generates high-level financial reconciliation summary metrics.
+   */
+  async getFinancialReconciliationSummary(query: AdminReconciliationQueryDto) {
+    const where: Prisma.OrderWhereInput = {};
+
+    if (query.paymentMethod) {
+      where.paymentMethod = query.paymentMethod as PaymentMethod;
+    }
+    if (query.paymentStatus) {
+      where.paymentStatus = query.paymentStatus as PaymentStatus;
+    }
+    if (query.startDate || query.endDate) {
+      where.createdAt = {};
+      if (query.startDate) where.createdAt.gte = new Date(query.startDate);
+      if (query.endDate) where.createdAt.lte = new Date(query.endDate);
+    }
+    if (query.search) {
+      where.OR = [
+        { orderNumber: { contains: query.search, mode: 'insensitive' } },
+        { customerName: { contains: query.search, mode: 'insensitive' } },
+        { customerEmail: { contains: query.search, mode: 'insensitive' } },
+        {
+          paymentAttempts: {
+            some: {
+              gatewayReference: { contains: query.search, mode: 'insensitive' },
+            },
+          },
+        },
+        {
+          refundRecords: {
+            some: {
+              OR: [
+                { reference: { contains: query.search, mode: 'insensitive' } },
+                { externalReference: { contains: query.search, mode: 'insensitive' } },
+              ],
+            },
+          },
+        },
+      ];
+    }
+
+    const orders = await this.prisma.order.findMany({
+      where,
+      include: {
+        paymentAttempts: {
+          where: { status: PaymentAttemptStatus.SUCCEEDED },
+        },
+        refundRecords: true,
+        returnRequests: {
+          include: { items: true },
+        },
+      },
+    });
+
+    let totalOrders = orders.length;
+    let totalOrderAmountCents = 0;
+    let totalVerifiedCollectedCents = 0;
+    let totalCompletedRefundsCents = 0;
+    let totalReservedRefundsCents = 0;
+    let totalAvailableRefundBalanceCents = 0;
+    let discrepancyCount = 0;
+
+    for (const order of orders) {
+      totalOrderAmountCents += order.totalCents;
+
+      // Calculate verified collections
+      let verifiedCollected = 0;
+      if (
+        order.paymentMethod === PaymentMethod.CARD_PAYHERE ||
+        order.paymentMethod === PaymentMethod.BANK_TRANSFER
+      ) {
+        const seenRefs = new Set<string>();
+        for (const pa of order.paymentAttempts) {
+          if (pa.gatewayReference && !seenRefs.has(pa.gatewayReference)) {
+            seenRefs.add(pa.gatewayReference);
+            verifiedCollected += pa.amountCents;
+          }
+        }
+      }
+      totalVerifiedCollectedCents += verifiedCollected;
+
+      let completedRefunds = 0;
+      let reservedRefunds = 0;
+      const seenRefundRefs = new Set<string>();
+      let hasDupRefundRef = false;
+      let hasCompletedWithoutEvidence = false;
+
+      for (const ref of order.refundRecords) {
+        if (ref.status === RefundStatus.COMPLETED) {
+          completedRefunds += ref.amountCents;
+          if (ref.externalReference) {
+            if (seenRefundRefs.has(ref.externalReference)) {
+              hasDupRefundRef = true;
+            }
+            seenRefundRefs.add(ref.externalReference);
+          } else {
+            hasCompletedWithoutEvidence = true;
+          }
+        } else if (
+          ref.status === RefundStatus.REQUESTED ||
+          ref.status === RefundStatus.APPROVED ||
+          ref.status === RefundStatus.PROCESSING
+        ) {
+          reservedRefunds += ref.amountCents;
+        }
+      }
+
+      totalCompletedRefundsCents += completedRefunds;
+      totalReservedRefundsCents += reservedRefunds;
+
+      const refundCeiling = Math.min(order.totalCents, verifiedCollected);
+      const availableBalance = Math.max(0, refundCeiling - completedRefunds - reservedRefunds);
+      totalAvailableRefundBalanceCents += availableBalance;
+
+      // Check discrepancies
+      const hasExceedsCollection = completedRefunds + reservedRefunds > verifiedCollected;
+      const hasPaidWithoutCollection = order.paymentStatus === PaymentStatus.PAID && verifiedCollected === 0;
+      const hasReturnMismatch = order.returnRequests.some((rr) =>
+        rr.items.some((it) => it.status === ReturnItemStatus.REFUNDED) &&
+        !order.refundRecords.some((rf) => rf.orderReturnRequestId === rr.id && rf.status === RefundStatus.COMPLETED)
+      );
+
+      if (
+        hasExceedsCollection ||
+        hasPaidWithoutCollection ||
+        hasDupRefundRef ||
+        hasCompletedWithoutEvidence ||
+        hasReturnMismatch
+      ) {
+        discrepancyCount++;
+      }
+    }
+
+    return {
+      totalOrders,
+      totalOrderAmountCents,
+      totalVerifiedCollectedCents,
+      totalCompletedRefundsCents,
+      totalReservedRefundsCents,
+      totalAvailableRefundBalanceCents,
+      discrepancyCount,
+    };
+  }
+
+  /**
+   * Retrieves paginated financial reconciliation records with verified audit details and discrepancy flags.
+   */
+  async getFinancialReconciliation(query: AdminReconciliationQueryDto) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+
+    const where: Prisma.OrderWhereInput = {};
+
+    if (query.paymentMethod) {
+      where.paymentMethod = query.paymentMethod as PaymentMethod;
+    }
+    if (query.paymentStatus) {
+      where.paymentStatus = query.paymentStatus as PaymentStatus;
+    }
+    if (query.startDate || query.endDate) {
+      where.createdAt = {};
+      if (query.startDate) where.createdAt.gte = new Date(query.startDate);
+      if (query.endDate) where.createdAt.lte = new Date(query.endDate);
+    }
+    if (query.search) {
+      where.OR = [
+        { orderNumber: { contains: query.search, mode: 'insensitive' } },
+        { customerName: { contains: query.search, mode: 'insensitive' } },
+        { customerEmail: { contains: query.search, mode: 'insensitive' } },
+        {
+          paymentAttempts: {
+            some: {
+              gatewayReference: { contains: query.search, mode: 'insensitive' },
+            },
+          },
+        },
+        {
+          refundRecords: {
+            some: {
+              OR: [
+                { reference: { contains: query.search, mode: 'insensitive' } },
+                { externalReference: { contains: query.search, mode: 'insensitive' } },
+              ],
+            },
+          },
+        },
+      ];
+    }
+    if (query.refundStatus) {
+      where.refundRecords = {
+        some: { status: query.refundStatus as RefundStatus },
+      };
+    }
+
+    // Fetch all matching orders to calculate financial reconciliation state accurately
+    const orders = await this.prisma.order.findMany({
+      where,
+      include: {
+        paymentAttempts: {
+          where: { status: PaymentAttemptStatus.SUCCEEDED },
+          orderBy: { createdAt: 'desc' },
+        },
+        refundRecords: {
+          include: {
+            orderReturnRequest: {
+              select: { id: true, returnNumber: true, status: true },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        returnRequests: {
+          include: { items: true },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Map each order to its detailed reconciliation entry
+    const reconciliationItems = orders.map((order) => {
+      // 1. Calculate verified collections
+      let verifiedCollectedCents = 0;
+      const paymentReferences: string[] = [];
+      const paymentRefCounts = new Map<string, number>();
+
+      for (const pa of order.paymentAttempts) {
+        if (pa.gatewayReference) {
+          paymentRefCounts.set(pa.gatewayReference, (paymentRefCounts.get(pa.gatewayReference) || 0) + 1);
+        }
+      }
+
+      if (
+        order.paymentMethod === PaymentMethod.CARD_PAYHERE ||
+        order.paymentMethod === PaymentMethod.BANK_TRANSFER
+      ) {
+        const seenRefs = new Set<string>();
+        for (const pa of order.paymentAttempts) {
+          if (pa.gatewayReference) {
+            paymentReferences.push(pa.gatewayReference);
+            if (!seenRefs.has(pa.gatewayReference)) {
+              seenRefs.add(pa.gatewayReference);
+              verifiedCollectedCents += pa.amountCents;
+            }
+          }
+        }
+      }
+
+      // 2. Calculate refunds
+      let completedRefundsCents = 0;
+      let reservedRefundsCents = 0;
+      const refundReferences: string[] = [];
+      const refundRefCounts = new Map<string, number>();
+      let hasCompletedWithoutEvidence = false;
+
+      for (const ref of order.refundRecords) {
+        if (ref.status === RefundStatus.COMPLETED) {
+          completedRefundsCents += ref.amountCents;
+          if (ref.externalReference) {
+            refundReferences.push(ref.externalReference);
+            refundRefCounts.set(ref.externalReference, (refundRefCounts.get(ref.externalReference) || 0) + 1);
+          } else {
+            hasCompletedWithoutEvidence = true;
+          }
+        } else if (
+          ref.status === RefundStatus.REQUESTED ||
+          ref.status === RefundStatus.APPROVED ||
+          ref.status === RefundStatus.PROCESSING
+        ) {
+          reservedRefundsCents += ref.amountCents;
+        }
+      }
+
+      const refundCeilingCents = Math.min(order.totalCents, verifiedCollectedCents);
+      const availableRefundBalanceCents = Math.max(
+        0,
+        refundCeilingCents - completedRefundsCents - reservedRefundsCents
+      );
+
+      // 3. Detect discrepancies
+      const discrepancies: string[] = [];
+      if (completedRefundsCents + reservedRefundsCents > verifiedCollectedCents) {
+        discrepancies.push('REFUNDS_EXCEED_COLLECTIONS: Total refunds exceed verified collected funds');
+      }
+      if (order.paymentStatus === PaymentStatus.PAID && verifiedCollectedCents === 0) {
+        discrepancies.push('PAID_WITHOUT_COLLECTION: Order marked PAID without verified collection evidence');
+      }
+      for (const [ref, count] of paymentRefCounts.entries()) {
+        if (count > 1) {
+          discrepancies.push(`DUPLICATE_PAYMENT_REF: Payment reference "${ref}" appears ${count} times`);
+        }
+      }
+      for (const [ref, count] of refundRefCounts.entries()) {
+        if (count > 1) {
+          discrepancies.push(`DUPLICATE_REFUND_REF: Refund reference "${ref}" appears ${count} times`);
+        }
+      }
+      if (hasCompletedWithoutEvidence) {
+        discrepancies.push('COMPLETED_WITHOUT_EVIDENCE: Refund marked COMPLETED without external transaction reference');
+      }
+      const hasReturnMismatch = order.returnRequests.some((rr) =>
+        rr.items.some((it) => it.status === ReturnItemStatus.REFUNDED) &&
+        !order.refundRecords.some((rf) => rf.orderReturnRequestId === rr.id && rf.status === RefundStatus.COMPLETED)
+      );
+      if (hasReturnMismatch) {
+        discrepancies.push('RETURN_REFUND_MISMATCH: Return item marked REFUNDED without completed linked refund');
+      }
+
+      return {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        createdAt: order.createdAt,
+        totalCents: order.totalCents,
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        verifiedCollectedCents,
+        completedRefundsCents,
+        reservedRefundsCents,
+        availableRefundBalanceCents,
+        paymentReferences: Array.from(new Set(paymentReferences)),
+        refundReferences: Array.from(new Set(refundReferences)),
+        refundRecords: order.refundRecords.map((r) => ({
+          id: r.id,
+          amountCents: r.amountCents,
+          method: r.method,
+          status: r.status,
+          reference: r.reference,
+          externalReference: r.externalReference,
+          requestedById: r.requestedById,
+          approvedById: r.approvedById,
+          completedById: r.completedById,
+          processedBy: r.processedBy,
+          reason: r.reason,
+          failureReason: r.failureReason,
+          createdAt: r.createdAt,
+          orderReturnRequestId: r.orderReturnRequestId,
+          returnNumber: r.orderReturnRequest?.returnNumber || null,
+        })),
+        returnRequestsCount: order.returnRequests.length,
+        hasDiscrepancy: discrepancies.length > 0,
+        discrepancies,
+      };
+    });
+
+    // Apply hasDiscrepancy filter if provided
+    let filteredItems = reconciliationItems;
+    if (query.hasDiscrepancy !== undefined) {
+      filteredItems = reconciliationItems.filter((it) => it.hasDiscrepancy === query.hasDiscrepancy);
+    }
+
+    const total = filteredItems.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const offset = (page - 1) * limit;
+    const paginatedItems = filteredItems.slice(offset, offset + limit);
+
+    // Compute summary over the filtered items
+    const summary = {
+      totalOrders: total,
+      totalOrderAmountCents: filteredItems.reduce((acc, it) => acc + it.totalCents, 0),
+      totalVerifiedCollectedCents: filteredItems.reduce((acc, it) => acc + it.verifiedCollectedCents, 0),
+      totalCompletedRefundsCents: filteredItems.reduce((acc, it) => acc + it.completedRefundsCents, 0),
+      totalReservedRefundsCents: filteredItems.reduce((acc, it) => acc + it.reservedRefundsCents, 0),
+      totalOutstandingRefundableCents: filteredItems.reduce((acc, it) => acc + it.availableRefundBalanceCents, 0),
+      discrepancyCount: filteredItems.filter((it) => it.hasDiscrepancy).length,
+    };
+
+    return {
+      items: paginatedItems,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+      summary,
+    };
   }
 }
 

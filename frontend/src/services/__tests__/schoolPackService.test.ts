@@ -14,6 +14,7 @@ vi.mock('@/lib/api/apiClient', () => ({
 describe('schoolPackService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    schoolPackService.resetToDefault();
   });
 
   it('retrieves config from API', async () => {
@@ -102,5 +103,29 @@ describe('schoolPackService', () => {
     const created = await schoolPackService.createPack(newPackData);
     expect(apiClient.post).toHaveBeenCalledWith('/admin/school-packs', newPackData);
     expect(created.id).toBe('pack-created');
+  });
+
+  it('gracefully falls back to initial mock packs when API fails with network error', async () => {
+    (apiClient.get as any).mockRejectedValueOnce(new Error('Failed to fetch'));
+
+    const res = await schoolPackService.getPacks();
+    expect(res.items.length).toBeGreaterThan(0);
+    expect(res.total).toBe(res.items.length);
+  });
+
+  it('filters fallback packs by grade and tier when API fails', async () => {
+    (apiClient.get as any).mockRejectedValueOnce(new Error('Failed to communicate with API server'));
+
+    const res = await schoolPackService.getPacks({ grade: 'Grade 1-2', tier: 'essential' });
+    expect(res.items.length).toBeGreaterThan(0);
+    expect(res.items.every((p) => p.grade === 'Grade 1-2' && p.tier === 'essential')).toBe(true);
+  });
+
+  it('falls back to cached/mock pack when getPackById API fails', async () => {
+    (apiClient.get as any).mockRejectedValueOnce(new Error('Failed to fetch'));
+
+    const pack = await schoolPackService.getPackById('grade-1-2-junior-essential-pack');
+    expect(pack).not.toBeNull();
+    expect(pack?.slug).toBe('grade-1-2-junior-essential-pack');
   });
 });

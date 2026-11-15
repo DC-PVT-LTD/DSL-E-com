@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 50" width="160" height="50">
+  <rect width="160" height="50" rx="8" fill="#102A5E" />
+  <g transform="translate(16, 13)">
+    <rect x="0" y="2" width="22" height="22" rx="3" fill="#D4AF37" />
+    <rect x="2" y="4" width="18" height="8" rx="1.5" fill="#102A5E" />
+    <circle cx="5" cy="18" r="1.5" fill="#102A5E" />
+    <circle cx="11" cy="18" r="1.5" fill="#102A5E" />
+    <circle cx="17" cy="18" r="1.5" fill="#102A5E" />
+  </g>
+  <text x="48" y="33" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="20" fill="#FFFFFF" letter-spacing="2">AMIGO</text>
+  <text x="122" y="22" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#D4AF37">CALC</text>
+</svg>

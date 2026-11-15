@@ -10,18 +10,25 @@ import {
   Loader2,
   HelpCircle,
 } from 'lucide-react';
-import { OrderReturnRequest } from '@/types/order';
+import { OrderReturnRequest, PaymentMethod } from '@/types/order';
 import { orderService } from '@/services/orderService';
 import { formatLKR } from '@/lib/currency';
+import { CreateRefundModal } from './CreateRefundModal';
 
 interface ReturnManagementCardProps {
   orderId: string;
   orderNumber: string;
+  paymentMethod?: PaymentMethod;
+  availableBalanceCents?: number;
+  onRefundInitiated?: () => void;
 }
 
 export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
   orderId,
   orderNumber,
+  paymentMethod = 'CARD_PAYHERE',
+  availableBalanceCents = 0,
+  onRefundInitiated,
 }) => {
   const [returns, setReturns] = useState<OrderReturnRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,6 +36,13 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
   const [rejectionReason, setRejectionReason] = useState<string>('');
   const [actionLoading, setActionLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [restockMap, setRestockMap] = useState<Record<string, boolean>>({});
+  const [refundModalReturnId, setRefundModalReturnId] = useState<string | null>(null);
+
+  const isRestockChecked = (returnId: string) => restockMap[returnId] !== false; // defaults to true
+  const setRestockChecked = (returnId: string, value: boolean) => {
+    setRestockMap((prev) => ({ ...prev, [returnId]: value }));
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -49,11 +63,11 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
   const handleAction = async (
     returnId: string,
     action: 'APPROVE' | 'REJECT' | 'CONFIRM_RECEIVED',
-    reason?: string
+    payload?: { rejectionReason?: string; restockItems?: boolean }
   ) => {
     setActionLoading(true);
     setNotice(null);
-    const res = await orderService.processReturnAction(orderId, returnId, action, reason);
+    const res = await orderService.processReturnAction(orderId, returnId, action, payload);
     setActionLoading(false);
 
     if (res.success) {
@@ -62,13 +76,7 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
       setRejectingId(null);
       setRejectionReason('');
     } else {
-      if (res.isBackendPending) {
-        setNotice(
-          'Return processing endpoint [PATCH /api/v1/admin/orders/:id/returns/:returnId/status] is pending implementation by the backend developer (documented in PHASE_11_BACKEND_API_REQUIREMENTS.md).'
-        );
-      } else {
-        alert(res.error || 'Failed to process return');
-      }
+      alert(res.error || 'Failed to process return');
     }
   };
 
@@ -157,15 +165,102 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
               {/* Items in Return */}
               <div className="bg-white rounded-xl border border-slate-200 p-2.5 divide-y divide-slate-100">
                 {ret.items.map((it) => (
-                  <div key={it.id} className="py-1.5 flex justify-between items-center text-xs">
+                  <div key={it.id} className="py-2 flex justify-between items-center text-xs">
                     <div>
                       <span className="font-bold text-slate-800">{it.productName}</span>
-                      <span className="text-[10px] text-slate-400 ml-2">Qty: {it.quantity}</span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-slate-500 font-mono">
+                          Requested Qty: {it.quantity}
+                        </span>
+                        {it.receivedAt && (
+                          <span className="text-[10px] text-emerald-600">
+                            (Received {new Date(it.receivedAt).toLocaleDateString()})
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-[10px] font-semibold text-slate-500">{it.reason}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-400 font-semibold">{it.reason}</span>
+                      <span
+                        className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                          it.status === 'REFUNDED'
+                            ? 'bg-purple-50 text-purple-800 border-purple-200'
+                            : it.status === 'RECEIVED'
+                            ? 'bg-blue-50 text-blue-800 border-blue-200'
+                            : it.status === 'APPROVED'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            : it.status === 'REJECTED'
+                            ? 'bg-rose-50 text-rose-800 border-rose-200'
+                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                        }`}
+                      >
+                        {it.status}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
+
+              {/* Linked Financial Refund Information */}
+              {(ret as any).refundRecords && (ret as any).refundRecords.length > 0 ? (
+                <div className="p-3 rounded-xl bg-purple-50/60 border border-purple-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-purple-900 text-xs flex items-center gap-1.5">
+                      <RotateCcw className="w-3.5 h-3.5 text-purple-700" />
+                      <span>Linked Financial Refund</span>
+                    </span>
+                    {(ret as any).refundRecords.map((rf: any) => (
+                      <span
+                        key={rf.id}
+                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                          rf.status === 'COMPLETED'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            : rf.status === 'APPROVED'
+                            ? 'bg-blue-50 text-blue-800 border-blue-200'
+                            : rf.status === 'PROCESSING'
+                            ? 'bg-indigo-50 text-indigo-800 border-indigo-200'
+                            : rf.status === 'REQUESTED'
+                            ? 'bg-amber-50 text-amber-800 border-amber-200'
+                            : 'bg-rose-50 text-rose-800 border-rose-200'
+                        }`}
+                      >
+                        {rf.status}
+                      </span>
+                    ))}
+                  </div>
+                  {(ret as any).refundRecords.map((rf: any) => (
+                    <div key={rf.id} className="text-[11px] text-purple-900 space-y-1">
+                      <div className="flex justify-between">
+                        <span>Refund Amount:</span>
+                        <strong className="font-mono text-purple-950">
+                          {formatLKR(rf.amountCents)}
+                        </strong>
+                      </div>
+                      {rf.externalReference && (
+                        <div className="flex justify-between">
+                          <span>Completion Reference:</span>
+                          <code className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-purple-200">
+                            {rf.externalReference}
+                          </code>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : ret.status === 'APPROVED' || ret.status === 'COMPLETED' ? (
+                <div className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-600">
+                    No refund recorded yet for this return request.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setRefundModalReturnId(ret.id)}
+                    className="px-2.5 py-1 rounded-lg bg-[#08275E] hover:bg-[#103b8c] text-white text-[11px] font-bold transition-colors cursor-pointer"
+                  >
+                    Issue Return Refund
+                  </button>
+                </div>
+              ) : null}
 
               {/* Action Buttons */}
               {ret.status === 'PENDING' && (
@@ -193,7 +288,11 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
                         <button
                           type="button"
                           disabled={actionLoading || !rejectionReason.trim()}
-                          onClick={() => handleAction(ret.id, 'REJECT', rejectionReason)}
+                          onClick={() =>
+                            handleAction(ret.id, 'REJECT', {
+                              rejectionReason: rejectionReason.trim(),
+                            })
+                          }
                           className="px-3 py-1 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold disabled:opacity-40"
                         >
                           Confirm Rejection
@@ -225,21 +324,58 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
               )}
 
               {ret.status === 'APPROVED' && (
-                <div className="pt-2 border-t border-slate-200/60 flex justify-end">
+                <div className="pt-3 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer select-none text-slate-700 text-xs font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={isRestockChecked(ret.id)}
+                      onChange={(e) => setRestockChecked(ret.id, e.target.checked)}
+                      className="w-4 h-4 rounded text-[#08275E] border-slate-300 focus:ring-[#08275E] cursor-pointer"
+                    />
+                    <span>Restock returned items to catalogue inventory</span>
+                  </label>
+
                   <button
                     type="button"
-                    onClick={() => handleAction(ret.id, 'CONFIRM_RECEIVED')}
+                    onClick={() =>
+                      handleAction(ret.id, 'CONFIRM_RECEIVED', {
+                        restockItems: isRestockChecked(ret.id),
+                      })
+                    }
                     disabled={actionLoading}
-                    className="px-3.5 py-1.5 rounded-xl bg-[#08275E] hover:bg-[#103b8c] text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#08275E] hover:bg-[#103b8c] text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
                   >
                     <PackageCheck className="w-3.5 h-3.5" />
-                    <span>Confirm Products Received &amp; Restock</span>
+                    <span>Confirm Products Received</span>
                   </button>
                 </div>
               )}
             </div>
           ))}
         </div>
+      )}
+      {refundModalReturnId && (
+        <CreateRefundModal
+          orderId={orderId}
+          orderNumber={orderNumber}
+          paymentMethod={paymentMethod}
+          availableBalanceCents={availableBalanceCents}
+          returnRequests={returns}
+          preselectedReturnId={refundModalReturnId}
+          isOpen={Boolean(refundModalReturnId)}
+          onClose={() => setRefundModalReturnId(null)}
+          onSuccess={() => {
+            setRefundModalReturnId(null);
+            const loadReturns = async () => {
+              setIsLoading(true);
+              const res = await orderService.fetchOrderReturns(orderId);
+              setReturns(res);
+              setIsLoading(false);
+            };
+            loadReturns();
+            if (onRefundInitiated) onRefundInitiated();
+          }}
+        />
       )}
     </div>
   );

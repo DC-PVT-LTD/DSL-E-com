@@ -81,6 +81,22 @@ export const envSchema = z.object({
   PAYHERE_SANDBOX: z.string().optional().default('true'),
   FRONTEND_URL: z.string().optional().default('http://localhost:3000'),
   BACKEND_URL: z.string().optional().default('http://localhost:4000/api/v1'),
+
+  // ─── Email / SMTP Provider Configuration ─────────────────────────────────────
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z
+    .string()
+    .optional()
+    .default('587')
+    .transform((val) => parseInt(val, 10))
+    .pipe(z.number().int().min(1).max(65535)),
+  SMTP_SECURE: z.string().optional().default('false'),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  MAIL_FROM_NAME: z.string().optional().default('DSL Stationery'),
+  MAIL_FROM_EMAIL: z.string().optional(),
+  CONTACT_RECEIVER_EMAIL: z.string().optional(),
+  EMAIL_PROVIDER_API_KEY: z.string().optional(),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

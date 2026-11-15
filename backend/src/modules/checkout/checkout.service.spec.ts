@@ -52,6 +52,11 @@ describe('CheckoutService', () => {
         create: vi.fn(),
         update: vi.fn().mockResolvedValue({ id: 'ord-1' }),
       },
+      bankDepositSubmission: {
+        create: vi.fn().mockResolvedValue({ id: 'sub-1', status: 'PENDING' }),
+        findUnique: vi.fn().mockResolvedValue(null),
+        findFirst: vi.fn().mockResolvedValue(null),
+      },
       inventoryMovement: {
         create: vi.fn(),
       },
@@ -75,10 +80,25 @@ describe('CheckoutService', () => {
       sendPaymentOutcome: vi.fn().mockResolvedValue({ success: true, messageId: 'm2' }),
     };
 
+    const mockPrivateReceiptStorageService = {
+      verifyMagicBytes: vi.fn().mockReturnValue(true),
+      stageReceipt: vi.fn(),
+      verifyStagingToken: vi.fn().mockReturnValue({
+        storageKey: 'test-storage-key.pdf',
+        originalFilename: 'slip.pdf',
+        fileSizeBytes: 12345,
+        mimeType: 'application/pdf',
+        fileHashSha256: 'abc123hash',
+        exp: Date.now() + 100000,
+      }),
+      getSecureFilePath: vi.fn().mockReturnValue('/path/to/receipt.pdf'),
+    };
+
     service = new CheckoutService(
       mockPrisma as any,
       mockInventoryGateway as any,
       mockCartService as any,
+      mockPrivateReceiptStorageService as any,
       mockNotificationsService as any
     );
 
@@ -254,9 +274,15 @@ describe('CheckoutService', () => {
       );
     });
 
-    it('generates official PayHere checkout payload and valid MD5 hash without exposing secret', async () => {
+    it('generates official PayHere checkout payload and valid MD5 hash without exposing secret when onlineCardEnabled is true', async () => {
       process.env.PAYHERE_MERCHANT_ID = '1211149';
       process.env.PAYHERE_MERCHANT_SECRET = 'test_secret_123';
+
+      mockPrisma.storeSettings.findUnique.mockResolvedValueOnce({
+        onlineCardEnabled: true,
+        flatDeliveryFeeCents: 35000,
+        freeDeliveryThresholdCents: 500000,
+      });
 
       mockPrisma.stockReservation.findUnique.mockResolvedValueOnce({
         id: 'res-valid',
@@ -307,6 +333,82 @@ describe('CheckoutService', () => {
         .toUpperCase();
 
       expect(result.payHerePayload?.hash).toBe(expectedHash);
+    });
+
+    it('Stage A: rejects card payment validation when onlineCardEnabled is false', async () => {
+      mockPrisma.storeSettings.findUnique.mockResolvedValueOnce({
+        onlineCardEnabled: false,
+        flatDeliveryFeeCents: 35000,
+        freeDeliveryThresholdCents: 500000,
+      });
+
+      await expect(
+        service.validatePrePay({
+          reservationId: 'res-valid',
+          deliveryAddress: {
+            fullName: 'Test Customer',
+            phone: '0771234567',
+            email: 'test@dsl.lk',
+            addressLine1: 'No 1, Main St',
+            city: 'Colombo',
+            district: 'Colombo',
+          },
+          paymentMethod: PaymentMethod.CARD_PAYHERE,
+        })
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('Stage A: rejected card validation does not reserve stock or create a payment attempt', async () => {
+      mockPrisma.storeSettings.findUnique.mockResolvedValueOnce({
+        onlineCardEnabled: false,
+        flatDeliveryFeeCents: 35000,
+        freeDeliveryThresholdCents: 500000,
+      });
+
+      const findResSpy = vi.spyOn(mockPrisma.stockReservation, 'findUnique');
+      const updateResSpy = vi.spyOn(mockPrisma.stockReservation, 'update');
+      const upsertAttemptSpy = vi.spyOn(mockPrisma.paymentAttempt, 'upsert');
+
+      try {
+        await service.validatePrePay({
+          reservationId: 'res-valid',
+          deliveryAddress: {
+            fullName: 'Test Customer',
+            phone: '0771234567',
+            email: 'test@dsl.lk',
+            addressLine1: 'No 1, Main St',
+            city: 'Colombo',
+            district: 'Colombo',
+          },
+          paymentMethod: PaymentMethod.CARD_PAYHERE,
+        });
+      } catch (err) {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect((err as BadRequestException).message).toContain('Online card payment is currently disabled');
+      }
+
+      // Verify no reservation or payment attempt operations occurred
+      expect(findResSpy).not.toHaveBeenCalled();
+      expect(updateResSpy).not.toHaveBeenCalled();
+      expect(upsertAttemptSpy).not.toHaveBeenCalled();
+    });
+
+    it('Stage A: rejects direct client calls to processPayment using CARD_PAYHERE', async () => {
+      await expect(
+        service.processPayment({
+          reservationId: 'res-1',
+          deliveryAddress: {
+            fullName: 'Attacker',
+            phone: '0771112233',
+            email: 'attacker@example.com',
+            addressLine1: 'Fake Street',
+            city: 'Colombo',
+            district: 'Colombo',
+          },
+          paymentMethod: PaymentMethod.CARD_PAYHERE,
+          idempotencyKey: 'idemp-attack-1',
+        })
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -365,6 +467,53 @@ describe('CheckoutService', () => {
           payment_id: 'pay-1',
           payhere_amount: '1000.00',
           payhere_currency: 'USD',
+          status_code: '2',
+          md5sig: sig,
+        })
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects webhooks when amount mismatches expected attempt total', async () => {
+      const sig = generateWebhookSig('DSL-101', '500.00', 'LKR', '2');
+
+      mockPrisma.paymentAttempt.findFirst.mockResolvedValueOnce({
+        id: 'att-101',
+        amountCents: 100000, // Rs. 1000.00 expected
+        status: PaymentAttemptStatus.PROCESSING,
+        reservation: { id: 'res-1', status: ReservationStatus.PAYMENT_PENDING },
+      });
+
+      await expect(
+        service.handlePayHereWebhook({
+          merchant_id: merchantId,
+          order_id: 'DSL-101',
+          payment_id: 'pay-1',
+          payhere_amount: '500.00',
+          payhere_currency: 'LKR',
+          status_code: '2',
+          md5sig: sig,
+        })
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects webhook when payment notification order reference mismatches attempt orderId (Requirement 14)', async () => {
+      const sig = generateWebhookSig('DSL-ROGUE-ORDER', '1000.00', 'LKR', '2');
+
+      mockPrisma.paymentAttempt.findFirst.mockResolvedValueOnce({
+        id: 'att-valid-1',
+        amountCents: 100000,
+        status: PaymentAttemptStatus.PROCESSING,
+        gatewayPayload: { orderId: 'DSL-CORRECT-ORDER' },
+        reservation: { id: 'res-1', status: ReservationStatus.PAYMENT_PENDING },
+      });
+
+      await expect(
+        service.handlePayHereWebhook({
+          merchant_id: merchantId,
+          order_id: 'DSL-ROGUE-ORDER',
+          payment_id: 'pay-1',
+          payhere_amount: '1000.00',
+          payhere_currency: 'LKR',
           status_code: '2',
           md5sig: sig,
         })
@@ -558,7 +707,7 @@ describe('CheckoutService', () => {
       );
     });
 
-    it('handles PayHere chargeback (status -3) as a dispute without restoring already-fulfilled physical stock', async () => {
+    it('handles PayHere status -3 without chargeback features: preserves successful attempt and order records without altering status or releasing stock', async () => {
       const sig = generateWebhookSig('DSL-CHARGEBACK-1', '1000.00', 'LKR', '-3');
 
       mockPrisma.paymentAttempt.findFirst.mockResolvedValueOnce({
@@ -574,12 +723,6 @@ describe('CheckoutService', () => {
         },
       });
 
-      mockPrisma.order.findUnique.mockResolvedValueOnce({
-        id: 'ord-cb-1',
-        orderNumber: 'DSL-2026-999999',
-        notes: 'Original order notes',
-      });
-
       const res = await service.handlePayHereWebhook({
         merchant_id: merchantId,
         order_id: 'DSL-CHARGEBACK-1',
@@ -591,36 +734,18 @@ describe('CheckoutService', () => {
         md5sig: sig,
       });
 
-      expect(res.status).toBe('chargedback');
-      // Payment attempt marked FAILED with dispute reason
-      expect(mockPrisma.paymentAttempt.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { id: 'att-cb-1' },
-          data: expect.objectContaining({
-            status: PaymentAttemptStatus.FAILED,
-            failureReason: expect.stringContaining('Chargeback'),
-          }),
-        })
-      );
+      expect(res.status).toBe('ignored');
+      expect(res.message).toContain('Status -3 notification logged and preserved without altering payment or order status');
 
-      // Order notes updated with dispute flag
-      expect(mockPrisma.order.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { id: 'ord-cb-1' },
-          data: expect.objectContaining({
-            notes: expect.stringContaining('CHARGEBACK DISPUTE'),
-          }),
-        })
-      );
-
-      // Invariant: Physical stock was NOT restored (product.update NOT called with increment)
+      // Invariants:
+      // 1. PaymentAttempt was NOT marked FAILED
+      expect(mockPrisma.paymentAttempt.update).not.toHaveBeenCalled();
+      // 2. Order was NOT cancelled and notes were NOT overwritten with dispute workflows
+      expect(mockPrisma.order.update).not.toHaveBeenCalled();
+      // 3. Physical stock was NOT released/restored
       expect(mockPrisma.product.update).not.toHaveBeenCalled();
-      // Invariant: Reservation was NOT released (remains CONSUMED)
-      expect(mockPrisma.stockReservation.update).not.toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: { status: ReservationStatus.RELEASED },
-        })
-      );
+      // 4. Reservation was NOT released
+      expect(mockPrisma.stockReservation.update).not.toHaveBeenCalled();
     });
   });
 
@@ -1167,7 +1292,7 @@ describe('CheckoutService', () => {
       expect(result.order.userId).toBeNull();
       expect(result.order.customerName).toBe('Guest Customer');
       expect(result.order.customerEmail).toBe('guest@example.lk');
-      expect(result.order.addressSnapshot.city).toBe('Negombo');
+      expect(result.order.addressSnapshot?.city).toBe('Negombo');
       expect(mockCartService.removePurchasedItems).toHaveBeenCalled();
     });
 
@@ -1233,7 +1358,469 @@ describe('CheckoutService', () => {
 
       expect(result.order.userId).toBe('user-authenticated-123');
       expect(result.order.customerEmail).toBe('registered@dsl.lk');
-      expect(result.order.addressSnapshot.city).toBe('Kadawatha');
+      expect(result.order.addressSnapshot?.city).toBe('Kadawatha');
+    });
+  });
+
+  describe('Stage 3.2 — Bank Transfer, Stock Commitment & Payment Lifecycle', () => {
+    const validDeliveryAddress = {
+      fullName: 'Sunil Perera',
+      email: 'sunil@example.com',
+      phone: '0771234567',
+      addressLine1: '123 Galle Road',
+      city: 'Colombo',
+      district: 'Colombo',
+      province: 'Western',
+    };
+
+    beforeEach(() => {
+      mockPrisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        name: 'Standard Pen',
+        priceCents: 15000,
+        stockQuantity: 50,
+        sku: 'PEN-01',
+        variants: [],
+      });
+
+      mockPrisma.stockReservation.findUnique.mockResolvedValue({
+        id: 'res-bank-1',
+        status: ReservationStatus.ACTIVE,
+        expiresAt: new Date(Date.now() + 600000),
+        items: [
+          {
+            id: 'item-1',
+            productId: 'p1',
+            variantId: null,
+            quantity: 2,
+            unitPriceCents: 15000,
+            product: { id: 'p1', name: 'Standard Pen', sku: 'PEN-01' },
+            variant: null,
+          },
+        ],
+      });
+    });
+
+    it('rejects Bank Transfer if bankTransferEnabled is false in StoreSettings', async () => {
+      mockPrisma.storeSettings.findUnique.mockResolvedValue({
+        bankTransferEnabled: false,
+        bankName: 'Commercial Bank',
+        accountHolderName: 'DSL Stationery (Pvt) Ltd',
+        accountNumber: '1000123456',
+        branchName: 'Kollupitiya',
+        paymentInstructions: 'Deposit to account',
+        referenceInstructions: 'Use order reference',
+      });
+
+      await expect(
+        service.processPayment({
+          reservationId: 'res-bank-1',
+          paymentMethod: PaymentMethod.BANK_TRANSFER,
+          deliveryAddress: validDeliveryAddress,
+          idempotencyKey: 'idemp-bt-disabled',
+          bankTransferData: {
+            receiptToken: 'token.signed',
+            referenceNumber: 'REF12345',
+            depositDate: '2026-11-14',
+          },
+        })
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects Bank Transfer if StoreSettings bank details are incomplete', async () => {
+      mockPrisma.storeSettings.findUnique.mockResolvedValue({
+        bankTransferEnabled: true,
+        bankName: 'Commercial Bank',
+        accountHolderName: null, // Incomplete
+        accountNumber: '1000123456',
+        branchName: 'Kollupitiya',
+        paymentInstructions: 'Deposit to account',
+        referenceInstructions: 'Use order reference',
+      });
+
+      await expect(
+        service.processPayment({
+          reservationId: 'res-bank-1',
+          paymentMethod: PaymentMethod.BANK_TRANSFER,
+          deliveryAddress: validDeliveryAddress,
+          idempotencyKey: 'idemp-bt-incomplete',
+          bankTransferData: {
+            receiptToken: 'token.signed',
+            referenceNumber: 'REF12345',
+            depositDate: '2026-11-14',
+          },
+        })
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects Bank Transfer if bankTransferData is missing', async () => {
+      mockPrisma.storeSettings.findUnique.mockResolvedValue({
+        bankTransferEnabled: true,
+        bankName: 'Commercial Bank',
+        accountHolderName: 'DSL Stationery (Pvt) Ltd',
+        accountNumber: '1000123456',
+        branchName: 'Kollupitiya',
+        paymentInstructions: 'Deposit to account',
+        referenceInstructions: 'Use order reference',
+      });
+
+      await expect(
+        service.processPayment({
+          reservationId: 'res-bank-1',
+          paymentMethod: PaymentMethod.BANK_TRANSFER,
+          deliveryAddress: validDeliveryAddress,
+          idempotencyKey: 'idemp-bt-missing-data',
+        })
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('successfully creates Order with PENDING status and BankDepositSubmission with PENDING status for Bank Transfer', async () => {
+      mockPrisma.storeSettings.findUnique.mockResolvedValue({
+        bankTransferEnabled: true,
+        bankName: 'Commercial Bank',
+        accountHolderName: 'DSL Stationery (Pvt) Ltd',
+        accountNumber: '1000123456',
+        branchName: 'Kollupitiya',
+        paymentInstructions: 'Deposit to account',
+        referenceInstructions: 'Use order reference',
+        flatDeliveryFeeCents: 35000,
+        freeDeliveryThresholdCents: 500000,
+      });
+
+      mockPrisma.order.create.mockImplementation(({ data }: any) => {
+        return Promise.resolve({
+          id: 'ord-bank-99',
+          orderNumber: data.orderNumber,
+          orderStatus: data.orderStatus,
+          paymentStatus: data.paymentStatus,
+          paymentMethod: data.paymentMethod,
+          totalCents: data.totalCents,
+          customerName: data.customerName,
+          customerEmail: data.customerEmail,
+          items: data.items.create,
+          addressSnapshot: data.addressSnapshot.create,
+        });
+      });
+
+      const result = await service.processPayment({
+        reservationId: 'res-bank-1',
+        paymentMethod: PaymentMethod.BANK_TRANSFER,
+        deliveryAddress: validDeliveryAddress,
+        idempotencyKey: 'idemp-bt-success-1',
+        bankTransferData: {
+          receiptToken: 'valid-staged-token',
+          referenceNumber: 'TXN-987654321',
+          depositDate: '2026-11-14',
+          customerNotes: 'Online transfer from Commercial Bank account',
+        },
+      });
+
+      // Assert Order status is PENDING and Payment status is PENDING (NOT auto-paid)
+      expect(result.order.orderStatus).toBe(OrderStatus.PENDING);
+      expect(result.order.paymentStatus).toBe(PaymentStatus.PENDING);
+      expect(result.order.paymentMethod).toBe(PaymentMethod.BANK_TRANSFER);
+
+      // Assert BankDepositSubmission was created with PENDING status
+      expect(mockPrisma.bankDepositSubmission.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          orderId: 'ord-bank-99',
+          referenceNumber: 'TXN-987654321',
+          status: 'PENDING',
+          receiptStorageKey: 'test-storage-key.pdf',
+          originalFilename: 'slip.pdf',
+        }),
+      });
+
+      // Assert PaymentAttempt was created/updated with PROCESSING status
+      expect(mockPrisma.paymentAttempt.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({
+            paymentMethod: PaymentMethod.BANK_TRANSFER,
+            status: PaymentAttemptStatus.PROCESSING,
+          }),
+        })
+      );
+    });
+
+    it('creates Cash on Delivery orders with CONFIRMED orderStatus and PENDING paymentStatus', async () => {
+      mockPrisma.order.create.mockImplementation(({ data }: any) => {
+        return Promise.resolve({
+          id: 'ord-cod-99',
+          orderNumber: data.orderNumber,
+          orderStatus: data.orderStatus,
+          paymentStatus: data.paymentStatus,
+          paymentMethod: data.paymentMethod,
+          totalCents: data.totalCents,
+          items: data.items.create,
+          addressSnapshot: data.addressSnapshot.create,
+        });
+      });
+
+      const result = await service.processPayment({
+        reservationId: 'res-bank-1',
+        paymentMethod: PaymentMethod.CASH_ON_DELIVERY,
+        deliveryAddress: validDeliveryAddress,
+        idempotencyKey: 'idemp-cod-test-1',
+      });
+
+      expect(result.order.orderStatus).toBe(OrderStatus.CONFIRMED);
+      expect(result.order.paymentStatus).toBe(PaymentStatus.PENDING);
+      expect(result.order.paymentMethod).toBe(PaymentMethod.CASH_ON_DELIVERY);
+    });
+
+    it('PayHere webhook cancels existing Order and restores physical stock for status -1 or -2', async () => {
+      const existingAttempt = {
+        id: 'att-payhere-cancel',
+        orderId: 'ord-payhere-cancelled-1',
+        reservationId: 'res-payhere-1',
+        amountCents: 65000,
+        status: PaymentAttemptStatus.PROCESSING,
+        reservation: { id: 'res-payhere-1', status: ReservationStatus.CONSUMED },
+        gatewayPayload: {
+          deliveryAddress: validDeliveryAddress,
+        },
+      };
+
+      const existingOrder = {
+        id: 'ord-payhere-cancelled-1',
+        orderNumber: 'DSL-2026-CANCEL1',
+        orderStatus: OrderStatus.CONFIRMED,
+        paymentStatus: PaymentStatus.PENDING,
+        items: [
+          { productId: 'p1', variantId: null, quantity: 2 },
+        ],
+      };
+
+      mockPrisma.paymentAttempt.findFirst.mockResolvedValue(existingAttempt);
+      mockPrisma.order.findUnique.mockResolvedValue(existingOrder);
+      mockPrisma.product.findUnique.mockResolvedValue({ id: 'p1', stockQuantity: 22 });
+      mockPrisma.product.update.mockResolvedValue({ id: 'p1', stockQuantity: 24 });
+
+      // Build valid PayHere signature for status_code: "-1"
+      const merchantId = '1211149';
+      const orderId = 'DSL-2026-CANCEL1';
+      const payhereAmount = '650.00';
+      const payhereCurrency = 'LKR';
+      const statusCode = '-1';
+      const merchantSecret = 'dsl_payhere_sandbox_secret';
+      const hashedSecret = crypto.createHash('md5').update(merchantSecret).digest('hex').toUpperCase();
+      const checkHashStr = `${merchantId}${orderId}${payhereAmount}${payhereCurrency}${statusCode}${hashedSecret}`;
+      const md5sig = crypto.createHash('md5').update(checkHashStr).digest('hex').toUpperCase();
+
+      const webhookResult = await service.handlePayHereWebhook({
+        merchant_id: merchantId,
+        order_id: orderId,
+        payment_id: 'ph-pay-fail-1',
+        payhere_amount: payhereAmount,
+        payhere_currency: payhereCurrency,
+        status_code: statusCode,
+        md5sig,
+        custom_2: 'idemp-cancel-key',
+      });
+
+      expect(webhookResult.status).toBe('failed');
+
+      // Assert Order was updated to CANCELLED and paymentStatus to FAILED
+      expect(mockPrisma.order.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'ord-payhere-cancelled-1' },
+          data: expect.objectContaining({
+            orderStatus: OrderStatus.CANCELLED,
+            paymentStatus: PaymentStatus.FAILED,
+          }),
+        })
+      );
+
+      // Assert physical stock was restored via increment
+      expect(mockPrisma.product.update).toHaveBeenCalledWith({
+        where: { id: 'p1' },
+        data: { stockQuantity: { increment: 2 } },
+      });
+
+      // Assert InventoryMovement was recorded with RESTOCK
+      expect(mockPrisma.inventoryMovement.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          productId: 'p1',
+          changeAmount: 2,
+          reason: 'RESTOCK',
+        }),
+      });
+
+      // Assert InventoryGateway broadcasted stock update
+      expect(mockInventoryGateway.broadcastStockUpdate).toHaveBeenCalled();
+    });
+
+    it('reconciles late verified PayHere success after order cancellation without reactivating or inventing refunds', async () => {
+      const merchantSecret = 'dsl_payhere_sandbox_secret';
+      const merchantId = '1211149';
+      const orderId = 'DSL-ORDER-CANCELLED-1';
+      const payhereAmount = '2500.00';
+      const payhereCurrency = 'LKR';
+      const statusCode = '2';
+
+      const md5Secret = crypto.createHash('md5').update(merchantSecret).digest('hex').toUpperCase();
+      const hashStr = `${merchantId}${orderId}${payhereAmount}${payhereCurrency}${statusCode}${md5Secret}`;
+      const md5sig = crypto.createHash('md5').update(hashStr).digest('hex').toUpperCase();
+
+      const existingCancelledOrder = {
+        id: 'ord-cancelled-1',
+        orderNumber: orderId,
+        orderStatus: OrderStatus.CANCELLED,
+        paymentStatus: PaymentStatus.FAILED,
+        notes: '[CANCELLED: Customer timeout]',
+      };
+
+      const existingAttempt = {
+        id: 'att-cancelled-1',
+        reservationId: 'res-cancelled-1',
+        amountCents: 250000,
+        currency: 'LKR',
+        status: PaymentAttemptStatus.FAILED,
+        orderId: existingCancelledOrder.id,
+        order: existingCancelledOrder,
+        gatewayPayload: {
+          orderId,
+        },
+      };
+
+      mockPrisma.paymentAttempt.findUnique.mockResolvedValue(null);
+      mockPrisma.paymentAttempt.findFirst.mockResolvedValue(existingAttempt);
+
+      const webhookDto = {
+        merchant_id: merchantId,
+        order_id: orderId,
+        payment_id: '320025999999',
+        payhere_amount: payhereAmount,
+        payhere_currency: payhereCurrency,
+        status_code: statusCode,
+        md5sig,
+      };
+
+      const result = await service.handlePayHereWebhook(webhookDto as any);
+
+      expect(result.status).toBe('reconciliation_required');
+      expect(result.message).toContain('manual staff reconciliation required');
+
+      // Verify payment attempt was preserved as SUCCEEDED
+      expect(mockPrisma.paymentAttempt.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: existingAttempt.id },
+          data: expect.objectContaining({
+            status: PaymentAttemptStatus.SUCCEEDED,
+            gatewayReference: '320025999999',
+          }),
+        })
+      );
+
+      // Verify order notes flagged with RECONCILIATION_REQUIRED
+      expect(mockPrisma.order.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: existingCancelledOrder.id },
+          data: expect.objectContaining({
+            notes: expect.stringContaining('[RECONCILIATION_REQUIRED:'),
+          }),
+        })
+      );
+    });
+
+    it('rejects duplicate receipt slip submission for another order', async () => {
+      const mockStagedReceipt = {
+        storageKey: '1731600000000_receipt_duplicate.pdf',
+        originalFilename: 'receipt.pdf',
+        fileSizeBytes: 2048,
+        mimeType: 'application/pdf',
+        fileHashSha256: 'abcdef123456',
+        exp: Date.now() + 3600000,
+      };
+
+      (service as any).privateReceiptStorageService = {
+        verifyStagingToken: vi.fn().mockReturnValue(mockStagedReceipt),
+      };
+
+      // Mock bankDepositSubmission finding an existing submission with same storage key
+      mockPrisma.bankDepositSubmission = {
+        findFirst: vi.fn().mockResolvedValue({ id: 'sub-existing-1', receiptStorageKey: mockStagedReceipt.storageKey }),
+      };
+
+      const bankTransferDto: any = {
+        reservationId: 'res-bt-1',
+        paymentMethod: PaymentMethod.BANK_TRANSFER,
+        idempotencyKey: 'bt-dup-attempt',
+        deliveryAddress: {
+          fullName: 'Saman Perera',
+          phone: '+94771234567',
+          email: 'saman@example.lk',
+          addressLine1: 'No 1, Galle Road',
+          city: 'Colombo',
+          district: 'Colombo',
+        },
+        bankTransferData: {
+          receiptToken: 'valid.token',
+          referenceNumber: 'TXN123456',
+          depositDate: '2026-11-14',
+        },
+      };
+
+      // Mock StoreSettings with valid bank details
+      mockPrisma.storeSettings.findUnique.mockResolvedValueOnce({
+        bankTransferEnabled: true,
+        bankName: 'Commercial Bank of Ceylon',
+        accountHolderName: 'DSL Stationery',
+        accountNumber: '1000123456',
+        branchName: 'Colombo 03',
+        paymentInstructions: 'Deposit',
+        referenceInstructions: 'Reference',
+      });
+
+      await expect(
+        service.processPayment(bankTransferDto, 'user-1', 'session-1')
+      ).rejects.toThrow('This receipt has already been submitted for another order. Please upload a new receipt.');
+    });
+
+    it('getCheckoutSettings returns complete bank details only when bankTransferEnabled is true and complete', async () => {
+      // Incomplete configuration: should return bankTransfer: null and bankTransferEnabled: false
+      mockPrisma.storeSettings.findUnique.mockResolvedValueOnce({
+        onlineCardEnabled: false,
+        codEnabled: true,
+        bankTransferEnabled: true,
+        bankName: 'Commercial Bank',
+        accountHolderName: null, // Incomplete
+        accountNumber: '1000123456',
+        branchName: 'Kollupitiya',
+        paymentInstructions: 'Deposit',
+        referenceInstructions: 'Reference',
+      });
+
+      const incompleteSettings = await service.getCheckoutSettings();
+      expect(incompleteSettings.bankTransferEnabled).toBe(false);
+      expect(incompleteSettings.bankTransfer).toBeNull();
+
+      // Complete configuration: should return bankTransfer object and bankTransferEnabled: true
+      mockPrisma.storeSettings.findUnique.mockResolvedValueOnce({
+        onlineCardEnabled: false,
+        codEnabled: true,
+        bankTransferEnabled: true,
+        bankName: 'Commercial Bank of Ceylon',
+        accountHolderName: 'DSL Stationery (Pvt) Ltd',
+        accountNumber: '1000123456',
+        branchName: 'Colombo 03',
+        branchCode: '045',
+        bankCode: '7010',
+        paymentInstructions: 'Deposit cash or perform CEFT transfer',
+        referenceInstructions: 'Include reference number in remarks',
+        bankLogoUrl: 'https://example.com/logo.png',
+      });
+
+      const completeSettings = await service.getCheckoutSettings();
+      expect(completeSettings.bankTransferEnabled).toBe(true);
+      expect(completeSettings.bankTransfer).toEqual(
+        expect.objectContaining({
+          bankName: 'Commercial Bank of Ceylon',
+          accountHolderName: 'DSL Stationery (Pvt) Ltd',
+          accountNumber: '1000123456',
+          branchName: 'Colombo 03',
+        })
+      );
     });
   });
 });

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { categoryService } from '../categoryService';
 import { apiClient } from '@/lib/api/apiClient';
+import { INITIAL_CATEGORIES } from '@/mocks/categories';
 
 describe('categoryService', () => {
   beforeEach(() => {
@@ -42,9 +43,41 @@ describe('categoryService', () => {
     } as any);
 
     const result = await categoryService.fetchCategories();
-    expect(result.length).toBe(2);
-    expect(result[0].name).toBe('Books & Notebooks');
+
+    // 1. Exact count: Both 'cat-books' and 'cat-pens' merge over existing default categories
+    expect(result.length).toBe(INITIAL_CATEGORIES.length);
+
+    // 2. Strict uniqueness verification across IDs and Slugs
+    const uniqueIds = new Set(result.map((c) => c.id));
+    expect(uniqueIds.size).toBe(result.length);
+    const uniqueSlugs = new Set(result.map((c) => c.slug));
+    expect(uniqueSlugs.size).toBe(result.length);
+
+    // 3. Expected API-fetched records and override behavior
+    const books = result.find((c) => c.id === 'cat-books');
+    expect(books).toBeDefined();
+    expect(books?.name).toBe('Books & Notebooks');
+    expect(books?.description).toBe('CR books and notebooks');
+    expect(books?.itemCount).toBe(15);
+
+    const pens = result.find((c) => c.id === 'cat-pens');
+    expect(pens).toBeDefined();
+    expect(pens?.name).toBe('Pens & Writing');
+    expect(pens?.description).toBe('Writing instruments');
+    expect(pens?.itemCount).toBe(20);
+
+    // 4. Preservation of non-overridden default categories
+    const erasers = result.find((c) => c.id === 'cat-erasers');
+    expect(erasers).toBeDefined();
+    expect(erasers?.name).toBe('Erasers');
+
+    const markers = result.find((c) => c.id === 'cat-markers');
+    expect(markers).toBeDefined();
+    expect(markers?.name).toBe('Markers');
+
+    // 5. Query helpers return accurate entity attributes
     expect(categoryService.getCategoryBySlug('books-and-notebooks')?.description).toBe('CR books and notebooks');
+    expect(categoryService.getCategoryById('cat-pens')?.itemCount).toBe(20);
   });
 
   it('creates, updates, and deletes category via backend API', async () => {

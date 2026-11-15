@@ -121,6 +121,26 @@ async function bootstrap() {
         return callback(null, true);
       }
 
+      // Automatically permit local LAN IP origins (e.g. 192.168.x.x, 172.x.x.x, 10.x.x.x) on frontend ports 3000/3002
+      try {
+        const parsed = new URL(normalized);
+        const host = parsed.hostname;
+        const reqPort = parsed.port;
+        const isFrontendPort = reqPort === '3000' || reqPort === '3001' || reqPort === '3002';
+        const isLanIp =
+          host === 'localhost' ||
+          host === '127.0.0.1' ||
+          /^192\.168\.\d{1,3}\.\d{1,3}$/.test(host) ||
+          /^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(host) ||
+          /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host);
+
+        if (isFrontendPort && isLanIp) {
+          return callback(null, true);
+        }
+      } catch {
+        // Fall through to reject
+      }
+
       return callback(
         new ForbiddenException(`CORS blocked for origin: ${requestOrigin}`),
         false,
@@ -133,6 +153,15 @@ async function bootstrap() {
       'Authorization',
       'Accept',
       'X-Requested-With',
+      'x-guest-session-id',
+      'x-session-id',
+      'x-tracking-otp',
+      'Origin',
+    ],
+    exposedHeaders: [
+      'x-guest-session-id',
+      'x-session-id',
+      'Content-Disposition',
     ],
   });
 

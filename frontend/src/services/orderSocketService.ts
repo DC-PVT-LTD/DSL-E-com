@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { apiClient } from '@/lib/api/apiClient';
 
 export interface OrderSocketEvent {
   orderId: string;
@@ -29,7 +30,7 @@ class OrderSocketService {
   }
 
   private initSocket() {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+    const apiBase = apiClient.getBaseUrl();
     const socketUrl = apiBase.replace(/\/api\/v1\/?$/, '');
 
     try {

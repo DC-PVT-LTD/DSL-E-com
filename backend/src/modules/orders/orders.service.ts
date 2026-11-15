@@ -62,6 +62,17 @@ export class OrdersService {
           },
         },
         addressSnapshot: true,
+        bankDepositSubmissions: {
+          select: {
+            id: true,
+            status: true,
+            referenceNumber: true,
+            depositDate: true,
+            rejectionReason: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
         paymentAttempts: {
           orderBy: { createdAt: 'desc' },
           select: {

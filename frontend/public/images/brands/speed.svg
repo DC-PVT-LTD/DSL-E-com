@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 50" width="160" height="50">
+  <defs>
+    <linearGradient id="speedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#006DEB" />
+      <stop offset="100%" stop-color="#087BFF" />
+    </linearGradient>
+  </defs>
+  <rect width="160" height="50" rx="8" fill="#F8FAFC" />
+  <g transform="skewX(-14)">
+    <text x="26" y="34" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="26" fill="url(#speedGrad)" letter-spacing="1">SPEED</text>
+    <path d="M 125 15 L 142 15 L 136 21 L 119 21 Z" fill="#EF4444" />
+    <path d="M 121 24 L 138 24 L 132 30 L 115 30 Z" fill="#F59E0B" />
+  </g>
+</svg>

@@ -114,6 +114,44 @@ export class ProductsController {
     return createApiResponse(product);
   }
 
+  @ApiTags('Admin API', 'Products')
+  @Get('admin/analytics')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Get product catalog KPI metrics and chart distribution',
+    description: 'Returns real database counts for total, active, inactive, healthy, low, and out of stock products, plus brand and category breakdowns.',
+  })
+  async getCatalogAnalytics() {
+    const data = await this.productsService.getAdminAnalytics();
+    return createApiResponse(data, 'Product analytics retrieved successfully');
+  }
+
+  @ApiTags('Admin API', 'Products', 'Export')
+  @Get('export')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Export products to CSV or Excel',
+    description: 'Exports all matching products across active filters or selected IDs to a formatted CSV or XLSX file.',
+  })
+  async exportProducts(
+    @Query() query: ProductQueryDto,
+    @Query('format') format: 'csv' | 'xlsx',
+    @Query('selectedIds') selectedIdsStr: string,
+    @Res() res: Response
+  ) {
+    const selectedIds = selectedIdsStr ? selectedIdsStr.split(',').filter(Boolean) : undefined;
+    const file = await this.productsService.exportProducts(query, format || 'xlsx', selectedIds);
+    res.setHeader('Content-Type', file.mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
+    res.send(file.buffer);
+  }
+
   @ApiTags('Products')
   @ApiTags('Admin API', 'Products', 'SKU')
   @Get('generate-sku')

@@ -460,6 +460,10 @@ describe('PromotionsService', () => {
         startDate: new Date().toISOString(),
         endDate: new Date(Date.now() + 100000).toISOString(),
         code: 'BTS2026',
+        status: PromotionStatus.ACTIVE,
+        priority: 0,
+        isStackableWithSchoolPacks: false,
+        isActive: true,
       });
 
       expect(res.id).toBe('new-p');

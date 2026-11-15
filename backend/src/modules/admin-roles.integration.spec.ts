@@ -326,9 +326,10 @@ describe('Phase 3 RBAC & Concurrency Security (E2E & Integration)', () => {
   });
 
   describe('5. Role Management & Permission Enforcement', () => {
-    it('should list all 38 authoritative permissions', async () => {
+    it('should list all 39 registered permissions', async () => {
       const perms = await rolesService.getPermissions();
-      expect(perms.length).toBe(38);
+      expect(perms.length).toBe(39);
+      expect(perms.some((p) => p.key === 'products.import')).toBe(true);
     });
 
     it('should prevent non-super-admin from creating or deleting custom roles', async () => {

@@ -212,6 +212,8 @@ export class RecommendationsService implements OnModuleInit {
               sku: subProduct.sku,
               priceCents: subProduct.priceCents,
               stockQuantity: subProduct.stockQuantity,
+              imageUrl: subProduct.images && subProduct.images.length > 0 ? subProduct.images[0] : null,
+              images: subProduct.images || [],
             });
           }
         }
@@ -238,6 +240,8 @@ export class RecommendationsService implements OnModuleInit {
               sku: catSub.sku,
               priceCents: catSub.priceCents,
               stockQuantity: catSub.stockQuantity,
+              imageUrl: catSub.images && catSub.images.length > 0 ? catSub.images[0] : null,
+              images: catSub.images || [],
             });
           }
         }
@@ -260,6 +264,8 @@ export class RecommendationsService implements OnModuleInit {
         lowStock: product.stockQuantity <= product.lowStockThreshold,
         reason: rule.reason,
         priority: rule.priority,
+        imageUrl: product.images && product.images.length > 0 ? product.images[0] : null,
+        images: product.images || [],
         substitutes,
       });
 
@@ -460,6 +466,8 @@ export class RecommendationsService implements OnModuleInit {
       priceCents: p.priceCents,
       stockQuantity: p.stockQuantity,
       categoryId: p.categoryId,
+      imageUrl: p.images && p.images.length > 0 ? p.images[0] : null,
+      images: p.images || [],
     }));
   }
 

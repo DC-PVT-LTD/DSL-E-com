@@ -10,6 +10,31 @@ import { INITIAL_CATEGORIES } from '@/mocks/categories';
 
 const CAT_STORAGE_KEY = 'dsl_categories_data_v1';
 
+export function deduplicateCategories(cats: ProductCategory[]): ProductCategory[] {
+  const seenIds = new Set<string>();
+  const seenSlugs = new Set<string>();
+  const seenNames = new Set<string>();
+  const result: ProductCategory[] = [];
+
+  for (const cat of cats) {
+    if (!cat) continue;
+    const idKey = (cat.id || '').toLowerCase().trim();
+    const slugKey = (cat.slug || '').toLowerCase().trim();
+    const nameKey = (cat.name || '').toLowerCase().trim();
+
+    if (idKey && seenIds.has(idKey)) continue;
+    if (slugKey && seenSlugs.has(slugKey)) continue;
+    if (nameKey && seenNames.has(nameKey)) continue;
+
+    if (idKey) seenIds.add(idKey);
+    if (slugKey) seenSlugs.add(slugKey);
+    if (nameKey) seenNames.add(nameKey);
+
+    result.push(cat);
+  }
+  return result;
+}
+
 export interface CategoryQueryOptions {
   search?: string;
   featured?: boolean;
@@ -32,13 +57,17 @@ class CategoryService {
     if (typeof window !== 'undefined') {
       try {
         const catStr = localStorage.getItem(CAT_STORAGE_KEY);
-        this.categories = catStr ? JSON.parse(catStr) : [...INITIAL_CATEGORIES];
-        return;
+        if (catStr) {
+          const stored: ProductCategory[] = JSON.parse(catStr);
+          this.categories = deduplicateCategories([...stored, ...INITIAL_CATEGORIES]);
+          localStorage.setItem(CAT_STORAGE_KEY, JSON.stringify(this.categories));
+          return;
+        }
       } catch (err) {
         console.error('Error loading categories from storage:', err);
       }
     }
-    this.categories = [...INITIAL_CATEGORIES];
+    this.categories = deduplicateCategories([...INITIAL_CATEGORIES]);
   }
 
   private persistAndNotify() {
@@ -83,12 +112,24 @@ class CategoryService {
       });
 
       if (res.success && Array.isArray(res.data)) {
-        this.categories = res.data;
+        // Filter out non-stationery and test categories (e.g. Diapers, Stage4 test items)
+        const validBackendCats = res.data.filter(
+          (c) =>
+            !c.slug.includes('diaper') &&
+            !c.slug.includes('stage4') &&
+            !c.slug.includes('import-test') &&
+            !c.name.toLowerCase().includes('stage4') &&
+            !c.name.toLowerCase().includes('diaper')
+        );
+
+        // Merge with INITIAL_CATEGORIES to ensure Colour Pencils, Pencils, etc. are always present, deduplicating IDs/slugs
+        this.categories = deduplicateCategories([...validBackendCats, ...INITIAL_CATEGORIES]);
         this.persistAndNotify();
-        return res.data;
+        return [...this.categories];
       }
-    } catch (err) {
-      console.warn('Could not fetch categories from backend API, using local fallback:', err);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[CategoryService] Backend API not reachable (${msg}), using local fallback.`);
     }
     return [...this.categories];
   }
@@ -102,8 +143,9 @@ class CategoryService {
       if (res.success && Array.isArray(res.data)) {
         return res.data;
       }
-    } catch (err) {
-      console.warn('Could not fetch category tree from backend API, falling back to client-side tree build:', err);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[CategoryService] Backend API not reachable (${msg}), falling back to client-side tree build.`);
     }
 
     const all = await this.fetchCategories({ limit: 100 });
@@ -112,6 +154,56 @@ class CategoryService {
       ...root,
       children: all.filter((c) => c.parentId === root.id),
     }));
+  }
+
+  /**
+   * Fetches accurate category analytics from backend database.
+   */
+  public async fetchCategoryAnalytics(): Promise<{
+    totalCategories: number;
+    parentCategories: number;
+    subcategories: number;
+    featuredCategories: number;
+    categoriesWithProducts: number;
+    emptyCategories: number;
+    topCategories: Array<{ id: string; name: string; count: number }>;
+  }> {
+    const res = await apiClient.get<BackendApiResponse<any>>('categories/admin/analytics');
+    return res.data;
+  }
+
+  /**
+   * Exports categories to CSV or Excel directly from backend streaming endpoint.
+   */
+  public async exportCategories(
+    format: 'csv' | 'xlsx' = 'xlsx',
+    selectedIds?: string[]
+  ): Promise<Blob> {
+    const params: Record<string, string | undefined> = { format };
+    if (selectedIds && selectedIds.length > 0) {
+      params.selectedIds = selectedIds.join(',');
+    }
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('dsl_admin_token') : null;
+    const queryString = new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, v]) => v !== undefined)
+        .map(([k, v]) => [k, String(v)])
+    ).toString();
+
+    const response = await fetch(`http://localhost:4000/api/v1/categories/export?${queryString}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Export failed with status ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.blob();
   }
 
   /**
@@ -128,19 +220,37 @@ class CategoryService {
     return brandService.fetchBrands(options);
   }
 
+  private resolveSlugAlias(slug: string): string {
+    const clean = slug?.trim().toLowerCase();
+    const aliases: Record<string, string> = {
+      'art-craft-materials': 'fabric-paint',
+      'art-and-craft': 'fabric-paint',
+      'art': 'fabric-paint',
+      'art-and-drawing': 'water-colour',
+      'craft-and-projects': 'clay-and-modelling',
+      'pens-and-writing': 'pens',
+      'exercise-books': 'exercise-books',
+      'maths-and-geometry': 'rulers',
+      'office-and-filing': 'tapes-and-adhesives',
+      'paper-and-copier': 'exercise-books',
+    };
+    return aliases[clean] || clean;
+  }
+
   /**
    * Fetch single category by slug from backend API.
    */
   public async fetchCategoryBySlug(slug: string): Promise<ProductCategory | null> {
+    const canonicalSlug = this.resolveSlugAlias(slug);
     try {
-      const res = await apiClient.get<BackendApiResponse<ProductCategory>>(`categories/slug/${encodeURIComponent(slug)}`);
+      const res = await apiClient.get<BackendApiResponse<ProductCategory>>(`categories/slug/${encodeURIComponent(canonicalSlug)}`);
       if (res.success && res.data) {
         return res.data;
       }
     } catch (err) {
-      console.warn(`Could not fetch category by slug "${slug}" from backend API:`, err);
+      console.warn(`Could not fetch category by slug "${slug}" (canonical "${canonicalSlug}") from backend API:`, err);
     }
-    return this.getCategoryBySlug(slug) || null;
+    return this.getCategoryBySlug(canonicalSlug) || this.getCategoryBySlug(slug) || null;
   }
 
   /**
@@ -274,7 +384,8 @@ class CategoryService {
   }
 
   public getCategoryBySlug(slug: string): ProductCategory | undefined {
-    return this.categories.find((c) => c.slug === slug);
+    const canonicalSlug = this.resolveSlugAlias(slug);
+    return this.categories.find((c) => c.slug === slug || c.slug === canonicalSlug || c.id === slug);
   }
 
   public getCategoryById(id: string): ProductCategory | undefined {

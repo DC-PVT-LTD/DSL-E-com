@@ -83,7 +83,7 @@ describe('Promotions Controllers', () => {
         totalPages: 1,
       });
 
-      const res = await adminController.listPromotions({ page: 1, limit: 20 });
+      const res = await adminController.listPromotions({ page: 1, limit: 20, sortBy: 'createdAt', sortOrder: 'desc' });
       expect(res.data.items).toHaveLength(1);
     });
 
@@ -101,6 +101,10 @@ describe('Promotions Controllers', () => {
           discountValue: 10,
           startDate: new Date().toISOString(),
           endDate: new Date(Date.now() + 100000).toISOString(),
+          status: 'ACTIVE',
+          priority: 0,
+          isStackableWithSchoolPacks: false,
+          isActive: true,
         },
         req
       );

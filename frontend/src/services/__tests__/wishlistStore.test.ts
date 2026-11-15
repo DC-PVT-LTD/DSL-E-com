@@ -3,6 +3,7 @@ import { useWishlistStore } from '../wishlistStore';
 import { wishlistService } from '../wishlistService';
 import { useUserStore } from '../userStore';
 import { useCartStore } from '../cartStore';
+import { cartService } from '../cartService';
 import { INITIAL_PRODUCTS } from '@/mocks/products';
 
 describe('useWishlistStore', () => {
@@ -149,7 +150,80 @@ describe('useWishlistStore', () => {
   });
 
   describe('cart integration', () => {
-    it('adding a wishlist item to cart adds it without removing from wishlist', async () => {
+    it('adding a wishlist item to cart adds it without removing from wishlist (happy path)', async () => {
+      const product = INITIAL_PRODUCTS[0];
+      const mockBackendCart = {
+        id: 'cart-1',
+        items: [
+          {
+            id: 'cart-item-1',
+            productId: product.id,
+            product: {
+              id: product.id,
+              name: product.name,
+              slug: product.slug,
+              sku: product.sku,
+              images: product.images || [],
+              priceCents: product.priceCents,
+              stockQuantity: product.stockQuantity,
+              isActive: true,
+            },
+            quantity: 1,
+            unitPriceCents: product.priceCents,
+            totalPriceCents: product.priceCents,
+            isAvailable: true,
+            isOutOfStock: false,
+            exceedsStock: false,
+          },
+        ],
+        itemCount: 1,
+        subtotalCents: product.priceCents,
+        discountCents: 0,
+        deliveryCents: 0,
+        totalCents: product.priceCents,
+        isFreeDeliveryEligible: false,
+        freeDeliveryThresholdCents: 500000,
+        warnings: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      vi.spyOn(cartService, 'addItem').mockResolvedValue(mockBackendCart as any);
+
+      const productToTransfer = INITIAL_PRODUCTS[0];
+      useWishlistStore.setState({
+        items: [
+          {
+            id: 'item-1',
+            productId: productToTransfer.id,
+            createdAt: new Date().toISOString(),
+            product: { ...productToTransfer, images: [] },
+          },
+        ],
+        savedProductIds: [productToTransfer.id],
+        itemCount: 1,
+      });
+
+      useCartStore.getState().clearCartLocal();
+
+      // Simulate customer clicking "Add to Cart" on the wishlist page
+      await useCartStore.getState().addItem(productToTransfer, 1);
+
+      // Verify item exists in cart
+      expect(useCartStore.getState().items.length).toBe(1);
+      expect(useCartStore.getState().items[0].productId).toBe(productToTransfer.id);
+
+      // Verify item remains strictly in the customer's wishlist
+      expect(useWishlistStore.getState().isInWishlist(productToTransfer.id)).toBe(true);
+      expect(useWishlistStore.getState().itemCount).toBe(1);
+    });
+
+    it('preserves optimistic cart item during network error without affecting wishlist', async () => {
+      vi.spyOn(cartService, 'addItem').mockImplementation(async () => {
+        const err = new Error('network error');
+        (err as any).isNetworkError = true;
+        throw err;
+      });
+
       const product = INITIAL_PRODUCTS[0];
       useWishlistStore.setState({
         items: [
@@ -166,14 +240,13 @@ describe('useWishlistStore', () => {
 
       useCartStore.getState().clearCartLocal();
 
-      // Simulate customer clicking "Add to Cart" on the wishlist page
       await useCartStore.getState().addItem(product, 1);
 
-      // Verify item exists in cart
+      // Verify optimistic item remains in cart despite network error
       expect(useCartStore.getState().items.length).toBe(1);
       expect(useCartStore.getState().items[0].productId).toBe(product.id);
 
-      // Verify item remains strictly in the customer's wishlist
+      // Verify wishlist is unaffected
       expect(useWishlistStore.getState().isInWishlist(product.id)).toBe(true);
       expect(useWishlistStore.getState().itemCount).toBe(1);
     });

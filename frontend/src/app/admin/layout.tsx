@@ -54,24 +54,32 @@ export default function AdminLayout({
     return <div className="min-h-screen bg-slate-100">{children}</div>;
   }
 
-  if (isChecking || !isAdminLoggedIn) {
+    if (isChecking) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100">
+          <Loader2 className="w-8 h-8 animate-spin text-[#08275E]" />
+          <p className="mt-3 text-xs text-slate-500 font-medium">Verifying administrator session...</p>
+        </div>
+      );
+    }
+
+    if (!isAdminLoggedIn) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100">
+          <p className="text-xs text-slate-500 font-medium">Redirecting to administrator login...</p>
+        </div>
+      );
+    }
+
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100">
-        <Loader2 className="w-8 h-8 animate-spin text-[#08275E]" />
-        <p className="mt-3 text-xs text-slate-500 font-medium">Verifying administrator session...</p>
+      <div className="min-h-screen flex bg-slate-100 text-slate-900">
+        <AdminSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <AdminHeader />
+          <main className="flex-1 p-6 sm:p-8 overflow-y-auto">
+            {children}
+          </main>
+        </div>
       </div>
     );
   }
-
-  return (
-    <div className="min-h-screen flex bg-slate-100 text-slate-900">
-      <AdminSidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <AdminHeader />
-        <main className="flex-1 p-6 sm:p-8 overflow-y-auto">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-}

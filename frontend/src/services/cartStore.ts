@@ -34,6 +34,29 @@ interface CartState {
       bundleInfo?: CartBundleInfo | null;
     }>
   ) => Promise<number>;
+  addBulkItems: (
+    items: Array<{
+      productId: string;
+      quantity: number;
+      variantId?: string | null;
+      product?: Product;
+      variant?: ProductVariant;
+    }>
+  ) => Promise<{
+    success: boolean;
+    addedCount: number;
+    failedCount: number;
+    results: Array<{
+      productId: string;
+      variantId?: string | null;
+      sku?: string;
+      name?: string;
+      requestedQuantity: number;
+      addedQuantity: number;
+      success: boolean;
+      error?: string;
+    }>;
+  }>;
   addSchoolPack: (
     pack: { id: string; name: string; savingsPercentage: number },
     customizedItems: { productId: string; product: Product; variant?: ProductVariant; quantity: number }[]
@@ -220,14 +243,16 @@ export const useCartStore = create<CartState>()(
           });
           return true;
         } catch (err: any) {
-          // If offline or network error, preserve optimistic local items
-          if (err?.isNetworkError || process.env.NODE_ENV === 'test') {
+          // If network error (offline, dev mock, backend not reachable), keep optimistic state
+          if (err?.isNetworkError || err?.name === 'TypeError' || err?.message?.includes('fetch')) {
             set({
               isLoading: false,
+              lastSyncedAt: Date.now(),
             });
             return true;
           }
-          // Revert optimistic update if server rejected
+
+          // Revert optimistic update only if authoritative server explicitly rejected
           set({
             items: rollbackItems,
             error: err?.message || 'Could not add item to cart',
@@ -254,6 +279,71 @@ export const useCartStore = create<CartState>()(
           if (success) addedCount++;
         }
         return addedCount;
+      },
+
+      /**
+       * Add bulk order items directly to authoritative server cart.
+       * Merges existing cart lines, updates navbar and subtotal, and returns detailed results.
+       */
+      addBulkItems: async (itemsToAdd) => {
+        if (!itemsToAdd || itemsToAdd.length === 0) {
+          return { success: false, addedCount: 0, failedCount: 0, results: [] };
+        }
+
+        set({ isLoading: true, error: null });
+
+        try {
+          const res = await cartService.addBulkItems(
+            itemsToAdd.map((it) => ({
+              productId: it.productId,
+              variantId: it.variantId || null,
+              quantity: it.quantity,
+            }))
+          );
+
+          const clientItems = res.cart.items.map((bItem) => {
+            const clientItem = cartService.toClientCartItem(bItem);
+            const existing = get().items.find((i) => i.id === clientItem.id);
+            clientItem.selected = existing ? existing.selected : true;
+            return clientItem;
+          });
+
+          set({
+            items: clientItems,
+            warnings: res.cart.warnings,
+            lastSyncedAt: Date.now(),
+            isLoading: false,
+            error: null,
+          });
+
+          return {
+            success: res.addedCount > 0,
+            addedCount: res.addedCount,
+            failedCount: res.failedCount,
+            results: res.results,
+          };
+        } catch (err: any) {
+          set({
+            isLoading: false,
+            error: err?.message || 'Failed to add bulk items to cart',
+          });
+
+          await get().fetchCart();
+
+          return {
+            success: false,
+            addedCount: 0,
+            failedCount: itemsToAdd.length,
+            results: itemsToAdd.map((it) => ({
+              productId: it.productId,
+              variantId: it.variantId || null,
+              requestedQuantity: it.quantity,
+              addedQuantity: 0,
+              success: false,
+              error: err?.message || 'Request failed',
+            })),
+          };
+        }
       },
 
       /**
@@ -394,9 +484,6 @@ export const useCartStore = create<CartState>()(
             lastSyncedAt: Date.now(),
           });
         } catch (err: any) {
-          if (err?.isNetworkError || process.env.NODE_ENV === 'test') {
-            return;
-          }
           set({ items: rollback, error: err?.message });
         }
       },
@@ -417,9 +504,6 @@ export const useCartStore = create<CartState>()(
             lastSyncedAt: Date.now(),
           });
         } catch (err: any) {
-          if (err?.isNetworkError || process.env.NODE_ENV === 'test') {
-            return;
-          }
           set({ items: rollback, error: err?.message });
         }
       },
@@ -575,9 +659,9 @@ export const useCartStore = create<CartState>()(
             },
             variant: item.variant
               ? {
-                  ...item.variant,
-                  stockQuantity: availableStock,
-                }
+                ...item.variant,
+                stockQuantity: availableStock,
+              }
               : undefined,
             isAvailable: !isOutOfStock,
             isOutOfStock,
@@ -598,18 +682,19 @@ export const useCartStore = create<CartState>()(
 
       getSummary: () => {
         const { items, appliedDiscount, warnings } = get();
-        const selectedItems = items.filter((i) => i.selected !== false);
-        const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
-        const selectedItemCount = selectedItems.reduce((acc, i) => acc + i.quantity, 0);
-        const subtotalCents = selectedItems.reduce((acc, i) => acc + i.totalPriceCents, 0);
+        const safeItems = Array.isArray(items) ? items : [];
+        const selectedItems = safeItems.filter((i) => i.selected !== false);
+        const itemCount = safeItems.reduce((acc, i) => acc + (Number(i.quantity) || 0), 0);
+        const selectedItemCount = selectedItems.reduce((acc, i) => acc + (Number(i.quantity) || 0), 0);
+        const subtotalCents = selectedItems.reduce((acc, i) => acc + (Number(i.totalPriceCents) || 0), 0);
 
         // Retain bundle savings from customized school packs for selected items
         let bundleDiscountCents = 0;
         for (const item of selectedItems) {
           if (item.bundleInfo && item.bundleInfo.savingsPercentage > 0) {
-            bundleDiscountCents += Math.round(
-              (item.totalPriceCents * item.bundleInfo.savingsPercentage) / 100
-            );
+            const itemPrice = Number(item.totalPriceCents) || 0;
+            const savingsPct = Number(item.bundleInfo.savingsPercentage) || 0;
+            bundleDiscountCents += Math.round((itemPrice * savingsPct) / 100);
           }
         }
 
@@ -622,8 +707,9 @@ export const useCartStore = create<CartState>()(
           );
         }
 
-        const discountCents = bundleDiscountCents + promoDiscountCents;
-        const deliveryCents = subtotalCents === 0 ? 0 : calculateDeliveryFeeCents(subtotalCents - discountCents);
+        const safePromoDiscount = Number(promoDiscountCents) || 0;
+        const discountCents = bundleDiscountCents + safePromoDiscount;
+        const deliveryCents = subtotalCents === 0 ? 0 : calculateDeliveryFeeCents(Math.max(0, subtotalCents - discountCents));
         const totalCents = Math.max(0, subtotalCents - discountCents + deliveryCents);
 
         return {

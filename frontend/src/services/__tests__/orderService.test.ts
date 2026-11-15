@@ -1,9 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { orderService } from '../orderService';
 import { productService } from '../productService';
+import { apiClient } from '@/lib/api/apiClient';
 
 describe('orderService', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     orderService.resetToDefault();
   });
 
@@ -100,5 +102,87 @@ describe('orderService', () => {
     // Cancel order
     orderService.updateOrderStatus(newOrder.id, 'cancelled');
     expect(productService.getById(product.id)?.stockQuantity).toBe(initialStock);
+  });
+
+  describe('processReturnAction', () => {
+    it('sends rejectionReason when rejecting a return request', async () => {
+      const patchSpy = vi.spyOn(apiClient, 'patch').mockResolvedValueOnce({
+        success: true,
+        data: { id: 'ret-1', status: 'REJECTED' },
+      } as any);
+
+      const res = await orderService.processReturnAction(
+        'ord-100',
+        'ret-1',
+        'REJECT',
+        { rejectionReason: 'Item damaged by customer' }
+      );
+
+      expect(patchSpy).toHaveBeenCalledWith('/admin/orders/ord-100/returns/ret-1/status', {
+        action: 'REJECT',
+        rejectionReason: 'Item damaged by customer',
+        restockItems: undefined,
+      });
+      expect(res.success).toBe(true);
+      expect(res.data?.status).toBe('REJECTED');
+    });
+
+    it('sends restockItems: false when confirming receipt without restocking', async () => {
+      const patchSpy = vi.spyOn(apiClient, 'patch').mockResolvedValueOnce({
+        success: true,
+        data: { id: 'ret-1', status: 'COMPLETED' },
+      } as any);
+
+      const res = await orderService.processReturnAction(
+        'ord-100',
+        'ret-1',
+        'CONFIRM_RECEIVED',
+        { restockItems: false }
+      );
+
+      expect(patchSpy).toHaveBeenCalledWith('/admin/orders/ord-100/returns/ret-1/status', {
+        action: 'CONFIRM_RECEIVED',
+        rejectionReason: undefined,
+        restockItems: false,
+      });
+      expect(res.success).toBe(true);
+    });
+
+    it('sends restockItems: true when confirming receipt with restocking', async () => {
+      const patchSpy = vi.spyOn(apiClient, 'patch').mockResolvedValueOnce({
+        success: true,
+        data: { id: 'ret-1', status: 'COMPLETED' },
+      } as any);
+
+      const res = await orderService.processReturnAction(
+        'ord-100',
+        'ret-1',
+        'CONFIRM_RECEIVED',
+        { restockItems: true }
+      );
+
+      expect(patchSpy).toHaveBeenCalledWith('/admin/orders/ord-100/returns/ret-1/status', {
+        action: 'CONFIRM_RECEIVED',
+        rejectionReason: undefined,
+        restockItems: true,
+      });
+      expect(res.success).toBe(true);
+    });
+
+    it('returns error when backend rejects transition', async () => {
+      vi.spyOn(apiClient, 'patch').mockRejectedValueOnce(
+        new Error('Return request has already been completed')
+      );
+
+      const res = await orderService.processReturnAction(
+        'ord-100',
+        'ret-1',
+        'CONFIRM_RECEIVED',
+        { restockItems: true }
+      );
+
+      expect(res.success).toBe(false);
+      expect(res.error).toBe('Return request has already been completed');
+    });
   });
 });

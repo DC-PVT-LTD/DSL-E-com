@@ -41,6 +41,54 @@ export const SRI_LANKA_DISTRICTS: Record<string, string[]> = {
   Sabaragamuwa: ['Ratnapura', 'Kegalle'],
 };
 
+export const DISTRICT_TO_PROVINCE_MAP: Record<string, string> = {
+  Colombo: 'Western',
+  Gampaha: 'Western',
+  Kalutara: 'Western',
+  Kandy: 'Central',
+  Matale: 'Central',
+  'Nuwara Eliya': 'Central',
+  Galle: 'Southern',
+  Matara: 'Southern',
+  Hambantota: 'Southern',
+  Jaffna: 'Northern',
+  Kilinochchi: 'Northern',
+  Mannar: 'Northern',
+  Vavuniya: 'Northern',
+  Mullaitivu: 'Northern',
+  Batticaloa: 'Eastern',
+  Ampara: 'Eastern',
+  Trincomalee: 'Eastern',
+  Kurunegala: 'North Western',
+  Puttalam: 'North Western',
+  Anuradhapura: 'North Central',
+  Polonnaruwa: 'North Central',
+  Badulla: 'Uva',
+  Monaragala: 'Uva',
+  Ratnapura: 'Sabaragamuwa',
+  Kegalle: 'Sabaragamuwa',
+};
+
+export const ALL_SRI_LANKA_DISTRICTS = Object.keys(DISTRICT_TO_PROVINCE_MAP);
+
+export function normalizeProvince(provinceName?: string | null): string {
+  if (!provinceName) return 'Western';
+  const clean = provinceName.replace(/\s*province$/i, '').trim();
+  const match = SRI_LANKA_PROVINCES.find(
+    (p) => p.toLowerCase() === clean.toLowerCase()
+  );
+  return match || 'Western';
+}
+
+export function normalizeDistrict(districtName?: string | null): string {
+  if (!districtName) return 'Colombo';
+  const clean = districtName.replace(/\s*district$/i, '').trim();
+  const match = ALL_SRI_LANKA_DISTRICTS.find(
+    (d) => d.toLowerCase() === clean.toLowerCase()
+  );
+  return match || clean;
+}
+
 interface DeliveryLocationPickerProps {
   value: ShippingAddress;
   onChange: (address: ShippingAddress) => void;
@@ -172,16 +220,23 @@ export default function DeliveryLocationPicker({
         const addr = data.address;
         const street = addr.road || addr.street || addr.neighbourhood || '';
         const city = addr.city || addr.town || addr.suburb || addr.village || value.city;
-        const district = addr.state_district || addr.county || value.district;
-        const province = addr.state || value.province;
+        const rawDistrict = addr.state_district || addr.county || '';
+        const rawProvince = addr.state || '';
+
+        const normDistrict = normalizeDistrict(rawDistrict) || normalizeDistrict(value.district) || 'Colombo';
+        const normProvince =
+          DISTRICT_TO_PROVINCE_MAP[normDistrict] ||
+          normalizeProvince(rawProvince) ||
+          normalizeProvince(value.province) ||
+          'Western';
 
         onChange({
           ...value,
           formattedAddress: data.display_name,
           street: street || value.street,
           city: city || value.city,
-          district: district || value.district,
-          province: province || value.province,
+          district: normDistrict,
+          province: normProvince,
           latitude,
           longitude,
         });
@@ -245,6 +300,43 @@ export default function DeliveryLocationPicker({
         { enableHighAccuracy: true, timeout: 8000 }
       );
     }
+  };
+
+  // Synchronized Province & District state resolution
+  const currentProvince = normalizeProvince(
+    value.province || (value.district ? DISTRICT_TO_PROVINCE_MAP[value.district] : null) || 'Western'
+  );
+
+  const provinceDistricts = SRI_LANKA_DISTRICTS[currentProvince] || SRI_LANKA_DISTRICTS['Western'];
+
+  const currentDistrict =
+    value.district && provinceDistricts.includes(value.district)
+      ? value.district
+      : provinceDistricts[0];
+
+  const handleProvinceChange = (newProvince: string) => {
+    const normProv = normalizeProvince(newProvince);
+    const districtsInNewProv = SRI_LANKA_DISTRICTS[normProv] || [];
+    const newDistrict = districtsInNewProv.includes(value.district)
+      ? value.district
+      : (districtsInNewProv[0] || 'Colombo');
+
+    onChange({
+      ...value,
+      province: normProv,
+      district: newDistrict,
+    });
+  };
+
+  const handleDistrictChange = (newDistrict: string) => {
+    const normDistrict = normalizeDistrict(newDistrict);
+    const autoProvince = DISTRICT_TO_PROVINCE_MAP[normDistrict] || currentProvince;
+
+    onChange({
+      ...value,
+      district: normDistrict,
+      province: autoProvince,
+    });
   };
 
   return (
@@ -406,17 +498,9 @@ export default function DeliveryLocationPicker({
           <div>
             <label className="font-bold text-[#292525] block mb-1">Province *</label>
             <select
-              value={value.province || 'Western'}
-              onChange={(e) => {
-                const prov = e.target.value;
-                const availableDistricts = SRI_LANKA_DISTRICTS[prov] || [];
-                onChange({
-                  ...value,
-                  province: prov,
-                  district: availableDistricts[0] || value.district,
-                });
-              }}
-              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-[#0066CC] bg-[#FFFDF0]/50 text-[#292525]"
+              value={currentProvince}
+              onChange={(e) => handleProvinceChange(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-[#0066CC] bg-[#FFFDF0]/50 text-[#292525] font-medium"
             >
               {SRI_LANKA_PROVINCES.map((p) => (
                 <option key={p} value={p}>
@@ -429,11 +513,11 @@ export default function DeliveryLocationPicker({
           <div>
             <label className="font-bold text-[#292525] block mb-1">District in Sri Lanka *</label>
             <select
-              value={value.district}
-              onChange={(e) => onChange({ ...value, district: e.target.value })}
-              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-[#0066CC] bg-[#FFFDF0]/50 text-[#292525]"
+              value={currentDistrict}
+              onChange={(e) => handleDistrictChange(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-[#0066CC] bg-[#FFFDF0]/50 text-[#292525] font-medium"
             >
-              {(SRI_LANKA_DISTRICTS[value.province || 'Western'] || []).map((d) => (
+              {provinceDistricts.map((d) => (
                 <option key={d} value={d}>
                   {d}
                 </option>

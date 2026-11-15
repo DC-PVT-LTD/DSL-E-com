@@ -82,6 +82,26 @@ class ApiClient {
   }
 
   public getBaseUrl(): string {
+    if (typeof window !== 'undefined' && window.location.hostname) {
+      try {
+        const parsed = new URL(this.baseUrl);
+        if (window.location.hostname === '127.0.0.1' && parsed.hostname === 'localhost') {
+          parsed.hostname = '127.0.0.1';
+          return parsed.toString().replace(/\/+$/, '');
+        }
+        if (
+          window.location.hostname !== 'localhost' &&
+          window.location.hostname !== '127.0.0.1'
+        ) {
+          if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+            parsed.hostname = window.location.hostname;
+            return parsed.toString().replace(/\/+$/, '');
+          }
+        }
+      } catch {
+        // Fallback to configured baseUrl
+      }
+    }
     return this.baseUrl;
   }
 
@@ -98,7 +118,7 @@ class ApiClient {
    * guaranteeing that path prefixes like /api/v1 are preserved.
    */
   public buildUrl(endpoint: string, params?: Record<string, string | number | boolean | undefined | null>): string {
-    const cleanBase = this.baseUrl.replace(/\/+$/, '');
+    const cleanBase = this.getBaseUrl().replace(/\/+$/, '');
     const cleanEndpoint = endpoint.replace(/^\/+/, '');
     const fullUrlString = `${cleanBase}/${cleanEndpoint}`;
 
@@ -149,7 +169,7 @@ class ApiClient {
    * Performs an HTTP request and parses JSON response with strict error extraction.
    */
   public async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    const { params, timeoutMs = 10000, _retryCount = 0, ...fetchOptions } = options;
+    const { params, timeoutMs = 25000, _retryCount = 0, ...fetchOptions } = options;
     const fullUrl = this.buildUrl(endpoint, params);
 
     const controller = new AbortController();
@@ -240,8 +260,8 @@ class ApiClient {
       const message = isAbort
         ? `Request timed out after ${timeoutMs}ms: ${endpoint}`
         : err instanceof Error
-        ? err.message
-        : 'Failed to communicate with API server';
+          ? err.message
+          : 'Failed to communicate with API server';
 
       throw new ApiError(message, 0, undefined, true);
     }

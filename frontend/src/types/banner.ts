@@ -10,6 +10,7 @@ export interface HomepageBanner {
   imageAltText: string;
   buttonText?: string | null;
   buttonLink?: string | null;
+  placement?: 'HERO' | 'MID_PAGE_PROMO' | 'SPOTLIGHT' | string | null;
   sortOrder: number;
   status: BannerStatus;
   startAt?: string | null;
@@ -34,6 +35,7 @@ export interface CreateBannerInput {
   imageAltText: string;
   buttonText?: string | null;
   buttonLink?: string | null;
+  placement?: string | null;
   sortOrder?: number;
   status?: BannerStatus;
   startAt?: string | null;

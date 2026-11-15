@@ -72,6 +72,9 @@ export interface ImportSummary {
 }
 
 export interface ImportPreviewResult {
+  previewId?: string | null;
+  previewChecksum?: string;
+  expiresAt?: string | null;
   summary: ImportSummary;
   rows: ImportPreviewRow[];
   fileName: string;

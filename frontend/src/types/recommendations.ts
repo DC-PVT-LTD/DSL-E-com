@@ -7,6 +7,9 @@ export interface RecommendationSubstitute {
   sku: string;
   priceCents: number;
   stockQuantity: number;
+  categoryId?: string;
+  imageUrl?: string | null;
+  images?: string[];
 }
 
 export interface RecommendedProductItem {
@@ -24,6 +27,8 @@ export interface RecommendedProductItem {
   reason: string;
   priority: number;
   selected?: boolean;
+  imageUrl?: string | null;
+  images?: string[];
   substitutes: RecommendationSubstitute[];
 }
 

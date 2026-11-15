@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, CheckCircle2, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import { newsletterService } from '@/services/newsletterService';
 
 interface NewsletterSubscriptionFormProps {
@@ -16,7 +16,7 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
   className = '',
 }) => {
   const [email, setEmail] = useState('');
-  const [consent, setConsent] = useState(false); // Unchecked by default
+  const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
 
     if (!consent) {
       setErrorMessage(
-        'Please tick the consent box to confirm you agree to receive promotional emails.'
+        'Please tick the consent box to confirm you agree to receive communications.'
       );
       return;
     }
@@ -50,7 +50,7 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
       const res = await newsletterService.subscribe(trimmedEmail, consent, source);
       setSuccessMessage(
         res.message ||
-          'Thank you! If your email is valid, a verification link has been sent to confirm your subscription.'
+          'Thank you! A verification link has been sent to confirm your subscription.'
       );
       setEmail('');
       setConsent(false);
@@ -65,20 +65,20 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
   if (variant === 'footer') {
     return (
       <div className={`space-y-3 ${className}`}>
-        <div className="flex items-center gap-2 text-xs font-bold text-[#0066CC] uppercase tracking-wider">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#006DEB] uppercase tracking-wider">
           <Mail className="w-3.5 h-3.5" />
           <span>Newsletter &amp; Offers</span>
         </div>
-        <p className="text-xs text-[#292525]/75 leading-relaxed font-medium">
-          Get exclusive stationery deals, school booklist alerts, and new brand arrivals delivered to your inbox.
+        <p className="text-xs text-white/75 leading-relaxed font-medium">
+          Receive syllabus updates, stock releases, and enterprise promotional allocations.
         </p>
 
         {successMessage ? (
-          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start gap-2.5 text-xs text-emerald-800 animate-fadeIn">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-2xl flex items-start gap-2.5 text-xs text-emerald-300 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold">Subscription confirmation sent!</p>
-              <p className="text-[11px] text-emerald-700 mt-0.5">{successMessage}</p>
+              <p className="font-bold">Verification link sent</p>
+              <p className="text-[11px] text-emerald-300/80 mt-0.5">{successMessage}</p>
             </div>
           </div>
         ) : (
@@ -87,17 +87,17 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
               <input
                 type="email"
                 required
-                placeholder="Enter your email address..."
+                placeholder="Enter work or personal email..."
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
                 aria-label="Email address for newsletter"
-                className="flex-1 px-3.5 py-2 rounded-xl border border-[#C6E7FF] bg-white text-xs text-[#292525] placeholder:text-[#292525]/40 focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
+                className="flex-1 px-4 py-2.5 rounded-full border border-white/20 bg-white/10 text-xs text-white placeholder:text-white/40 focus:outline-hidden focus:border-[#006DEB]"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-xs shrink-0 flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
+                className="bg-[#006DEB] hover:bg-[#005ac2] text-white text-xs font-bold px-6 py-2.5 rounded-full transition-all shadow-sm shrink-0 flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
               >
                 {loading ? (
                   <>
@@ -110,22 +110,21 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
               </button>
             </div>
 
-            {/* Explicit affirmative consent checkbox - unchecked by default */}
             <label className="flex items-start gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
                 disabled={loading}
-                className="mt-0.5 w-3.5 h-3.5 rounded border-[#C6E7FF] text-[#0066CC] focus:ring-[#0066CC] cursor-pointer"
+                className="mt-0.5 w-3.5 h-3.5 rounded border-white/30 text-[#006DEB] focus:ring-[#006DEB] cursor-pointer"
               />
-              <span className="text-[10px] text-[#292525]/70 leading-normal">
-                I agree to receive promotional emails, offers and updates from DSL Stationery. I understand that I can unsubscribe at any time.
+              <span className="text-[10px] text-white/60 leading-normal">
+                I agree to receive communications from DSL Distributors. I can unsubscribe at any time.
               </span>
             </label>
 
             {errorMessage && (
-              <div className="flex items-center gap-1.5 text-[11px] text-rose-600 font-medium">
+              <div className="flex items-center gap-1.5 text-[11px] text-rose-400 font-medium">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 <span>{errorMessage}</span>
               </div>
@@ -136,33 +135,22 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
     );
   }
 
-  // Card Variant (for Homepage or standalone sections)
+  // Card Variant
   return (
-    <div className={`bg-white rounded-3xl border border-[#C6E7FF] p-8 sm:p-12 text-center shadow-sm space-y-4 relative overflow-hidden max-w-4xl mx-auto ${className}`}>
-      <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0066CC] uppercase tracking-wider">
-        <Mail className="w-4 h-4" />
-        <span>Join our stationery lovers club</span>
-      </div>
-
-      <h3 className="text-2xl sm:text-3xl font-black text-[#292525] tracking-tight">
-        Stay in the Loop &amp; Get 10% Off
-      </h3>
-
-      <p className="text-xs sm:text-sm text-[#292525]/70 max-w-md mx-auto leading-relaxed">
-        Subscribe for exclusive coupon drops, back-to-school bundle announcements, and new pastel stationery releases.
-      </p>
-
+    <div className={`space-y-3.5 ${className}`}>
       {successMessage ? (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl max-w-md mx-auto text-left flex items-start gap-3 text-xs text-emerald-800 animate-fadeIn">
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl max-w-lg mx-auto text-left flex items-start gap-3 text-xs text-emerald-800 animate-fadeIn">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <p className="font-bold">Almost there! Verification link sent.</p>
+            <p className="font-bold">Verification link sent!</p>
             <p className="text-emerald-700 leading-relaxed">{successMessage}</p>
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-3 pt-2">
-          <div className="flex flex-col sm:flex-row gap-2">
+        <form onSubmit={handleSubmit} className="max-w-lg mx-auto space-y-3">
+          {/* Two-Tone Pill Input & Button Bar */}
+          <div className="relative flex items-center bg-white rounded-full border border-slate-200/90 shadow-md p-1 pl-3 sm:pl-4 focus-within:border-[#006DEB] focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+            <Mail className="w-4 h-4 text-slate-400 shrink-0 mr-1.5 sm:mr-2" />
             <input
               type="email"
               required
@@ -170,43 +158,48 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              aria-label="Email address for newsletter subscription"
-              className="flex-1 px-4 py-2.5 rounded-full border border-[#C6E7FF] text-xs text-[#292525] focus:outline-none focus:ring-2 focus:ring-[#0066CC] bg-[#FFFDF0]"
+              aria-label="Email address for distribution updates"
+              className="flex-1 bg-transparent border-none text-[11px] sm:text-xs md:text-sm text-[#09285C] placeholder:text-slate-400 placeholder:text-[11px] sm:placeholder:text-xs md:placeholder:text-sm focus:outline-hidden py-1.5 sm:py-2 min-w-0 pr-1"
             />
             <button
               type="submit"
               disabled={loading}
-              className="bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold px-6 py-2.5 rounded-full shadow-xs transition-colors shrink-0 flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+              aria-label="Subscribe"
+              className="inline-flex items-center rounded-full overflow-hidden shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 cursor-pointer p-0 shrink-0 select-none group"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Subscribing...</span>
-                </>
-              ) : (
-                <span>Subscribe</span>
-              )}
+              <span className="bg-[#006DEB] hover:bg-[#005ac2] text-white text-[11px] sm:text-xs md:text-sm font-bold pl-3.5 sm:pl-5 pr-2 sm:pr-3 py-2 sm:py-2.5 flex items-center transition-colors">
+                {loading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                    <span className="hidden sm:inline">Sending...</span>
+                  </>
+                ) : (
+                  <span>Subscribe</span>
+                )}
+              </span>
+              <span className="bg-[#FFD84D] hover:bg-[#F2C736] text-[#594300] px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-center justify-center transition-colors">
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
+              </span>
             </button>
           </div>
 
-          {/* Explicit affirmative consent checkbox - unchecked by default */}
-          <div className="text-left px-1">
+          <div className="text-left px-3 sm:px-4">
             <label className="flex items-start gap-2.5 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
                 disabled={loading}
-                className="mt-0.5 w-4 h-4 rounded border-[#C6E7FF] text-[#0066CC] focus:ring-[#0066CC] cursor-pointer shrink-0"
+                className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#006DEB] focus:ring-[#006DEB] cursor-pointer shrink-0"
               />
-              <span className="text-[11px] text-[#292525]/75 leading-relaxed">
-                I agree to receive promotional emails, offers and updates from DSL Stationery. I understand that I can unsubscribe at any time.
+              <span className="text-[11px] text-[#09285C]/75 leading-relaxed font-medium">
+                I agree to receive distribution updates and communications from DSL Distributors.
               </span>
             </label>
           </div>
 
           {errorMessage && (
-            <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-left flex items-center gap-2 text-xs text-rose-700">
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-left flex items-center gap-2 text-xs text-rose-700">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
               <span>{errorMessage}</span>
             </div>
@@ -216,4 +209,3 @@ export const NewsletterSubscriptionForm: React.FC<NewsletterSubscriptionFormProp
     </div>
   );
 };
-

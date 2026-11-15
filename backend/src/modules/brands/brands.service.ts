@@ -5,6 +5,7 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import * as ExcelJS from 'exceljs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { BrandQueryDto } from './dto/brand-query.dto';
@@ -70,6 +71,121 @@ export class BrandsService {
 
     const meta = createPaginationMeta(totalItems, query.page, query.limit);
     return createPaginatedResponse(items, meta);
+  }
+
+  /**
+   * Retrieves brand analytics directly from PostgreSQL database.
+   */
+  async getAdminAnalytics() {
+    const [counts, usage, topBrands] = await Promise.all([
+      this.prisma.$queryRaw<Array<{ total: number; featured: number }>>`
+        SELECT
+          COUNT(*)::int AS "total",
+          COUNT(*) FILTER (WHERE "featured" = true)::int AS "featured"
+        FROM "Brand"
+      `,
+      this.prisma.$queryRaw<Array<{ withProducts: number; empty: number }>>`
+        SELECT
+          COUNT(DISTINCT b.id) FILTER (WHERE p.id IS NOT NULL)::int AS "withProducts",
+          COUNT(DISTINCT b.id) FILTER (WHERE p.id IS NULL)::int AS "empty"
+        FROM "Brand" b
+        LEFT JOIN "Product" p ON p."brandId" = b.id
+      `,
+      this.prisma.$queryRaw<Array<{ id: string; name: string; count: number }>>`
+        SELECT b.id, b.name, COUNT(p.id)::int AS count
+        FROM "Brand" b
+        LEFT JOIN "Product" p ON p."brandId" = b.id
+        GROUP BY b.id, b.name
+        ORDER BY count DESC
+        LIMIT 10
+      `,
+    ]);
+
+    const c = counts[0] || { total: 0, featured: 0 };
+    const u = usage[0] || { withProducts: 0, empty: 0 };
+
+    return {
+      totalBrands: Number(c.total),
+      featuredBrands: Number(c.featured),
+      brandsWithProducts: Number(u.withProducts),
+      emptyBrands: Number(u.empty),
+      topBrands: topBrands.map((b) => ({ id: b.id, name: b.name, count: Number(b.count) })),
+    };
+  }
+
+  /**
+   * Generates a streaming CSV or XLSX export of all brands.
+   */
+  async exportBrands(
+    format: 'csv' | 'xlsx' = 'xlsx',
+    selectedIds?: string[]
+  ): Promise<{ buffer: Buffer; filename: string; mimeType: string }> {
+    const where: any = {};
+    if (selectedIds && selectedIds.length > 0) {
+      where.id = { in: selectedIds };
+    }
+
+    const brands = await this.prisma.brand.findMany({
+      where,
+      orderBy: { name: 'asc' },
+      include: {
+        _count: { select: { products: true } },
+      },
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'DSL Stationery Admin';
+    workbook.created = new Date();
+
+    const worksheet = workbook.addWorksheet('Brands');
+    worksheet.columns = [
+      { header: 'Brand ID', key: 'id', width: 28 },
+      { header: 'Name', key: 'name', width: 30 },
+      { header: 'Slug', key: 'slug', width: 25 },
+      { header: 'Origin Country', key: 'originCountry', width: 20 },
+      { header: 'Product Count', key: 'productCount', width: 16 },
+      { header: 'Featured', key: 'featured', width: 14 },
+      { header: 'Description', key: 'description', width: 40 },
+      { header: 'Created Date', key: 'createdAt', width: 22 },
+    ];
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF1E3A8A' },
+    };
+
+    brands.forEach((b) => {
+      worksheet.addRow({
+        id: b.id,
+        name: b.name,
+        slug: b.slug,
+        originCountry: b.originCountry,
+        productCount: b._count.products,
+        featured: b.featured ? 'Yes' : 'No',
+        description: b.description,
+        createdAt: b.createdAt ? b.createdAt.toISOString() : '',
+      });
+    });
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    if (format === 'csv') {
+      const csvBuffer = await workbook.csv.writeBuffer();
+      return {
+        buffer: Buffer.from(csvBuffer),
+        filename: `dsl-brands-${timestamp}.csv`,
+        mimeType: 'text/csv; charset=utf-8',
+      };
+    } else {
+      const xlsxBuffer = await workbook.xlsx.writeBuffer();
+      return {
+        buffer: Buffer.from(xlsxBuffer),
+        filename: `dsl-brands-${timestamp}.xlsx`,
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      };
+    }
   }
 
   async findById(id: string) {

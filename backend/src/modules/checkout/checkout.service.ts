@@ -24,8 +24,13 @@ import {
   PaymentStatus,
   PaymentMethod,
   InventoryChangeReason,
+  BankDepositStatus,
 } from '../../generated/prisma';
 import { PromotionsService } from '../promotions/promotions.service';
+import {
+  PrivateReceiptStorageService,
+  StagedReceiptMetadata,
+} from './private-receipt-storage.service';
 
 export interface SchoolPackSnapshotItem {
   packId: string;
@@ -79,6 +84,7 @@ export class CheckoutService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(InventoryGateway) private readonly inventoryGateway: InventoryGateway,
     @Inject(CartService) private readonly cartService: CartService,
+    @Inject(PrivateReceiptStorageService) private readonly privateReceiptStorageService: PrivateReceiptStorageService,
     @Optional() @Inject(NotificationsService) private readonly notificationsService?: NotificationsService,
     @Optional() @Inject(PromotionsService) private readonly promotionsService?: PromotionsService
   ) {}
@@ -337,6 +343,32 @@ export class CheckoutService {
     userId?: string | null,
     sessionId?: string | null
   ) {
+    // 0. Enforce payment method availability against StoreSettings before allocating stock or creating attempts
+    const settings = await this.prisma.storeSettings.findUnique({
+      where: { id: 'default' },
+    });
+
+    if (dto.paymentMethod === PaymentMethod.CARD_PAYHERE && (!settings || !settings.onlineCardEnabled)) {
+      throw new BadRequestException('Online card payment is currently disabled.');
+    }
+    if (dto.paymentMethod === PaymentMethod.CASH_ON_DELIVERY && settings?.codEnabled === false) {
+      throw new BadRequestException('Cash on Delivery is currently disabled.');
+    }
+    if (dto.paymentMethod === PaymentMethod.BANK_TRANSFER) {
+      const isBankComplete = Boolean(
+        settings?.bankTransferEnabled &&
+        settings?.bankName?.trim() &&
+        settings?.accountHolderName?.trim() &&
+        settings?.accountNumber?.trim() &&
+        settings?.branchName?.trim() &&
+        settings?.paymentInstructions?.trim() &&
+        settings?.referenceInstructions?.trim()
+      );
+      if (!isBankComplete) {
+        throw new BadRequestException('Bank Transfer is currently unavailable or bank details are not configured.');
+      }
+    }
+
     const reservation = await this.prisma.stockReservation.findUnique({
       where: { id: dto.reservationId },
       include: {
@@ -518,7 +550,9 @@ export class CheckoutService {
         merchant_id: merchantId,
         return_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/checkout/result?orderId=${orderId}&payment=success`,
         cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/checkout?payment=cancelled`,
-        notify_url: `${process.env.BACKEND_URL || 'http://localhost:4000/api/v1'}/checkout/payhere/webhook`,
+        notify_url:
+          process.env.PAYHERE_NOTIFY_URL ||
+          `${process.env.BACKEND_URL || 'http://localhost:4000/api/v1'}/checkout/payhere/webhook`,
         order_id: orderId,
         items: `DSL Stationery Order (${reservation.items.length} items)`,
         amount: amountFormatted,
@@ -555,8 +589,57 @@ export class CheckoutService {
   async processPayment(
     dto: ProcessPaymentDto,
     userId?: string | null,
-    sessionId?: string | null
+    sessionId?: string | null,
+    isInternalWebhook = false
   ) {
+    // Security check: Direct client requests cannot submit CARD_PAYHERE
+    if (dto.paymentMethod === PaymentMethod.CARD_PAYHERE && !isInternalWebhook) {
+      throw new BadRequestException(
+        'Direct card payment confirmation is not permitted. Card payments must be processed and verified through the payment gateway callback.'
+      );
+    }
+
+    // Bank transfer validation: ensure enabled, complete config, and valid receipt slip
+    let stagedReceipt: StagedReceiptMetadata | null = null;
+    if (dto.paymentMethod === PaymentMethod.BANK_TRANSFER) {
+      const settings = await this.prisma.storeSettings.findUnique({
+        where: { id: 'default' },
+      });
+      const isBankComplete = Boolean(
+        settings?.bankTransferEnabled &&
+        settings?.bankName?.trim() &&
+        settings?.accountHolderName?.trim() &&
+        settings?.accountNumber?.trim() &&
+        settings?.branchName?.trim() &&
+        settings?.paymentInstructions?.trim() &&
+        settings?.referenceInstructions?.trim()
+      );
+      if (!isBankComplete) {
+        throw new BadRequestException('Bank Transfer is currently unavailable or bank details are not configured.');
+      }
+
+      if (!dto.bankTransferData) {
+        throw new BadRequestException(
+          'Bank transfer slip, reference number, and deposit date are required before placing order.'
+        );
+      }
+
+      stagedReceipt = this.privateReceiptStorageService.verifyStagingToken(
+        dto.bankTransferData.receiptToken,
+        { userId, sessionId }
+      );
+
+      // Verify that this staged receipt has not already been submitted for another completed or pending order
+      const duplicateSubmission = await this.prisma.bankDepositSubmission.findFirst({
+        where: { receiptStorageKey: stagedReceipt.storageKey },
+      });
+      if (duplicateSubmission) {
+        throw new BadRequestException(
+          'This receipt has already been submitted for another order. Please upload a new receipt.'
+        );
+      }
+    }
+
     // 1. Idempotency check: if an order already exists for this idempotency key, return it
     const existingAttempt = await this.prisma.paymentAttempt.findUnique({
       where: { idempotencyKey: dto.idempotencyKey },
@@ -765,8 +848,34 @@ export class CheckoutService {
         };
       });
 
-      // Determine initial payment status
-      const isPaid = dto.paymentMethod === 'CARD_PAYHERE' || dto.paymentMethod === 'BANK_TRANSFER';
+      // Determine initial payment status and order status according to approved lifecycle:
+      // - Bank Transfer: PENDING payment, PENDING order (awaits admin bank statement verification in Stage 3.3)
+      // - Cash on Delivery: PENDING payment, CONFIRMED order
+      // - Card PayHere: PAID & CONFIRMED only if verified callback with status_code === '2'; otherwise PENDING
+      const isCardVerifiedPaid =
+        dto.paymentMethod === PaymentMethod.CARD_PAYHERE &&
+        isInternalWebhook &&
+        dto.paymentData?.status_code === '2';
+
+      let initialPaymentStatus: PaymentStatus = PaymentStatus.PENDING;
+      let initialOrderStatus: OrderStatus = OrderStatus.CONFIRMED;
+
+      if (dto.paymentMethod === PaymentMethod.BANK_TRANSFER) {
+        initialPaymentStatus = PaymentStatus.PENDING;
+        initialOrderStatus = OrderStatus.PENDING;
+      } else if (dto.paymentMethod === PaymentMethod.CASH_ON_DELIVERY) {
+        initialPaymentStatus = PaymentStatus.PENDING;
+        initialOrderStatus = OrderStatus.CONFIRMED;
+      } else if (dto.paymentMethod === PaymentMethod.CARD_PAYHERE) {
+        if (isCardVerifiedPaid) {
+          initialPaymentStatus = PaymentStatus.PAID;
+          initialOrderStatus = OrderStatus.CONFIRMED;
+        } else {
+          initialPaymentStatus = PaymentStatus.PENDING;
+          initialOrderStatus = OrderStatus.PENDING;
+        }
+      }
+
       const order = await tx.order.create({
         data: {
           orderNumber,
@@ -779,8 +888,8 @@ export class CheckoutService {
           deliveryCents: totals.deliveryCents,
           totalCents: totals.totalCents,
           paymentMethod: dto.paymentMethod,
-          paymentStatus: isPaid ? PaymentStatus.PAID : PaymentStatus.PENDING,
-          orderStatus: OrderStatus.CONFIRMED,
+          paymentStatus: initialPaymentStatus,
+          orderStatus: initialOrderStatus,
           notes: orderNotes,
           promotionId: totals.voucherApplied?.promotionId || null,
           promoCode: totals.voucherApplied?.code || null,
@@ -818,7 +927,8 @@ export class CheckoutService {
       });
 
       // Update or create payment attempt
-      await tx.paymentAttempt.upsert({
+      const isAttemptSucceeded = isCardVerifiedPaid;
+      const paymentAttempt = await tx.paymentAttempt.upsert({
         where: { idempotencyKey: dto.idempotencyKey },
         create: {
           reservationId: reservation.id,
@@ -826,7 +936,7 @@ export class CheckoutService {
           amountCents: totals.totalCents,
           currency: 'LKR',
           paymentMethod: dto.paymentMethod,
-          status: isPaid ? PaymentAttemptStatus.SUCCEEDED : PaymentAttemptStatus.PROCESSING,
+          status: isAttemptSucceeded ? PaymentAttemptStatus.SUCCEEDED : PaymentAttemptStatus.PROCESSING,
           idempotencyKey: dto.idempotencyKey,
           gatewayPayload: {
             ...(existingPayload || {}),
@@ -836,7 +946,7 @@ export class CheckoutService {
         },
         update: {
           orderId: order.id,
-          status: isPaid ? PaymentAttemptStatus.SUCCEEDED : PaymentAttemptStatus.PROCESSING,
+          status: isAttemptSucceeded ? PaymentAttemptStatus.SUCCEEDED : PaymentAttemptStatus.PROCESSING,
           gatewayPayload: {
             ...(existingPayload || {}),
             totals,
@@ -844,6 +954,26 @@ export class CheckoutService {
           },
         },
       });
+
+      // For Bank Transfer, persist verified BankDepositSubmission inside transaction
+      if (dto.paymentMethod === PaymentMethod.BANK_TRANSFER && stagedReceipt && dto.bankTransferData) {
+        await tx.bankDepositSubmission.create({
+          data: {
+            orderId: order.id,
+            paymentAttemptId: paymentAttempt.id,
+            receiptStorageKey: stagedReceipt.storageKey,
+            originalFilename: stagedReceipt.originalFilename,
+            fileSizeBytes: stagedReceipt.fileSizeBytes,
+            mimeType: stagedReceipt.mimeType,
+            fileHashSha256: stagedReceipt.fileHashSha256,
+            referenceNumber: dto.bankTransferData.referenceNumber.trim(),
+            depositDate: new Date(dto.bankTransferData.depositDate),
+            amountCents: totals.totalCents,
+            customerNotes: dto.bankTransferData.customerNotes?.trim() || null,
+            status: BankDepositStatus.PENDING,
+          },
+        });
+      }
 
       // Record promotion redemption inside the same transaction
       if (
@@ -996,6 +1126,7 @@ export class CheckoutService {
             items: true,
           },
         },
+        order: true,
       },
     });
 
@@ -1008,6 +1139,26 @@ export class CheckoutService {
               items: true,
             },
           },
+          order: true,
+        },
+      });
+    }
+
+    if (!paymentAttempt && dto.order_id) {
+      paymentAttempt = await this.prisma.paymentAttempt.findFirst({
+        where: {
+          OR: [
+            { order: { orderNumber: dto.order_id } },
+            { gatewayPayload: { path: ['orderId'], equals: dto.order_id } },
+          ],
+        },
+        include: {
+          reservation: {
+            include: {
+              items: true,
+            },
+          },
+          order: true,
         },
       });
     }
@@ -1015,6 +1166,18 @@ export class CheckoutService {
     if (!paymentAttempt) {
       this.logger.error(`PayHere webhook could not find payment attempt for order ${dto.order_id}`);
       throw new NotFoundException(`Payment attempt for order ${dto.order_id} not found`);
+    }
+
+    // Security check: Payment notification for one order cannot update another order (Requirement 14)
+    const payloadOrderId = (paymentAttempt.gatewayPayload as any)?.orderId;
+    const matchesPayloadOrderId = payloadOrderId && payloadOrderId === dto.order_id;
+    const matchesOrderNumber = paymentAttempt.order?.orderNumber && paymentAttempt.order.orderNumber === dto.order_id;
+
+    if (payloadOrderId && !matchesPayloadOrderId && !matchesOrderNumber) {
+      this.logger.error(
+        `PayHere webhook order mismatch: notification for order "${dto.order_id}" attempted to update attempt linked to "${payloadOrderId}"`
+      );
+      throw new BadRequestException('Payment notification order reference mismatch');
     }
 
     // 5. Validate amount matches expected order total
@@ -1035,6 +1198,71 @@ export class CheckoutService {
     // 7. Handle Status Codes:
     // status_code: "2" = Success, "0" = Pending, "-1" = Canceled, "-2" = Failed, "-3" = Chargedback
     if (dto.status_code === '2') {
+      // Critical Audit Check: If an order was already created for this payment attempt and was CANCELLED
+      // (e.g. from an earlier cancellation callback or timeout), preserve the payment record as SUCCEEDED,
+      // record a reconciliation flag in the order notes, and DO NOT reactivate the order or invent refunds.
+      if (paymentAttempt.order && paymentAttempt.order.orderStatus === OrderStatus.CANCELLED) {
+        this.logger.warn(
+          `Late verified PayHere payment ${dto.payment_id} received for already CANCELLED order ${paymentAttempt.order.orderNumber}. Preserving payment record and flagging for manual reconciliation.`
+        );
+
+        await this.prisma.$transaction(async (tx) => {
+          await tx.paymentAttempt.update({
+            where: { id: paymentAttempt.id },
+            data: {
+              status: PaymentAttemptStatus.SUCCEEDED,
+              gatewayReference: dto.payment_id,
+            },
+          });
+
+          const reconNote = `[RECONCILIATION_REQUIRED: Late PayHere payment received after cancellation. Gateway Ref: ${dto.payment_id}, Amount: LKR ${dto.payhere_amount}]`;
+          const currentNotes = paymentAttempt.order?.notes;
+          const updatedNotes = currentNotes ? `${currentNotes} | ${reconNote}` : reconNote;
+
+          await tx.order.update({
+            where: { id: paymentAttempt.order!.id },
+            data: { notes: updatedNotes },
+          });
+        });
+
+        return {
+          status: 'reconciliation_required',
+          message:
+            'Payment succeeded after order cancellation. Payment record preserved; manual staff reconciliation required.',
+          orderId: paymentAttempt.order.id,
+        };
+      }
+
+      // If an existing order already exists for this payment attempt and is NOT cancelled,
+      // ensure paymentStatus is updated to PAID and orderStatus is CONFIRMED.
+      if (paymentAttempt.order && paymentAttempt.order.orderStatus !== OrderStatus.CANCELLED) {
+        await this.prisma.$transaction(async (tx) => {
+          await tx.paymentAttempt.update({
+            where: { id: paymentAttempt.id },
+            data: {
+              status: PaymentAttemptStatus.SUCCEEDED,
+              gatewayReference: dto.payment_id,
+            },
+          });
+
+          if (paymentAttempt.order!.paymentStatus !== PaymentStatus.PAID) {
+            await tx.order.update({
+              where: { id: paymentAttempt.order!.id },
+              data: {
+                paymentStatus: PaymentStatus.PAID,
+                orderStatus: OrderStatus.CONFIRMED,
+              },
+            });
+          }
+        });
+
+        return {
+          status: 'success',
+          orderId: paymentAttempt.order.id,
+          orderNumber: paymentAttempt.order.orderNumber,
+        };
+      }
+
       // Scenario 3: Verify reservation status before fulfilling
       const resStatus = paymentAttempt.reservation?.status;
       const isReservationExpired =
@@ -1098,14 +1326,19 @@ export class CheckoutService {
 
       try {
         // Fulfill order transactionally, preserving verified pack selections from pre-pay payload
-        const processResult = await this.processPayment({
-          reservationId: paymentAttempt.reservationId,
-          paymentMethod: PaymentMethod.CARD_PAYHERE,
-          idempotencyKey: paymentAttempt.idempotencyKey || `payhere-${dto.payment_id}`,
-          deliveryAddress,
-          paymentData: dto as any,
-          packSelections: payloadData.packSelections || null,
-        });
+        const processResult = await this.processPayment(
+          {
+            reservationId: paymentAttempt.reservationId,
+            paymentMethod: PaymentMethod.CARD_PAYHERE,
+            idempotencyKey: paymentAttempt.idempotencyKey || `payhere-${dto.payment_id}`,
+            deliveryAddress,
+            paymentData: dto as any,
+            packSelections: payloadData.packSelections || null,
+          },
+          null,
+          null,
+          true // Internal verified webhook
+        );
 
         // Update payment attempt to SUCCEEDED with gateway payment ID
         await this.prisma.paymentAttempt.update({
@@ -1167,49 +1400,27 @@ export class CheckoutService {
       return { status: 'pending', message: 'Payment verification is pending' };
     }
 
-    // 8. Handle Chargeback (-3):
-    // PayHere chargebacks occur after successful payment. They MUST NOT be treated as ordinary
-    // pre-payment cancellations or failures, and MUST NEVER automatically restore physical stock that has already been sold.
+    // 8. Handle Status Code -3:
+    // DSL Stationery explicitly does NOT support chargeback or dispute management functionality.
+    // - Existing successful PaymentAttempt must NOT be changed to FAILED.
+    // - Orders must NOT be cancelled and stock must NOT be released.
+    // - Existing successful payment and order history are strictly preserved without introducing chargeback features.
     if (dto.status_code === '-3') {
-      this.logger.warn(
-        `PayHere CHARGEBACK received for order ${dto.order_id}, payment_id=${dto.payment_id}. Physical stock will NOT be restored.`
+      this.logger.log(
+        `PayHere status -3 received for order ${dto.order_id}, payment_id=${dto.payment_id}. Preserving existing payment attempt and order records without altering status or inventory.`
       );
 
-      await this.prisma.$transaction(async (tx) => {
-        await tx.paymentAttempt.update({
-          where: { id: paymentAttempt.id },
-          data: {
-            status: PaymentAttemptStatus.FAILED,
-            gatewayReference: dto.payment_id,
-            failureReason: `PayHere Chargeback: ${dto.status_message || 'Customer initiated chargeback dispute'}`,
-          },
-        });
-
-        // If an order was already created, record chargeback dispute note without restoring stock
-        if (paymentAttempt.orderId) {
-          const ord = await tx.order.findUnique({ where: { id: paymentAttempt.orderId } });
-          if (ord) {
-            const chargebackNotice = `[CHARGEBACK DISPUTE - PayHere Ref: ${dto.payment_id}]`;
-            const updatedNotes = ord.notes ? `${ord.notes} | ${chargebackNotice}` : chargebackNotice;
-            await tx.order.update({
-              where: { id: ord.id },
-              data: {
-                notes: updatedNotes,
-              },
-            });
-          }
-        }
-      });
-
       return {
-        status: 'chargedback',
-        message: 'PayHere chargeback recorded. Physical inventory was not restored.',
-        orderId: paymentAttempt.orderId,
+        status: 'ignored',
+        message: 'Status -3 notification logged and preserved without altering payment or order status.',
+        orderId: paymentAttempt.orderId || null,
       };
     }
 
     // 9. Handled Failed / Cancelled (-1, -2)
     if (dto.status_code === '-1' || dto.status_code === '-2') {
+      const restoredItemsToBroadcast: Array<{ productId: string; variantId: string | null }> = [];
+
       await this.prisma.$transaction(async (tx) => {
         await tx.paymentAttempt.update({
           where: { id: paymentAttempt.id },
@@ -1221,18 +1432,82 @@ export class CheckoutService {
           },
         });
 
-        // Release the reservation so stock is immediately available to other customers
+        // Release the reservation so stock is immediately available to other customers if not consumed
         if (paymentAttempt.reservation && paymentAttempt.reservation.status !== ReservationStatus.CONSUMED) {
           await tx.stockReservation.update({
             where: { id: paymentAttempt.reservationId },
             data: { status: ReservationStatus.RELEASED },
           });
         }
+
+        // If an Order was already created for this payment attempt and is not already CANCELLED,
+        // cancel the order and atomically restore committed physical inventory (Stage 3.2 requirement)
+        if (paymentAttempt.orderId) {
+          const ord = await tx.order.findUnique({
+            where: { id: paymentAttempt.orderId },
+            include: { items: true },
+          });
+
+          if (ord && ord.orderStatus !== OrderStatus.CANCELLED) {
+            await tx.order.update({
+              where: { id: ord.id },
+              data: {
+                orderStatus: OrderStatus.CANCELLED,
+                paymentStatus: PaymentStatus.FAILED,
+                notes: ord.notes
+                  ? `${ord.notes} | [CANCELLED: PayHere ${dto.status_code === '-1' ? 'cancelled' : 'failed'}]`
+                  : `[CANCELLED: PayHere ${dto.status_code === '-1' ? 'cancelled' : 'failed'}]`,
+              },
+            });
+
+            // Atomically restore physical stock to products & variants
+            for (const item of ord.items) {
+              if (item.variantId) {
+                await tx.productVariant.update({
+                  where: { id: item.variantId },
+                  data: { stockQuantity: { increment: item.quantity } },
+                });
+              }
+
+              const prod = await tx.product.update({
+                where: { id: item.productId },
+                data: { stockQuantity: { increment: item.quantity } },
+              });
+
+              // Record immutable inventory movement audit log
+              await tx.inventoryMovement.create({
+                data: {
+                  productId: item.productId,
+                  variantId: item.variantId || null,
+                  previousQuantity: prod.stockQuantity - item.quantity,
+                  newQuantity: prod.stockQuantity,
+                  changeAmount: item.quantity,
+                  reason: InventoryChangeReason.RESTOCK,
+                  note: `PayHere payment ${dto.status_code === '-1' ? 'cancelled' : 'failed'}: Restored stock for cancelled order ${ord.orderNumber}`,
+                  performedById: 'SYSTEM_PAYHERE_WEBHOOK',
+                },
+              });
+
+              restoredItemsToBroadcast.push({
+                productId: item.productId,
+                variantId: item.variantId,
+              });
+            }
+          }
+        }
       });
 
-      // Broadcast released inventory
-      if (paymentAttempt.reservation?.items && this.inventoryGateway) {
-        for (const it of paymentAttempt.reservation.items) {
+      // Broadcast restored physical stock or released reservation stock
+      const itemsToBroadcast =
+        restoredItemsToBroadcast.length > 0
+          ? restoredItemsToBroadcast
+          : paymentAttempt.reservation?.items?.map((it) => ({
+              productId: it.productId,
+              variantId: it.variantId || null,
+            })) || [];
+
+      if (itemsToBroadcast.length > 0 && this.inventoryGateway) {
+        for (const it of itemsToBroadcast) {
           try {
             const p = await this.prisma.product.findUnique({ where: { id: it.productId } });
             if (p) {
@@ -1255,7 +1530,7 @@ export class CheckoutService {
                 reservedStock,
                 availableStock: Math.max(0, p.stockQuantity - reservedStock),
                 timestamp: new Date().toISOString(),
-                reason: 'PAYMENT_FAILED_RELEASE',
+                reason: restoredItemsToBroadcast.length > 0 ? 'PAYMENT_FAILED_RESTOCK' : 'PAYMENT_FAILED_RELEASE',
               });
             }
           } catch (wsErr) {
@@ -1266,14 +1541,16 @@ export class CheckoutService {
 
       if (this.notificationsService) {
         const payloadData = (paymentAttempt.gatewayPayload as any) || {};
-        this.notificationsService.sendPaymentOutcome({
-          customerEmail: payloadData.deliveryAddress?.email || 'customer@dslstationery.lk',
-          customerName: payloadData.deliveryAddress?.fullName || 'Valued Customer',
-          status: dto.status_code === '-1' ? 'CANCELLED' : 'FAILED',
-          amountCents: paymentAttempt.amountCents,
-          paymentId: dto.payment_id,
-          reason: dto.status_message || 'Payment not completed',
-        }).catch((err) => this.logger.error('Failed to dispatch payment failure notification:', err));
+        this.notificationsService
+          .sendPaymentOutcome({
+            customerEmail: payloadData.deliveryAddress?.email || 'customer@dslstationery.lk',
+            customerName: payloadData.deliveryAddress?.fullName || 'Valued Customer',
+            status: dto.status_code === '-1' ? 'CANCELLED' : 'FAILED',
+            amountCents: paymentAttempt.amountCents,
+            paymentId: dto.payment_id,
+            reason: dto.status_message || 'Payment not completed',
+          })
+          .catch((err) => this.logger.error('Failed to dispatch payment failure notification:', err));
       }
 
       return { status: 'failed', message: dto.status_message || 'Payment failed or cancelled' };
@@ -1341,5 +1618,71 @@ export class CheckoutService {
       isConfirmed: attempt.status === PaymentAttemptStatus.SUCCEEDED,
       paymentAttempt: attempt,
     };
+  }
+
+  /**
+   * Retrieves public checkout settings and payment method availability.
+   * Bank Transfer is available ONLY if enabled AND complete bank configuration is present.
+   */
+  async getCheckoutSettings() {
+    const settings = await this.prisma.storeSettings.findUnique({
+      where: { id: 'default' },
+    });
+
+    const isBankComplete = Boolean(
+      settings?.bankTransferEnabled &&
+      settings?.bankName?.trim() &&
+      settings?.accountHolderName?.trim() &&
+      settings?.accountNumber?.trim() &&
+      settings?.branchName?.trim() &&
+      settings?.paymentInstructions?.trim() &&
+      settings?.referenceInstructions?.trim()
+    );
+
+    return {
+      onlineCardEnabled: settings?.onlineCardEnabled ?? false,
+      codEnabled: settings?.codEnabled ?? true,
+      bankTransferEnabled: isBankComplete,
+      flatDeliveryFeeCents: settings?.flatDeliveryFeeCents ?? 35000,
+      freeDeliveryThresholdCents: settings?.freeDeliveryThresholdCents ?? 500000,
+      bankTransfer: isBankComplete
+        ? {
+            bankName: settings!.bankName!.trim(),
+            accountHolderName: settings!.accountHolderName!.trim(),
+            accountNumber: settings!.accountNumber!.trim(),
+            branchName: settings!.branchName!.trim(),
+            branchCode: settings!.branchCode ? settings!.branchCode.trim() : null,
+            bankCode: settings!.bankCode ? settings!.bankCode.trim() : null,
+            paymentInstructions: settings!.paymentInstructions!.trim(),
+            referenceInstructions: settings!.referenceInstructions!.trim(),
+            bankLogoUrl: settings!.bankLogoUrl ? settings!.bankLogoUrl.trim() : null,
+          }
+        : null,
+    };
+  }
+
+  /**
+   * Retrieves a bank deposit submission record for secure streaming to admins.
+   */
+  async getBankDepositSubmission(submissionId: string) {
+    const submission = await this.prisma.bankDepositSubmission.findUnique({
+      where: { id: submissionId },
+      include: {
+        order: {
+          select: {
+            id: true,
+            orderNumber: true,
+            customerName: true,
+            totalCents: true,
+          },
+        },
+      },
+    });
+
+    if (!submission) {
+      throw new NotFoundException(`Bank deposit submission "${submissionId}" not found`);
+    }
+
+    return submission;
   }
 }

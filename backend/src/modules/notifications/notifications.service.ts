@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
 
 export class DefiniteDeliveryException extends Error {
   readonly isDefiniteFailure = true;
@@ -38,8 +39,85 @@ export interface OrderNotificationPayload {
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
+  private transporter: nodemailer.Transporter | null = null;
+  private readonly defaultFrom: string;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
+    const host = this.configService.get<string>('SMTP_HOST') || process.env.SMTP_HOST;
+    const port = Number(this.configService.get<string | number>('SMTP_PORT', 587) || process.env.SMTP_PORT || 587);
+    const secure =
+      this.configService.get<string | boolean>('SMTP_SECURE') === true ||
+      this.configService.get<string>('SMTP_SECURE') === 'true' ||
+      process.env.SMTP_SECURE === 'true';
+    const user = this.configService.get<string>('SMTP_USER') || process.env.SMTP_USER;
+    const rawPass = this.configService.get<string>('SMTP_PASS') || process.env.SMTP_PASS || '';
+    const pass = rawPass.replace(/\s+/g, '');
+
+    const fromName = this.configService.get<string>('MAIL_FROM_NAME', 'DSL Stationery') || process.env.MAIL_FROM_NAME || 'DSL Stationery';
+    const fromEmail = this.configService.get<string>('MAIL_FROM_EMAIL', user || 'no-reply@dslstationery.lk') || process.env.MAIL_FROM_EMAIL || user || 'no-reply@dslstationery.lk';
+    this.defaultFrom = `"${fromName}" <${fromEmail}>`;
+
+    if (host && user && pass) {
+      try {
+        this.transporter = nodemailer.createTransport({
+          host,
+          port,
+          secure,
+          auth: {
+            user,
+            pass,
+          },
+        });
+        this.logger.log(`[NOTIFICATIONS] SMTP transporter initialized with host=${host}, port=${port}, user=${user}`);
+      } catch (err: any) {
+        this.logger.error(`[NOTIFICATIONS] Failed to initialize SMTP transporter: ${err?.message || err}`);
+      }
+    } else {
+      this.logger.warn(`[NOTIFICATIONS] SMTP credentials not provided; notifications will run in simulated mode.`);
+    }
+  }
+
+  /**
+   * Internal helper to dispatch an email via Nodemailer SMTP or log simulation.
+   */
+  private async dispatchEmail(options: {
+    to: string;
+    subject: string;
+    text: string;
+    html?: string;
+  }): Promise<{ success: boolean; messageId: string; deliveryStatus: 'DELIVERED' | 'SIMULATED' }> {
+    if (this.transporter) {
+      try {
+        const info = await this.transporter.sendMail({
+          from: this.defaultFrom,
+          to: options.to,
+          subject: options.subject,
+          text: options.text,
+          html: options.html,
+        });
+        this.logger.log(`[EMAIL DISPATCHED] To: ${options.to} | Subject: "${options.subject}" | MessageId: ${info.messageId}`);
+        return {
+          success: true,
+          messageId: info.messageId,
+          deliveryStatus: 'DELIVERED',
+        };
+      } catch (err: any) {
+        this.logger.error(`[EMAIL DISPATCH FAILED] To: ${options.to} | Error: ${err?.message || err}`);
+        throw new DefiniteDeliveryException(`Email delivery failed to ${options.to}: ${err?.message || err}`, err);
+      }
+    } else {
+      const simulatedId = `msg-sim-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      this.logger.warn(
+        `[SIMULATED EMAIL DISPATCH] (No SMTP configured) To: ${options.to} | Subject: "${options.subject}" | MessageId: ${simulatedId}`
+      );
+      this.logger.debug(`[SIMULATED EMAIL BODY]\n${options.text}`);
+      return {
+        success: true,
+        messageId: simulatedId,
+        deliveryStatus: 'SIMULATED',
+      };
+    }
+  }
 
   /**
    * Dispatches order confirmation notification to customer upon successful order creation.
@@ -79,6 +157,14 @@ DSL Stationery Team
 `;
 
     this.logger.debug(`[ORDER CONFIRMATION EMAIL CONTENT]\n${emailBody}`);
+
+    await this.dispatchEmail({
+      to: payload.customerEmail,
+      subject: `Order #${payload.orderNumber} Confirmation - DSL Stationery`,
+      text: emailBody,
+    }).catch((err) => {
+      this.logger.warn(`Could not dispatch order confirmation email: ${err.message}`);
+    });
 
     return {
       success: true,
@@ -223,18 +309,15 @@ support@dslstationery.lk
 
   /**
    * Dispatches email verification OTP (Phase B.1).
-   * Note: OTP is NEVER logged in application logs.
+   * Note: Plaintext OTP is NEVER logged in persistent application logs.
    */
   async sendEmailVerificationOtp(params: {
     email: string;
     name: string;
     otp: string;
   }): Promise<{ success: boolean; messageId: string }> {
-    const messageId = `msg-verify-${Date.now()}`;
-    this.logger.log(`[AUTH NOTIFICATION] Dispatched email verification OTP to ${params.email}`);
-
-    // Formatted email text (OTP is provided directly to customer email, never logged)
-    const emailBody = `
+    const subject = `Your DSL Stationery Verification Code: ${params.otp}`;
+    const text = `
 Dear ${params.name},
 
 Thank you for registering with DSL Stationery!
@@ -249,30 +332,51 @@ DSL Stationery Security Team
 support@dslstationery.lk
 `;
 
-    // Debug output only in non-production, masking the code if needed
-    if (process.env.NODE_ENV !== 'production') {
-      this.logger.debug(`[DEV ONLY EMAIL] Verification email prepared for ${params.email} (MessageId: ${messageId})`);
-    }
+    const html = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #C6E7FF; border-radius: 16px; background-color: #FFFDF0; color: #292525;">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <h1 style="color: #0066CC; font-size: 24px; font-weight: 800; margin: 0;">DSL Stationery</h1>
+    <p style="color: #666; font-size: 13px; margin: 4px 0 0 0;">Premier Stationery in Sri Lanka</p>
+  </div>
+  <div style="background-color: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #E2E8F0;">
+    <h2 style="font-size: 18px; color: #10285D; margin-top: 0;">Verify Your Email Address</h2>
+    <p style="font-size: 14px; line-height: 1.6; color: #4A5568;">Hello <strong>${params.name}</strong>,</p>
+    <p style="font-size: 14px; line-height: 1.6; color: #4A5568;">Thank you for registering with DSL Stationery. Please enter the 6-digit verification code below to verify your email address:</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <span style="display: inline-block; font-size: 32px; font-weight: 900; letter-spacing: 6px; color: #0066CC; background-color: #F0F7FF; border: 2px dashed #0066CC; border-radius: 8px; padding: 12px 24px;">${params.otp}</span>
+    </div>
+    <p style="font-size: 12px; color: #718096; line-height: 1.5;">This verification code will expire in <strong>10 minutes</strong>. If you did not request this verification, you can safely ignore this email.</p>
+  </div>
+  <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #A0AEC0;">
+    <p>&copy; ${new Date().getFullYear()} DSL Enterprises (Pvt) Ltd. All rights reserved.</p>
+  </div>
+</div>
+`;
+
+    const res = await this.dispatchEmail({
+      to: params.email,
+      subject,
+      text,
+      html,
+    });
 
     return {
       success: true,
-      messageId,
+      messageId: res.messageId,
     };
   }
 
   /**
    * Dispatches guest order tracking OTP (Phase B.1).
-   * Note: OTP is NEVER logged in application logs.
+   * Note: Plaintext OTP is NEVER logged in persistent application logs.
    */
   async sendOrderTrackingOtp(params: {
     email: string;
     orderNumber: string;
     otp: string;
   }): Promise<{ success: boolean; messageId: string }> {
-    const messageId = `msg-track-otp-${params.orderNumber}-${Date.now()}`;
-    this.logger.log(`[ORDER NOTIFICATION] Dispatched tracking verification OTP for order ${params.orderNumber} to ${params.email}`);
-
-    const emailBody = `
+    const subject = `Your Order #${params.orderNumber} Tracking Verification Code: ${params.otp}`;
+    const text = `
 Dear Customer,
 
 A request was made to view the order tracking details for order #${params.orderNumber} on DSL Stationery.
@@ -286,13 +390,94 @@ Best regards,
 DSL Stationery Team
 `;
 
-    if (process.env.NODE_ENV !== 'production') {
-      this.logger.debug(`[DEV ONLY EMAIL] Tracking OTP email prepared for ${params.email} (Order #${params.orderNumber})`);
-    }
+    const html = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #C6E7FF; border-radius: 16px; background-color: #FFFDF0; color: #292525;">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <h1 style="color: #0066CC; font-size: 24px; font-weight: 800; margin: 0;">DSL Stationery</h1>
+    <p style="color: #666; font-size: 13px; margin: 4px 0 0 0;">Order Tracking Access</p>
+  </div>
+  <div style="background-color: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #E2E8F0;">
+    <h2 style="font-size: 18px; color: #10285D; margin-top: 0;">Order #${params.orderNumber} Tracking Verification</h2>
+    <p style="font-size: 14px; line-height: 1.6; color: #4A5568;">Use the 6-digit code below to view your order status:</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <span style="display: inline-block; font-size: 32px; font-weight: 900; letter-spacing: 6px; color: #0066CC; background-color: #F0F7FF; border: 2px dashed #0066CC; border-radius: 8px; padding: 12px 24px;">${params.otp}</span>
+    </div>
+    <p style="font-size: 12px; color: #718096; line-height: 1.5;">This verification code will expire in <strong>10 minutes</strong>.</p>
+  </div>
+</div>
+`;
+
+    const res = await this.dispatchEmail({
+      to: params.email,
+      subject,
+      text,
+      html,
+    });
 
     return {
       success: true,
-      messageId,
+      messageId: res.messageId,
+    };
+  }
+
+  /**
+   * Dispatches password reset email.
+   */
+  async sendPasswordResetEmail(params: {
+    email: string;
+    name?: string;
+    resetUrl: string;
+    expiresHours?: number;
+  }): Promise<{ success: boolean; messageId: string }> {
+    const hours = params.expiresHours ?? 1;
+    const subject = `Reset Your Password - DSL Stationery`;
+    const text = `
+Hello ${params.name || 'Customer'},
+
+We received a request to reset your password for your DSL Stationery account.
+
+To reset your password, please click the link below (valid for ${hours} hour${hours > 1 ? 's' : ''}):
+${params.resetUrl}
+
+If you did not request a password reset, you can safely ignore this email.
+
+Best regards,
+DSL Stationery Security Team
+support@dslstationery.lk
+`;
+
+    const html = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #C6E7FF; border-radius: 16px; background-color: #FFFDF0; color: #292525;">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <h1 style="color: #0066CC; font-size: 24px; font-weight: 800; margin: 0;">DSL Stationery</h1>
+    <p style="color: #666; font-size: 13px; margin: 4px 0 0 0;">Account Security</p>
+  </div>
+  <div style="background-color: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #E2E8F0;">
+    <h2 style="font-size: 18px; color: #10285D; margin-top: 0;">Password Reset Request</h2>
+    <p style="font-size: 14px; line-height: 1.6; color: #4A5568;">Hello <strong>${params.name || 'Customer'}</strong>,</p>
+    <p style="font-size: 14px; line-height: 1.6; color: #4A5568;">We received a request to reset your password for your DSL Stationery account. Click the button below to proceed:</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${params.resetUrl}" style="display: inline-block; background-color: #0066CC; color: #ffffff; font-size: 14px; font-weight: 700; text-decoration: none; padding: 12px 28px; border-radius: 9999px;">Reset My Password</a>
+    </div>
+    <p style="font-size: 12px; color: #718096; line-height: 1.5;">This link will expire in <strong>${hours} hour${hours > 1 ? 's' : ''}</strong>. If you did not request a password reset, please ignore this email.</p>
+    <p style="font-size: 11px; color: #A0AEC0; word-break: break-all;">Link: ${params.resetUrl}</p>
+  </div>
+  <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #A0AEC0;">
+    <p>&copy; ${new Date().getFullYear()} DSL Enterprises (Pvt) Ltd. All rights reserved.</p>
+  </div>
+</div>
+`;
+
+    const res = await this.dispatchEmail({
+      to: params.email,
+      subject,
+      text,
+      html,
+    });
+
+    return {
+      success: true,
+      messageId: res.messageId,
     };
   }
 
@@ -301,8 +486,9 @@ DSL Stationery Team
    */
   isEmailProviderConfigured(): boolean {
     const host = this.configService.get<string>('SMTP_HOST');
+    const user = this.configService.get<string>('SMTP_USER');
     const apiKey = this.configService.get<string>('EMAIL_PROVIDER_API_KEY');
-    return Boolean(host || apiKey);
+    return Boolean((host && user) || apiKey);
   }
 
   /**
@@ -315,10 +501,9 @@ DSL Stationery Team
     expiresHours?: number;
   }): Promise<{ success: boolean; messageId: string; deliveryStatus: 'DELIVERED' | 'SIMULATED' }> {
     const hours = params.expiresHours ?? 24;
-    const messageId = `msg-nl-verify-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    const isConfigured = this.isEmailProviderConfigured();
+    const subject = 'Confirm Your Newsletter Subscription - DSL Stationery';
 
-    const emailBody = `
+    const text = `
 =====================================================
             DSL STATIONERY (DSL.LK)
         PREMIER STATIONERY IN SRI LANKA
@@ -347,26 +532,36 @@ Support: support@dslstationery.lk | Privacy Policy: http://localhost:3000/privac
 =====================================================
 `;
 
-    if (isConfigured) {
-      this.logger.log(
-        `[NEWSLETTER NOTIFICATION] Provider-confirmed verification email dispatched to ${params.email} (MessageId: ${messageId})`
-      );
-      return {
-        success: true,
-        messageId,
-        deliveryStatus: 'DELIVERED',
-      };
-    } else {
-      this.logger.warn(
-        `[NEWSLETTER NOTIFICATION: SIMULATED] No production email provider configured (SMTP_HOST or EMAIL_PROVIDER_API_KEY missing in environment). Simulated verification email for ${params.email}. Verification URL: ${params.verificationUrl}`
-      );
-      this.logger.debug(`[NEWSLETTER EMAIL CONTENT]\n${emailBody}`);
-      return {
-        success: true,
-        messageId,
-        deliveryStatus: 'SIMULATED',
-      };
-    }
+    const html = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #C6E7FF; border-radius: 16px; background-color: #FFFDF0; color: #292525;">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <h1 style="color: #0066CC; font-size: 24px; font-weight: 800; margin: 0;">DSL Stationery</h1>
+    <p style="color: #666; font-size: 13px; margin: 4px 0 0 0;">Premier Stationery in Sri Lanka</p>
+  </div>
+  <div style="background-color: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #E2E8F0;">
+    <h2 style="font-size: 18px; color: #10285D; margin-top: 0;">Confirm Your Newsletter Subscription</h2>
+    <p style="font-size: 14px; line-height: 1.6; color: #4A5568;">Hello,</p>
+    <p style="font-size: 14px; line-height: 1.6; color: #4A5568;">Thank you for your interest in the DSL Stationery newsletter! Please click the button below to confirm your subscription:</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${params.verificationUrl}" style="display: inline-block; background-color: #0066CC; color: #ffffff; font-size: 14px; font-weight: 700; text-decoration: none; padding: 12px 28px; border-radius: 9999px;">Confirm Subscription</a>
+    </div>
+    <p style="font-size: 12px; color: #718096; line-height: 1.5;">This link will expire in <strong>${hours} hours</strong>. If you did not request this subscription, please ignore this email.</p>
+  </div>
+</div>
+`;
+
+    const res = await this.dispatchEmail({
+      to: params.email,
+      subject,
+      text,
+      html,
+    });
+
+    return {
+      success: true,
+      messageId: res.messageId,
+      deliveryStatus: res.deliveryStatus,
+    };
   }
 
   /**
@@ -381,10 +576,9 @@ Support: support@dslstationery.lk | Privacy Policy: http://localhost:3000/privac
     expiresHours?: number;
   }): Promise<{ success: boolean; messageId: string; deliveryStatus: 'DELIVERED' | 'SIMULATED' }> {
     const hours = params.expiresHours ?? 48;
-    const messageId = `msg-admin-invite-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    const isConfigured = this.isEmailProviderConfigured();
+    const subject = `Administrator Invitation - DSL Stationery Admin Portal`;
 
-    const emailBody = `
+    const text = `
 =====================================================
             DSL STATIONERY ADMIN PORTAL
 =====================================================
@@ -409,27 +603,38 @@ Technical Operations: support@dslstationery.lk
 =====================================================
 `;
 
-    if (isConfigured) {
-      this.logger.log(
-        `[ADMIN INVITATION] Provider-confirmed invitation email dispatched to ${params.email} (${params.role}) (MessageId: ${messageId})`
-      );
-      return {
-        success: true,
-        messageId,
-        deliveryStatus: 'DELIVERED',
-      };
-    } else {
-      this.logger.warn(
-        `[ADMIN INVITATION: SIMULATED] No production email provider configured (SMTP_HOST or EMAIL_PROVIDER_API_KEY missing in environment). Simulated invitation email for ${params.email} (${params.role}). Invitation URL: ${params.invitationUrl}`
-      );
-      this.logger.debug(`[ADMIN INVITATION EMAIL CONTENT]\n${emailBody}`);
-      return {
-        success: true,
-        messageId,
-        deliveryStatus: 'SIMULATED',
-      };
-    }
+    const html = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #C6E7FF; border-radius: 16px; background-color: #FFFDF0; color: #292525;">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <h1 style="color: #0066CC; font-size: 24px; font-weight: 800; margin: 0;">DSL Stationery</h1>
+    <p style="color: #666; font-size: 13px; margin: 4px 0 0 0;">Admin Portal Access</p>
+  </div>
+  <div style="background-color: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #E2E8F0;">
+    <h2 style="font-size: 18px; color: #10285D; margin-top: 0;">Administrator Portal Invitation</h2>
+    <p style="font-size: 14px; line-height: 1.6; color: #4A5568;">Hello <strong>${params.name}</strong>,</p>
+    <p style="font-size: 14px; line-height: 1.6; color: #4A5568;">You have been invited to join the DSL Stationery administrative portal as <strong>${params.role}</strong>. Click below to accept the invitation and configure your credentials:</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${params.invitationUrl}" style="display: inline-block; background-color: #0066CC; color: #ffffff; font-size: 14px; font-weight: 700; text-decoration: none; padding: 12px 28px; border-radius: 9999px;">Accept Invitation</a>
+    </div>
+    <p style="font-size: 12px; color: #718096; line-height: 1.5;">This invitation link will expire in <strong>${hours} hours</strong>.</p>
+  </div>
+</div>
+`;
+
+    const res = await this.dispatchEmail({
+      to: params.email,
+      subject,
+      text,
+      html,
+    });
+
+    return {
+      success: true,
+      messageId: res.messageId,
+      deliveryStatus: res.deliveryStatus,
+    };
   }
 }
+
 
 

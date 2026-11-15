@@ -1,0 +1,10 @@
+sku,name,category,brand,sellingPrice,costPrice,stockQuantity,lowStockThreshold,description
+SAFE-TEST-001,Safe Test Pen,Pens,Speed,150.00,100.00,25,5,A safe test product
+SAFE-TEST-001,Duplicate SKU In File,Pens,Speed,150.00,100.00,25,5,Duplicate in file
+,Missing Name Product,Pens,Speed,150.00,100.00,25,5,Missing name
+SAFE-TEST-002,Invalid Price Product,Pens,Speed,-50.00,100.00,25,5,Invalid price
+SAFE-TEST-003,Invalid Stock Product,Pens,Speed,150.00,100.00,-10,5,Invalid stock
+COLLISION-SKU-1793700760720,Existing DB Product,Pens,Speed,200.00,150.00,50,5,Collision with DB
+SAFE-TEST-004,Unknown Category Product,NonExistentCategoryXYZ,Speed,150.00,100.00,10,5,Bad category
+SAFE-TEST-005,Unknown Brand Product,Pens,NonExistentBrandXYZ,150.00,100.00,10,5,Bad brand
+

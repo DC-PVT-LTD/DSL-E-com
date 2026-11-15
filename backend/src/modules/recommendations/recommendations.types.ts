@@ -37,6 +37,8 @@ export interface RecommendedProductItem {
   lowStock: boolean;
   reason: string;
   priority: number;
+  imageUrl?: string | null;
+  images?: string[];
   substitutes: Array<{
     id: string;
     name: string;
@@ -44,6 +46,8 @@ export interface RecommendedProductItem {
     sku: string;
     priceCents: number;
     stockQuantity: number;
+    imageUrl?: string | null;
+    images?: string[];
   }>;
 }
 

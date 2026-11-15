@@ -13,6 +13,9 @@ import {
   UpdateCartItemDto,
   MergeCartDto,
   AddSchoolPackToCartDto,
+  AddBulkItemsToCartDto,
+  BulkCartResponse,
+  BulkCartItemResult,
   CartResponse,
   CartItemResponse,
 } from './dto/cart.dto';
@@ -167,6 +170,194 @@ export class CartService {
     }
 
     return this.buildCartResponse(cart.id, userId, resolvedSessionId || sessionId);
+  }
+
+  /**
+   * Add multiple items to cart in bulk.
+   * Atomically evaluates server stock, merges with existing cart lines,
+   * recalculates prices, and returns per-item results and updated cart.
+   */
+  async addBulkItems(
+    dto: AddBulkItemsToCartDto,
+    userId?: string | null,
+    sessionId?: string | null
+  ): Promise<BulkCartResponse> {
+    const { cart, sessionId: resolvedSessionId } = await this.getOrCreateCartRecord(
+      userId,
+      sessionId
+    );
+
+    const results: BulkCartItemResult[] = [];
+    let addedCount = 0;
+    let failedCount = 0;
+
+    for (const item of dto.items) {
+      try {
+        if (!item.productId || item.quantity <= 0) {
+          results.push({
+            productId: item.productId,
+            variantId: item.variantId || null,
+            requestedQuantity: item.quantity,
+            addedQuantity: 0,
+            success: false,
+            error: 'Invalid product or quantity',
+          });
+          failedCount++;
+          continue;
+        }
+
+        const product = await this.prisma.product.findUnique({
+          where: { id: item.productId },
+          include: { variants: true },
+        });
+
+        if (!product) {
+          results.push({
+            productId: item.productId,
+            variantId: item.variantId || null,
+            requestedQuantity: item.quantity,
+            addedQuantity: 0,
+            success: false,
+            error: `Product with ID '${item.productId}' not found`,
+          });
+          failedCount++;
+          continue;
+        }
+
+        if (!product.isActive) {
+          results.push({
+            productId: item.productId,
+            variantId: item.variantId || null,
+            sku: product.sku,
+            name: product.name,
+            requestedQuantity: item.quantity,
+            addedQuantity: 0,
+            success: false,
+            error: `Product '${product.name}' is inactive/unavailable`,
+          });
+          failedCount++;
+          continue;
+        }
+
+        let variant: any = null;
+        if (item.variantId) {
+          variant = product.variants.find((v) => v.id === item.variantId);
+          if (!variant || !variant.isActive) {
+            results.push({
+              productId: item.productId,
+              variantId: item.variantId,
+              sku: product.sku,
+              name: product.name,
+              requestedQuantity: item.quantity,
+              addedQuantity: 0,
+              success: false,
+              error: `Variant is invalid or inactive`,
+            });
+            failedCount++;
+            continue;
+          }
+        }
+
+        const availableStock = variant ? variant.stockQuantity : product.stockQuantity;
+        if (availableStock <= 0) {
+          results.push({
+            productId: item.productId,
+            variantId: item.variantId || null,
+            sku: variant ? variant.sku : product.sku,
+            name: variant ? `${product.name} - ${variant.name}` : product.name,
+            requestedQuantity: item.quantity,
+            addedQuantity: 0,
+            success: false,
+            error: `'${variant ? variant.name : product.name}' is currently out of stock`,
+          });
+          failedCount++;
+          continue;
+        }
+
+        // Check for existing line to merge
+        const existingItem = await this.prisma.cartItem.findFirst({
+          where: {
+            cartId: cart.id,
+            productId: item.productId,
+            variantId: item.variantId || null,
+          },
+        });
+
+        const currentInCart = existingItem ? existingItem.quantity : 0;
+        const maxCanAdd = Math.max(0, availableStock - currentInCart);
+
+        if (maxCanAdd <= 0) {
+          results.push({
+            productId: item.productId,
+            variantId: item.variantId || null,
+            sku: variant ? variant.sku : product.sku,
+            name: variant ? `${product.name} - ${variant.name}` : product.name,
+            requestedQuantity: item.quantity,
+            addedQuantity: 0,
+            success: false,
+            error: `Already at maximum available stock in cart (${currentInCart}/${availableStock})`,
+          });
+          failedCount++;
+          continue;
+        }
+
+        const qtyToAdd = Math.min(item.quantity, maxCanAdd);
+
+        if (existingItem) {
+          await this.prisma.cartItem.update({
+            where: { id: existingItem.id },
+            data: { quantity: existingItem.quantity + qtyToAdd },
+          });
+        } else {
+          await this.prisma.cartItem.create({
+            data: {
+              cartId: cart.id,
+              productId: item.productId,
+              variantId: item.variantId || null,
+              quantity: qtyToAdd,
+            },
+          });
+        }
+
+        results.push({
+          productId: item.productId,
+          variantId: item.variantId || null,
+          sku: variant ? variant.sku : product.sku,
+          name: variant ? `${product.name} - ${variant.name}` : product.name,
+          requestedQuantity: item.quantity,
+          addedQuantity: qtyToAdd,
+          success: true,
+          error:
+            qtyToAdd < item.quantity
+              ? `Only ${qtyToAdd} added due to stock limit (${availableStock})`
+              : undefined,
+        });
+        addedCount++;
+      } catch (err: any) {
+        results.push({
+          productId: item.productId,
+          variantId: item.variantId || null,
+          requestedQuantity: item.quantity,
+          addedQuantity: 0,
+          success: false,
+          error: err?.message || 'Error processing item',
+        });
+        failedCount++;
+      }
+    }
+
+    const updatedCart = await this.buildCartResponse(
+      cart.id,
+      userId,
+      resolvedSessionId || sessionId
+    );
+
+    return {
+      cart: updatedCart,
+      results,
+      addedCount,
+      failedCount,
+    };
   }
 
   /**

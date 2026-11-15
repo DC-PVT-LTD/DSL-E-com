@@ -9,6 +9,31 @@ import { INITIAL_BRANDS } from '@/mocks/brands';
 
 const BRAND_STORAGE_KEY = 'dsl_brands_data_v1';
 
+export function deduplicateBrands(brands: Brand[]): Brand[] {
+  const seenIds = new Set<string>();
+  const seenSlugs = new Set<string>();
+  const seenNames = new Set<string>();
+  const result: Brand[] = [];
+
+  for (const b of brands) {
+    if (!b) continue;
+    const idKey = (b.id || '').toLowerCase().trim();
+    const slugKey = (b.slug || '').toLowerCase().trim();
+    const nameKey = (b.name || '').toLowerCase().trim();
+
+    if (idKey && seenIds.has(idKey)) continue;
+    if (slugKey && seenSlugs.has(slugKey)) continue;
+    if (nameKey && seenNames.has(nameKey)) continue;
+
+    if (idKey) seenIds.add(idKey);
+    if (slugKey) seenSlugs.add(slugKey);
+    if (nameKey) seenNames.add(nameKey);
+
+    result.push(b);
+  }
+  return result;
+}
+
 export interface BrandQueryOptions {
   search?: string;
   featured?: boolean;
@@ -29,14 +54,15 @@ class BrandService {
       try {
         const stored = localStorage.getItem(BRAND_STORAGE_KEY);
         if (stored) {
-          this.brands = JSON.parse(stored);
+          this.brands = deduplicateBrands(JSON.parse(stored));
+          localStorage.setItem(BRAND_STORAGE_KEY, JSON.stringify(this.brands));
           return;
         }
       } catch (err) {
         console.error('Error loading brands from storage:', err);
       }
     }
-    this.brands = [...INITIAL_BRANDS];
+    this.brands = deduplicateBrands([...INITIAL_BRANDS]);
   }
 
   private persistAndNotify() {
@@ -77,14 +103,70 @@ class BrandService {
       });
 
       if (res.success && Array.isArray(res.data)) {
-        this.brands = res.data;
+        // Filter out test and non-stationery brands (e.g. Wetex, Stage4)
+        const validBrands = res.data.filter(
+          (b) =>
+            !b.slug.includes('wetex') &&
+            !b.slug.includes('stage4') &&
+            !b.name.toLowerCase().includes('stage4') &&
+            !b.name.toLowerCase().includes('wetex')
+        );
+        this.brands = deduplicateBrands([...validBrands, ...INITIAL_BRANDS]);
         this.persistAndNotify();
-        return res.data;
+        return [...this.brands];
       }
     } catch (err) {
       console.warn('Could not fetch brands from backend API, using local fallback:', err);
     }
     return [...this.brands];
+  }
+
+  /**
+   * Fetches accurate brand analytics directly from backend.
+   */
+  public async fetchBrandAnalytics(): Promise<{
+    totalBrands: number;
+    featuredBrands: number;
+    brandsWithProducts: number;
+    emptyBrands: number;
+    topBrands: Array<{ id: string; name: string; count: number }>;
+  }> {
+    const res = await apiClient.get<BackendApiResponse<any>>('brands/admin/analytics');
+    return res.data;
+  }
+
+  /**
+   * Exports brands to CSV or Excel directly from backend streaming endpoint.
+   */
+  public async exportBrands(
+    format: 'csv' | 'xlsx' = 'xlsx',
+    selectedIds?: string[]
+  ): Promise<Blob> {
+    const params: Record<string, string | undefined> = { format };
+    if (selectedIds && selectedIds.length > 0) {
+      params.selectedIds = selectedIds.join(',');
+    }
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('dsl_admin_token') : null;
+    const queryString = new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, v]) => v !== undefined)
+        .map(([k, v]) => [k, String(v)])
+    ).toString();
+
+    const response = await fetch(`http://localhost:4000/api/v1/brands/export?${queryString}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Export failed with status ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.blob();
   }
 
   /**

@@ -4,7 +4,6 @@ import React from 'react';
 import { FilterParams } from '@/types/common';
 import { ProductCategory, Brand } from '@/types/product';
 import { Filter, RotateCcw, Check } from 'lucide-react';
-import { formatLKR } from '@/lib/currency';
 
 interface ProductFiltersProps {
   categories: ProductCategory[];
@@ -24,16 +23,17 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`bg-white rounded-3xl border border-[#C6E7FF]/70 p-5 space-y-6 shadow-xs ${className}`}>
+    <div className={`bg-white rounded-3xl border border-slate-200/80 p-5 space-y-6 shadow-xs ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-[#C6E7FF]/40">
-        <div className="flex items-center gap-2 text-sm font-bold text-[#292525]">
-          <Filter className="w-4 h-4 text-[#0066CC]" />
+      <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+        <div className="flex items-center gap-2 text-sm font-black text-[#09285C]">
+          <Filter className="w-4 h-4 text-[#0866E8]" />
           <span>Filters</span>
         </div>
         <button
+          type="button"
           onClick={onReset}
-          className="text-xs text-[#0066CC] hover:underline flex items-center gap-1 font-semibold transition-colors"
+          className="text-xs text-[#0866E8] hover:underline flex items-center gap-1 font-bold transition-colors cursor-pointer"
         >
           <RotateCcw className="w-3 h-3" />
           <span>Reset All</span>
@@ -42,26 +42,33 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
 
       {/* Categories */}
       <div>
-        <h4 className="text-xs font-bold text-[#292525] uppercase tracking-wider mb-3">
+        <h4 className="text-xs font-black text-[#09285C] uppercase tracking-wider mb-2.5">
           Categories
         </h4>
-        <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+        <div className="space-y-1 max-h-56 overflow-y-auto pr-1">
           <button
+            type="button"
             onClick={() => onFilterChange({ ...filters, category: undefined })}
-            className={`w-full flex items-center justify-between text-left text-xs px-3 py-1.5 rounded-full transition-colors ${
-              !filters.category ? 'bg-[#0066CC] text-white font-bold shadow-xs' : 'text-[#292525]/80 hover:bg-[#FFFDF0]'
+            className={`w-full flex items-center justify-between text-left text-xs px-3 py-2 rounded-xl transition-colors cursor-pointer ${
+              !filters.category ? 'bg-[#09285C] text-white font-bold shadow-xs' : 'text-[#09285C]/80 hover:bg-[#F7FAFF]'
             }`}
           >
             <span>All Categories</span>
           </button>
-          {categories.map((cat) => {
-            const isSelected = filters.category === cat.id || filters.category === cat.slug;
+          {categories.map((cat, idx) => {
+            const currentCat = (filters.category || '').toLowerCase();
+            const isSelected =
+              Boolean(currentCat) &&
+              (currentCat === cat.id.toLowerCase() ||
+                currentCat === (cat.slug || '').toLowerCase() ||
+                currentCat === cat.id.toLowerCase().replace(/^cat-/, ''));
             return (
               <button
-                key={cat.id}
-                onClick={() => onFilterChange({ ...filters, category: cat.id })}
-                className={`w-full flex items-center justify-between text-left text-xs px-3 py-1.5 rounded-full transition-colors ${
-                  isSelected ? 'bg-[#0066CC] text-white font-bold shadow-xs' : 'text-[#292525]/80 hover:bg-[#FFFDF0]'
+                key={`filter-cat-${cat.id}-${cat.slug || idx}`}
+                type="button"
+                onClick={() => onFilterChange({ ...filters, category: cat.slug || cat.id })}
+                className={`w-full flex items-center justify-between text-left text-xs px-3 py-2 rounded-xl transition-colors cursor-pointer ${
+                  isSelected ? 'bg-[#09285C] text-white font-bold shadow-xs' : 'text-[#09285C]/80 hover:bg-[#F7FAFF]'
                 }`}
               >
                 <span className="truncate">{cat.name}</span>
@@ -73,27 +80,29 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
       </div>
 
       {/* Brands */}
-      <div className="pt-4 border-t border-[#C6E7FF]/40">
-        <h4 className="text-xs font-bold text-[#292525] uppercase tracking-wider mb-3">
+      <div className="pt-4 border-t border-slate-100">
+        <h4 className="text-xs font-black text-[#09285C] uppercase tracking-wider mb-2.5">
           Brands
         </h4>
-        <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+        <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
           <button
+            type="button"
             onClick={() => onFilterChange({ ...filters, brand: undefined })}
-            className={`w-full flex items-center justify-between text-left text-xs px-3 py-1.5 rounded-full transition-colors ${
-              !filters.brand ? 'bg-[#0066CC] text-white font-bold shadow-xs' : 'text-[#292525]/80 hover:bg-[#FFFDF0]'
+            className={`w-full flex items-center justify-between text-left text-xs px-3 py-2 rounded-xl transition-colors cursor-pointer ${
+              !filters.brand ? 'bg-[#09285C] text-white font-bold shadow-xs' : 'text-[#09285C]/80 hover:bg-[#F7FAFF]'
             }`}
           >
             <span>All Brands</span>
           </button>
-          {brands.map((b) => {
+          {brands.map((b, idx) => {
             const isSelected = filters.brand === b.id || filters.brand === b.slug;
             return (
               <button
-                key={b.id}
+                key={`filter-brand-${b.id}-${b.slug || idx}`}
+                type="button"
                 onClick={() => onFilterChange({ ...filters, brand: b.id })}
-                className={`w-full flex items-center justify-between text-left text-xs px-3 py-1.5 rounded-full transition-colors ${
-                  isSelected ? 'bg-[#0066CC] text-white font-bold shadow-xs' : 'text-[#292525]/80 hover:bg-[#FFFDF0]'
+                className={`w-full flex items-center justify-between text-left text-xs px-3 py-2 rounded-xl transition-colors cursor-pointer ${
+                  isSelected ? 'bg-[#09285C] text-white font-bold shadow-xs' : 'text-[#09285C]/80 hover:bg-[#F7FAFF]'
                 }`}
               >
                 <span className="truncate">{b.name}</span>
@@ -105,13 +114,13 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
       </div>
 
       {/* Price Range */}
-      <div className="pt-4 border-t border-[#C6E7FF]/40">
-        <h4 className="text-xs font-bold text-[#292525] uppercase tracking-wider mb-3">
+      <div className="pt-4 border-t border-slate-100">
+        <h4 className="text-xs font-black text-[#09285C] uppercase tracking-wider mb-2.5">
           Price Range (LKR)
         </h4>
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div>
-            <label className="text-[10px] text-[#292525]/60 block mb-1">Min Price (Rs.)</label>
+            <label className="text-[10px] text-[#64748B] block mb-1 font-semibold">Min (Rs.)</label>
             <input
               type="number"
               placeholder="0"
@@ -120,11 +129,11 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
                 const val = e.target.value ? Number(e.target.value) * 100 : undefined;
                 onFilterChange({ ...filters, minPrice: val });
               }}
-              className="w-full px-3 py-1.5 border border-[#C6E7FF] rounded-full focus:outline-none focus:ring-2 focus:ring-[#0066CC] bg-[#FFFDF0]"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-hidden focus:border-[#0866E8] bg-[#F7FAFF] text-xs font-semibold text-[#09285C]"
             />
           </div>
           <div>
-            <label className="text-[10px] text-[#292525]/60 block mb-1">Max Price (Rs.)</label>
+            <label className="text-[10px] text-[#64748B] block mb-1 font-semibold">Max (Rs.)</label>
             <input
               type="number"
               placeholder="3,000"
@@ -133,25 +142,24 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
                 const val = e.target.value ? Number(e.target.value) * 100 : undefined;
                 onFilterChange({ ...filters, maxPrice: val });
               }}
-              className="w-full px-3 py-1.5 border border-[#C6E7FF] rounded-full focus:outline-none focus:ring-2 focus:ring-[#0066CC] bg-[#FFFDF0]"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-hidden focus:border-[#0866E8] bg-[#F7FAFF] text-xs font-semibold text-[#09285C]"
             />
           </div>
         </div>
       </div>
 
       {/* In Stock Only Checkbox */}
-      <div className="pt-4 border-t border-[#C6E7FF]/40">
-        <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#292525]">
+      <div className="pt-4 border-t border-slate-100">
+        <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-[#09285C] touch-target">
           <input
             type="checkbox"
             checked={!!filters.inStockOnly}
             onChange={(e) => onFilterChange({ ...filters, inStockOnly: e.target.checked })}
-            className="w-4 h-4 rounded border-[#C6E7FF] text-[#0066CC] focus:ring-[#0066CC]"
+            className="w-4 h-4 rounded-md border-slate-300 text-[#0866E8] focus:ring-[#0866E8] cursor-pointer"
           />
-          <span>In Stock Only</span>
+          <span>In Stock Items Only</span>
         </label>
       </div>
     </div>
-
   );
 };

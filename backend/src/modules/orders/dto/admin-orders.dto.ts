@@ -82,22 +82,61 @@ export const adminCreateReturnSchema = z.object({
 
 export type AdminCreateReturnDto = z.infer<typeof adminCreateReturnSchema>;
 
-export const adminProcessReturnSchema = z.object({
-  action: z.enum(['APPROVE', 'REJECT', 'CONFIRM_RECEIVED']),
-  rejectionReason: z.string().optional(),
-  restockItems: z.boolean().default(true),
-});
+export const adminProcessReturnSchema = z
+  .object({
+    action: z.enum(['APPROVE', 'REJECT', 'CONFIRM_RECEIVED']),
+    rejectionReason: z.string().trim().optional(),
+    restockItems: z.boolean().default(true),
+  })
+  .superRefine((data, ctx) => {
+    if (data.action === 'REJECT' && (!data.rejectionReason || !data.rejectionReason.trim())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Rejection reason is required when rejecting a return request',
+        path: ['rejectionReason'],
+      });
+    }
+  });
 
 export type AdminProcessReturnDto = z.infer<typeof adminProcessReturnSchema>;
 
 export const adminProcessRefundSchema = z.object({
   amountCents: z.number().int().positive('Refund amount must be greater than zero'),
   method: z.string().trim().min(1, 'Refund method is required'),
-  reference: z.string().optional(),
   reason: z.string().trim().min(1, 'Refund reason is required'),
+  reference: z.string().trim().optional(),
+  idempotencyKey: z.string().trim().optional(),
+  maskedAccountNumber: z.string().trim().optional(),
+  orderReturnRequestId: z.string().trim().optional(),
 });
 
 export type AdminProcessRefundDto = z.infer<typeof adminProcessRefundSchema>;
+
+export const adminApproveRefundSchema = z.object({
+  notes: z.string().trim().optional(),
+});
+export type AdminApproveRefundDto = z.infer<typeof adminApproveRefundSchema>;
+
+export const adminProcessRefundExecutionSchema = z.object({
+  notes: z.string().trim().optional(),
+});
+export type AdminProcessRefundExecutionDto = z.infer<typeof adminProcessRefundExecutionSchema>;
+
+export const adminCompleteRefundSchema = z.object({
+  externalReference: z.string().trim().min(1, 'External transaction reference is required to complete refund'),
+  notes: z.string().trim().optional(),
+});
+export type AdminCompleteRefundDto = z.infer<typeof adminCompleteRefundSchema>;
+
+export const adminRejectRefundSchema = z.object({
+  rejectionReason: z.string().trim().min(1, 'Rejection reason is required'),
+});
+export type AdminRejectRefundDto = z.infer<typeof adminRejectRefundSchema>;
+
+export const adminFailRefundSchema = z.object({
+  failureReason: z.string().trim().min(1, 'Failure reason is required'),
+});
+export type AdminFailRefundDto = z.infer<typeof adminFailRefundSchema>;
 
 export const adminAddNoteSchema = z.object({
   note: z.string().trim().min(1, 'Note content is required'),
@@ -105,4 +144,25 @@ export const adminAddNoteSchema = z.object({
 });
 
 export type AdminAddNoteDto = z.infer<typeof adminAddNoteSchema>;
+
+export const adminReconciliationQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  search: z.string().trim().optional(),
+  paymentMethod: z.string().trim().optional(),
+  paymentStatus: z.string().trim().optional(),
+  refundStatus: z.string().trim().optional(),
+  hasDiscrepancy: z
+    .preprocess((val) => {
+      if (val === 'true' || val === true) return true;
+      if (val === 'false' || val === false) return false;
+      return undefined;
+    }, z.boolean().optional())
+    .optional(),
+  startDate: z.string().trim().optional(),
+  endDate: z.string().trim().optional(),
+});
+
+export type AdminReconciliationQueryDto = z.infer<typeof adminReconciliationQuerySchema>;
+
 

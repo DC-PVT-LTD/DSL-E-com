@@ -10,13 +10,6 @@ export interface WhatsAppValidationResult {
   error?: string;
 }
 
-/**
- * Retrieves the configured WhatsApp Business contact number.
- * Priority:
- * 1. Admin-saved store settings in localStorage
- * 2. Public environment variable NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER
- * 3. Default fallback if defined
- */
 export function getWhatsAppBusinessNumber(): string {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(WHATSAPP_STORAGE_KEY);

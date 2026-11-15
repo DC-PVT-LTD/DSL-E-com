@@ -8,6 +8,7 @@ import {
   BackendApiResponse,
   BackendPaginatedResponse,
 } from '@/lib/api/apiClient';
+import { INITIAL_SCHOOL_PACKS } from '@/mocks/school-packs';
 
 export interface SchoolPackQueryParams {
   grade?: string;
@@ -20,7 +21,7 @@ export interface SchoolPackQueryParams {
 
 class SchoolPackService {
   private listeners: Set<() => void> = new Set();
-  private cachedPacks: SchoolPack[] = [];
+  private cachedPacks: SchoolPack[] = [...INITIAL_SCHOOL_PACKS];
   private cachedConfig: SchoolPackConfig | null = null;
 
   public subscribe(listener: () => void): () => void {
@@ -88,8 +89,24 @@ class SchoolPackService {
         total: res.meta?.totalItems ?? res.data?.length ?? 0,
       };
     } catch (err) {
-      console.error('Failed to fetch school packs:', err);
-      return { items: this.cachedPacks, total: this.cachedPacks.length };
+      console.warn('Failed to fetch school packs from backend API, using local fallback:', err);
+      let items = [...this.cachedPacks];
+      if (params?.grade && params.grade !== 'all') {
+        items = items.filter((p) => p.grade.toLowerCase() === params.grade?.toLowerCase());
+      }
+      if (params?.tier && params.tier !== 'all') {
+        items = items.filter((p) => p.tier.toLowerCase() === params.tier?.toLowerCase());
+      }
+      if (params?.search) {
+        const q = params.search.toLowerCase();
+        items = items.filter(
+          (p) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
+        );
+      }
+      const page = params?.page || 1;
+      const limit = params?.limit || items.length || 10;
+      const paginated = items.slice((page - 1) * limit, page * limit);
+      return { items: paginated, total: items.length };
     }
   }
 
@@ -103,8 +120,8 @@ class SchoolPackService {
       );
       return res.data;
     } catch (err) {
-      console.error(`Failed to fetch school pack '${idOrSlug}':`, err);
-      return null;
+      console.warn(`Failed to fetch school pack '${idOrSlug}', using fallback:`, err);
+      return this.getById(idOrSlug) || null;
     }
   }
 
@@ -122,7 +139,7 @@ class SchoolPackService {
       );
       return res.data;
     } catch (err) {
-      console.error(`Failed to calculate customized pricing for pack '${idOrSlug}':`, err);
+      console.warn(`Failed to calculate customized pricing for pack '${idOrSlug}':`, err);
       return null;
     }
   }
@@ -162,7 +179,7 @@ class SchoolPackService {
       );
       return res.data;
     } catch (err) {
-      console.error(`Failed to fetch admin school pack '${id}':`, err);
+      console.warn(`Failed to fetch admin school pack '${id}':`, err);
       return null;
     }
   }
@@ -255,7 +272,7 @@ class SchoolPackService {
 
   // Synchronous fallback helpers
   public resetToDefault(): void {
-    this.cachedPacks = [];
+    this.cachedPacks = [...INITIAL_SCHOOL_PACKS];
     this.cachedConfig = null;
     this.notify();
   }
@@ -265,7 +282,10 @@ class SchoolPackService {
   }
 
   public getById(id: string): SchoolPack | undefined {
-    return this.cachedPacks.find((p) => p.id === id || p.slug === id);
+    return (
+      this.cachedPacks.find((p) => p.id === id || p.slug === id) ||
+      INITIAL_SCHOOL_PACKS.find((p) => p.id === id || p.slug === id)
+    );
   }
 }
 

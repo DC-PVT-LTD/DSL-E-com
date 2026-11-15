@@ -21,6 +21,7 @@ describe('CategoriesService', () => {
         count: vi.fn(),
         findMany: vi.fn(),
       },
+      $queryRaw: vi.fn(),
     };
 
     service = new CategoriesService(mockPrisma as unknown as PrismaService);
@@ -153,6 +154,47 @@ describe('CategoriesService', () => {
 
       const result = await service.delete('cat-empty');
       expect(result.id).toBe('cat-empty');
+    });
+  });
+
+  describe('getAdminAnalytics', () => {
+    it('returns calculated category counts and usage from database', async () => {
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([{ total: 21, parents: 19, subcategories: 2, featured: 7 }])
+        .mockResolvedValueOnce([{ withProducts: 16, empty: 5 }])
+        .mockResolvedValueOnce([{ id: 'c1', name: 'Pens', count: 16 }]);
+
+      const res = await service.getAdminAnalytics();
+      expect(res.totalCategories).toBe(21);
+      expect(res.parentCategories).toBe(19);
+      expect(res.subcategories).toBe(2);
+      expect(res.featuredCategories).toBe(7);
+      expect(res.categoriesWithProducts).toBe(16);
+      expect(res.emptyCategories).toBe(5);
+      expect(res.topCategories[0].name).toBe('Pens');
+    });
+  });
+
+  describe('exportCategories', () => {
+    it('generates formatted CSV and XLSX exports for categories', async () => {
+      mockPrisma.category.findMany.mockResolvedValueOnce([
+        {
+          id: 'cat-pens',
+          name: 'Pens',
+          slug: 'pens',
+          featured: true,
+          displayOrder: 1,
+          createdAt: new Date('2026-01-01'),
+          parent: null,
+          _count: { products: 16, subProducts: 0, children: 2 },
+        },
+      ]);
+
+      const res = await service.exportCategories('csv');
+      expect(res.filename).toContain('dsl-categories-');
+      expect(res.filename).toContain('.csv');
+      expect(res.buffer.toString()).toContain('cat-pens');
+      expect(res.buffer.toString()).toContain('Pens');
     });
   });
 });

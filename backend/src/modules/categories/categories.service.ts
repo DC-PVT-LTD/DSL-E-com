@@ -6,6 +6,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
+import * as ExcelJS from 'exceljs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { CategoryQueryDto } from './dto/category-query.dto';
@@ -135,6 +136,138 @@ export class CategoriesService {
         children,
       };
     });
+  }
+
+  /**
+   * Retrieves accurate category analytics directly from PostgreSQL database.
+   */
+  async getAdminAnalytics() {
+    const [counts, usage, topCategories] = await Promise.all([
+      this.prisma.$queryRaw<Array<{
+        total: number;
+        parents: number;
+        subcategories: number;
+        featured: number;
+      }>>`
+        SELECT
+          COUNT(*)::int AS "total",
+          COUNT(*) FILTER (WHERE "parentId" IS NULL)::int AS "parents",
+          COUNT(*) FILTER (WHERE "parentId" IS NOT NULL)::int AS "subcategories",
+          COUNT(*) FILTER (WHERE "featured" = true)::int AS "featured"
+        FROM "Category"
+      `,
+      this.prisma.$queryRaw<Array<{
+        withProducts: number;
+        empty: number;
+      }>>`
+        SELECT
+          COUNT(DISTINCT c.id) FILTER (WHERE p.id IS NOT NULL OR sp.id IS NOT NULL)::int AS "withProducts",
+          COUNT(DISTINCT c.id) FILTER (WHERE p.id IS NULL AND sp.id IS NULL)::int AS "empty"
+        FROM "Category" c
+        LEFT JOIN "Product" p ON p."categoryId" = c.id
+        LEFT JOIN "Product" sp ON sp."subcategoryId" = c.id
+      `,
+      this.prisma.$queryRaw<Array<{ id: string; name: string; count: number }>>`
+        SELECT c.id, c.name, (COUNT(DISTINCT p.id) + COUNT(DISTINCT sp.id))::int AS count
+        FROM "Category" c
+        LEFT JOIN "Product" p ON p."categoryId" = c.id
+        LEFT JOIN "Product" sp ON sp."subcategoryId" = c.id
+        GROUP BY c.id, c.name
+        ORDER BY count DESC
+        LIMIT 10
+      `,
+    ]);
+
+    const c = counts[0] || { total: 0, parents: 0, subcategories: 0, featured: 0 };
+    const u = usage[0] || { withProducts: 0, empty: 0 };
+
+    return {
+      totalCategories: Number(c.total),
+      parentCategories: Number(c.parents),
+      subcategories: Number(c.subcategories),
+      featuredCategories: Number(c.featured),
+      categoriesWithProducts: Number(u.withProducts),
+      emptyCategories: Number(u.empty),
+      topCategories: topCategories.map((t) => ({ id: t.id, name: t.name, count: Number(t.count) })),
+    };
+  }
+
+  /**
+   * Generates a streaming CSV or XLSX export of all categories.
+   */
+  async exportCategories(
+    format: 'csv' | 'xlsx' = 'xlsx',
+    selectedIds?: string[]
+  ): Promise<{ buffer: Buffer; filename: string; mimeType: string }> {
+    const where: any = {};
+    if (selectedIds && selectedIds.length > 0) {
+      where.id = { in: selectedIds };
+    }
+
+    const categories = await this.prisma.category.findMany({
+      where,
+      orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }],
+      include: {
+        parent: { select: { name: true } },
+        _count: { select: { products: true, subProducts: true, children: true } },
+      },
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'DSL Stationery Admin';
+    workbook.created = new Date();
+
+    const worksheet = workbook.addWorksheet('Categories');
+    worksheet.columns = [
+      { header: 'Category ID', key: 'id', width: 28 },
+      { header: 'Name', key: 'name', width: 30 },
+      { header: 'Slug', key: 'slug', width: 25 },
+      { header: 'Parent Category', key: 'parent', width: 25 },
+      { header: 'Direct Products', key: 'directProducts', width: 16 },
+      { header: 'Subcategories', key: 'subcategories', width: 16 },
+      { header: 'Featured', key: 'featured', width: 14 },
+      { header: 'Display Order', key: 'displayOrder', width: 14 },
+      { header: 'Created Date', key: 'createdAt', width: 22 },
+    ];
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF1E3A8A' },
+    };
+
+    categories.forEach((c) => {
+      worksheet.addRow({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        parent: c.parent?.name || 'None (Root Category)',
+        directProducts: c._count.products,
+        subcategories: c._count.children,
+        featured: c.featured ? 'Yes' : 'No',
+        displayOrder: c.displayOrder,
+        createdAt: c.createdAt ? c.createdAt.toISOString() : '',
+      });
+    });
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    if (format === 'csv') {
+      const csvBuffer = await workbook.csv.writeBuffer();
+      return {
+        buffer: Buffer.from(csvBuffer),
+        filename: `dsl-categories-${timestamp}.csv`,
+        mimeType: 'text/csv; charset=utf-8',
+      };
+    } else {
+      const xlsxBuffer = await workbook.xlsx.writeBuffer();
+      return {
+        buffer: Buffer.from(xlsxBuffer),
+        filename: `dsl-categories-${timestamp}.xlsx`,
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      };
+    }
   }
 
   async findById(id: string) {

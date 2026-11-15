@@ -31,6 +31,7 @@ export const createBannerSchema = z
     imageAltText: z.string().trim().min(1, 'Image alt text is required').max(300, 'Alt text cannot exceed 300 characters'),
     buttonText: z.string().trim().max(100, 'Button text cannot exceed 100 characters').nullish(),
     buttonLink: z.string().trim().pipe(safeUrlSchema).nullish(),
+    placement: z.string().trim().max(50).optional().default('HERO'),
     sortOrder: z.number().int().optional().default(0),
     status: z.nativeEnum(BannerStatus).optional().default(BannerStatus.DRAFT),
     startAt: z.string().datetime({ offset: true }).or(z.string().datetime()).nullish(),
@@ -61,6 +62,7 @@ export const updateBannerSchema = z
     imageAltText: z.string().trim().min(1, 'Alt text cannot be empty').max(300, 'Alt text cannot exceed 300 characters').optional(),
     buttonText: z.string().trim().max(100, 'Button text cannot exceed 100 characters').nullish(),
     buttonLink: z.string().trim().pipe(safeUrlSchema).nullish(),
+    placement: z.string().trim().max(50).nullish(),
     sortOrder: z.number().int().optional(),
     status: z.nativeEnum(BannerStatus).optional(),
     startAt: z.string().datetime({ offset: true }).or(z.string().datetime()).nullish(),
@@ -95,6 +97,7 @@ export type ReorderBannersDto = z.infer<typeof reorderBannersSchema>;
 export const queryBannersSchema = z.object({
   status: z.nativeEnum(BannerStatus).optional(),
   search: z.string().trim().optional(),
+  placement: z.string().trim().optional(),
 });
 
 export type QueryBannersDto = z.infer<typeof queryBannersSchema>;

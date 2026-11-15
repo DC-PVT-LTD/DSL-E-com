@@ -11,6 +11,11 @@ import {
   OrderQueryParams,
   OrderListResult,
   BuyAgainResponse,
+  RefundRecord,
+  OrderRefundsResponse,
+  ReconciliationQueryParams,
+  ReconciliationListResult,
+  ReconciliationSummary,
 } from '@/types/order';
 import { CartItem } from '@/types/cart';
 import { INITIAL_ORDERS } from '@/mocks/customers';
@@ -670,18 +675,24 @@ class OrderService {
     orderId: string,
     returnId: string,
     action: 'APPROVE' | 'REJECT' | 'CONFIRM_RECEIVED',
-    reason?: string
-  ): Promise<{ success: boolean; error?: string; isBackendPending?: boolean }> {
+    payload?: {
+      rejectionReason?: string;
+      restockItems?: boolean;
+    }
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      await apiClient.patch(`/admin/orders/${orderId}/returns/${returnId}/status`, {
-        action,
-        reason,
-      });
-      return { success: true };
+      const res = await apiClient.patch<BackendApiResponse<any>>(
+        `/admin/orders/${orderId}/returns/${returnId}/status`,
+        {
+          action,
+          rejectionReason: payload?.rejectionReason,
+          restockItems: payload?.restockItems,
+        }
+      );
+      return { success: true, data: res?.data };
     } catch (err: any) {
       return {
         success: false,
-        isBackendPending: err?.status === 404 || err?.status === 501,
         error: err?.message || 'Failed to process return request',
       };
     }
@@ -728,6 +739,217 @@ class OrderService {
       };
     }
     return { success: false, error: 'Unexpected response' };
+  }
+
+  /**
+   * Fetch refunds and financial balance summary for an order
+   */
+  public async fetchOrderRefunds(orderId: string): Promise<OrderRefundsResponse | null> {
+    try {
+      const res = await apiClient.get<BackendApiResponse<OrderRefundsResponse>>(
+        `/admin/orders/${orderId}/refunds`
+      );
+      if (res?.data) {
+        return res.data;
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch order refunds:', err);
+    }
+    return null;
+  }
+
+  /**
+   * Request a refund for an order
+   */
+  public async requestRefund(
+    orderId: string,
+    data: {
+      amountCents: number;
+      method: string;
+      reason: string;
+      reference?: string;
+      idempotencyKey?: string;
+      maskedAccountNumber?: string;
+      orderReturnRequestId?: string;
+    }
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const res = await apiClient.post<BackendApiResponse<any>>(`/admin/orders/${orderId}/refund`, data);
+      if (res?.data) {
+        return { success: true, data: res.data };
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to submit refund request' };
+    }
+    return { success: false, error: 'Unexpected response' };
+  }
+
+  /**
+   * Authorize / approve a refund
+   */
+  public async approveRefund(
+    orderId: string,
+    refundId: string,
+    notes?: string
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const res = await apiClient.post<BackendApiResponse<any>>(
+        `/admin/orders/${orderId}/refunds/${refundId}/approve`,
+        { notes }
+      );
+      if (res?.data) {
+        return { success: true, data: res.data };
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to approve refund' };
+    }
+    return { success: false, error: 'Unexpected response' };
+  }
+
+  /**
+   * Transition refund to in-flight processing
+   */
+  public async processRefundExecution(
+    orderId: string,
+    refundId: string,
+    notes?: string
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const res = await apiClient.post<BackendApiResponse<any>>(
+        `/admin/orders/${orderId}/refunds/${refundId}/process`,
+        { notes }
+      );
+      if (res?.data) {
+        return { success: true, data: res.data };
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to process refund execution' };
+    }
+    return { success: false, error: 'Unexpected response' };
+  }
+
+  /**
+   * Complete refund upon execution evidence
+   */
+  public async completeRefund(
+    orderId: string,
+    refundId: string,
+    externalReference: string,
+    notes?: string
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const res = await apiClient.post<BackendApiResponse<any>>(
+        `/admin/orders/${orderId}/refunds/${refundId}/complete`,
+        { externalReference, notes }
+      );
+      if (res?.data) {
+        return { success: true, data: res.data };
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to complete refund' };
+    }
+    return { success: false, error: 'Unexpected response' };
+  }
+
+  /**
+   * Reject a requested or approved refund
+   */
+  public async rejectRefund(
+    orderId: string,
+    refundId: string,
+    rejectionReason: string
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const res = await apiClient.post<BackendApiResponse<any>>(
+        `/admin/orders/${orderId}/refunds/${refundId}/reject`,
+        { rejectionReason }
+      );
+      if (res?.data) {
+        return { success: true, data: res.data };
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to reject refund' };
+    }
+    return { success: false, error: 'Unexpected response' };
+  }
+
+  /**
+   * Mark an in-flight refund as failed
+   */
+  public async failRefund(
+    orderId: string,
+    refundId: string,
+    failureReason: string
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const res = await apiClient.post<BackendApiResponse<any>>(
+        `/admin/orders/${orderId}/refunds/${refundId}/fail`,
+        { failureReason }
+      );
+      if (res?.data) {
+        return { success: true, data: res.data };
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to mark refund as failed' };
+    }
+    return { success: false, error: 'Unexpected response' };
+  }
+
+  /**
+   * Fetch paginated financial reconciliation records
+   */
+  public async fetchFinancialReconciliation(
+    query: ReconciliationQueryParams
+  ): Promise<ReconciliationListResult | null> {
+    try {
+      const params = new URLSearchParams();
+      if (query.page) params.set('page', query.page.toString());
+      if (query.limit) params.set('limit', query.limit.toString());
+      if (query.search) params.set('search', query.search);
+      if (query.paymentMethod) params.set('paymentMethod', query.paymentMethod);
+      if (query.paymentStatus) params.set('paymentStatus', query.paymentStatus);
+      if (query.refundStatus) params.set('refundStatus', query.refundStatus);
+      if (query.hasDiscrepancy !== undefined) params.set('hasDiscrepancy', String(query.hasDiscrepancy));
+      if (query.startDate) params.set('startDate', query.startDate);
+      if (query.endDate) params.set('endDate', query.endDate);
+
+      const res = await apiClient.get<BackendApiResponse<ReconciliationListResult>>(
+        `/admin/orders/reconciliation?${params.toString()}`
+      );
+      if (res?.data) {
+        return res.data;
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch financial reconciliation:', err);
+    }
+    return null;
+  }
+
+  /**
+   * Fetch high-level financial reconciliation summary metrics
+   */
+  public async fetchFinancialReconciliationSummary(
+    query?: ReconciliationQueryParams
+  ): Promise<ReconciliationSummary | null> {
+    try {
+      const params = new URLSearchParams();
+      if (query?.paymentMethod) params.set('paymentMethod', query.paymentMethod);
+      if (query?.paymentStatus) params.set('paymentStatus', query.paymentStatus);
+      if (query?.startDate) params.set('startDate', query.startDate);
+      if (query?.endDate) params.set('endDate', query.endDate);
+      if (query?.search) params.set('search', query.search);
+
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const res = await apiClient.get<BackendApiResponse<ReconciliationSummary>>(
+        `/admin/orders/reconciliation/summary${qs}`
+      );
+      if (res?.data) {
+        return res.data;
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch financial reconciliation summary:', err);
+    }
+    return null;
   }
 
   // --- Local / Mock helper methods preserved for backward compatibility ---

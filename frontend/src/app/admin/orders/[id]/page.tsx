@@ -36,6 +36,7 @@ import { EditItemsModal } from '@/components/admin/orders/EditItemsModal';
 import { StatusTransitionModal } from '@/components/admin/orders/StatusTransitionModal';
 import { CancelOrderModal } from '@/components/admin/orders/CancelOrderModal';
 import { ReturnManagementCard } from '@/components/admin/orders/ReturnManagementCard';
+import { RefundManagementCard } from '@/components/admin/orders/RefundManagementCard';
 import { AuditHistoryCard } from '@/components/admin/orders/AuditHistoryCard';
 import { AdminNotesCard } from '@/components/admin/orders/AdminNotesCard';
 
@@ -495,14 +496,14 @@ function AdminOrderDetailContent() {
           </div>
         </div>
 
-        {/* F. Payment Details */}
+        {/* F. Payment & Financial Summary */}
         <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4 text-xs">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div className="flex items-center gap-2">
               <div className="p-1.5 rounded-lg bg-blue-50 text-[#08275E]">
                 <CreditCard className="w-4 h-4" />
               </div>
-              <h3 className="font-bold text-slate-900 text-sm">Payment &amp; Gateway Details</h3>
+              <h3 className="font-bold text-slate-900 text-sm">Payment &amp; Financial Summary</h3>
             </div>
             <PaymentStatusBadge status={order.paymentStatus} size="sm" />
           </div>
@@ -516,46 +517,71 @@ function AdminOrderDetailContent() {
             </div>
 
             <div className="flex justify-between">
-              <span className="text-slate-500">Paid Amount:</span>
+              <span className="text-slate-500">Order Authoritative Total:</span>
               <span className="font-black text-slate-900">
-                {order.paymentStatus === 'PAID' || order.paymentStatus === 'simulated_paid'
-                  ? formatLKR(order.totalCents)
-                  : 'Pending Settlement'}
+                {formatLKR(order.totalCents)}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span className="text-slate-500">Verified Collected Funds:</span>
+              <span className="font-black text-emerald-700">
+                {formatLKR(order.financialSummary?.verifiedCollectedCents ?? 0)}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span className="text-slate-500">Completed Refunds:</span>
+              <span className="font-black text-slate-900">
+                {formatLKR(order.financialSummary?.completedRefundsCents ?? 0)}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span className="text-slate-500">Reserved / In-Flight Refunds:</span>
+              <span className="font-bold text-amber-700">
+                {formatLKR(order.financialSummary?.reservedRefundsCents ?? 0)}
+              </span>
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 flex justify-between items-baseline">
+              <span className="font-bold text-slate-700">Available Refundable Balance:</span>
+              <span className="text-base font-black text-[#08275E]">
+                {formatLKR(order.financialSummary?.availableRefundBalanceCents ?? 0)}
               </span>
             </div>
 
             {latestPayment?.gatewayReference && (
-              <div className="flex justify-between">
+              <div className="flex justify-between pt-1 border-t border-slate-100">
                 <span className="text-slate-500">Gateway Reference:</span>
                 <span className="font-mono text-slate-800 text-[11px] font-bold">
                   {latestPayment.gatewayReference}
                 </span>
               </div>
             )}
-
-            {latestPayment?.createdAt && (
-              <div className="flex justify-between">
-                <span className="text-slate-500">Attempt Timestamp:</span>
-                <span className="text-slate-600 font-mono text-[10px]">
-                  {new Date(latestPayment.createdAt).toLocaleString()}
-                </span>
-              </div>
-            )}
-
-            <div className="flex justify-between">
-              <span className="text-slate-500">Refund Status:</span>
-              <span className="font-semibold text-slate-700">
-                {order.paymentStatus === 'REFUNDED' || order.paymentStatus === 'refunded'
-                  ? 'Refund Processed'
-                  : 'None Issued'}
-              </span>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* I. Return Requests Section */}
-      <ReturnManagementCard orderId={order.id} orderNumber={order.orderNumber} />
+      {/* G. Refund Management Section */}
+      <RefundManagementCard
+        orderId={order.id}
+        orderNumber={order.orderNumber}
+        orderTotalCents={order.totalCents}
+        paymentMethod={order.paymentMethod}
+        paymentStatus={order.paymentStatus}
+        returnRequests={order.returnRequests || []}
+        onOrderUpdated={loadOrder}
+      />
+
+      {/* H. Return Requests Section */}
+      <ReturnManagementCard
+        orderId={order.id}
+        orderNumber={order.orderNumber}
+        paymentMethod={order.paymentMethod}
+        availableBalanceCents={order.financialSummary?.availableRefundBalanceCents ?? 0}
+        onRefundInitiated={loadOrder}
+      />
 
       {/* J. Audit History Section */}
       <AuditHistoryCard orderId={order.id} orderCreatedAt={order.createdAt} />

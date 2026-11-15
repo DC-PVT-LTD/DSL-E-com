@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -16,15 +16,26 @@ import {
   Clock,
   MapPin,
   CheckCircle2,
+  Building2,
+  Upload,
+  FileText,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { useCartStore } from '@/services/cartStore';
 import { useUserStore } from '@/services/userStore';
-import { checkoutService, ReservationResponse, AuthoritativeTotals } from '@/services/checkoutService';
+import {
+  checkoutService,
+  ReservationResponse,
+  AuthoritativeTotals,
+  BankTransferConfig,
+} from '@/services/checkoutService';
 import { inventorySocketService } from '@/services/inventorySocketService';
 import { PaymentMethod, ShippingAddress } from '@/types/order';
 import { formatLKR } from '@/lib/currency';
+import { loadPayHereScript } from '@/lib/payhere';
 import ReservationCountdown from '@/components/checkout/ReservationCountdown';
-import DeliveryLocationPicker from '@/components/checkout/DeliveryLocationPicker';
+import DeliveryLocationPicker, { DISTRICT_TO_PROVINCE_MAP } from '@/components/checkout/DeliveryLocationPicker';
 import { CheckoutGateway } from '@/components/checkout/CheckoutGateway';
 
 export default function CheckoutPage() {
@@ -46,8 +57,21 @@ export default function CheckoutPage() {
   const addresses = (currentUser?.addresses as any[]) || [];
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
-  // Phase A: Filter strictly for selected items
-  const itemsToCheckout = items.filter((item) => item.selected !== false);
+  // Phase A: Stabilize cart-derived items to checkout using useMemo
+  const itemsToCheckout = useMemo(
+    () => items.filter((item) => item.selected !== false),
+    [items]
+  );
+
+  // Stable cart signature based on productId, variantId, and quantity
+  const cartSignature = useMemo(
+    () =>
+      itemsToCheckout
+        .map((item) => `${item.productId}:${item.variantId || ''}:${item.quantity}`)
+        .sort()
+        .join('|'),
+    [itemsToCheckout]
+  );
 
   // Reservation State
   const [reservation, setReservation] = useState<ReservationResponse | null>(null);
@@ -55,6 +79,38 @@ export default function CheckoutPage() {
   const [reservationError, setReservationError] = useState<string | null>(null);
   const [isExpired, setIsExpired] = useState(false);
   const [isRenewing, setIsRenewing] = useState(false);
+
+  // In-flight concurrency lock, lifecycle tracking, and deduplication refs
+  const isMountedRef = useRef(true);
+  const isReservingRef = useRef(false);
+  const lastReservedSignatureRef = useRef<string | null>(null);
+  const reservationRef = useRef<ReservationResponse | null>(null);
+  const isExpiredRef = useRef(false);
+  const itemsToCheckoutRef = useRef(itemsToCheckout);
+  const cartSignatureRef = useRef(cartSignature);
+
+  useEffect(() => {
+    reservationRef.current = reservation;
+  }, [reservation]);
+
+  useEffect(() => {
+    isExpiredRef.current = isExpired;
+  }, [isExpired]);
+
+  useEffect(() => {
+    itemsToCheckoutRef.current = itemsToCheckout;
+  }, [itemsToCheckout]);
+
+  useEffect(() => {
+    cartSignatureRef.current = cartSignature;
+  }, [cartSignature]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Server Authoritative Totals
   const [authoritativeTotals, setAuthoritativeTotals] = useState<AuthoritativeTotals | null>(null);
@@ -74,8 +130,125 @@ export default function CheckoutPage() {
   });
 
   const [useCustomAddress, setUseCustomAddress] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('CARD_PAYHERE');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>('CASH_ON_DELIVERY');
+  const [paymentSettings, setPaymentSettings] = useState<{
+    onlineCardEnabled: boolean;
+    codEnabled: boolean;
+    bankTransferEnabled: boolean;
+    bankTransfer?: BankTransferConfig | null;
+    isLoading: boolean;
+  }>({
+    onlineCardEnabled: false,
+    codEnabled: true,
+    bankTransferEnabled: false,
+    bankTransfer: null,
+    isLoading: true,
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Bank Transfer Form State
+  const [bankReceiptFile, setBankReceiptFile] = useState<File | null>(null);
+  const [bankReceiptToken, setBankReceiptToken] = useState<string | null>(null);
+  const [bankReceiptFileName, setBankReceiptFileName] = useState<string | null>(null);
+  const [bankReceiptFileSize, setBankReceiptFileSize] = useState<number | null>(null);
+  const [bankReceiptUploading, setBankReceiptUploading] = useState(false);
+  const [bankReceiptError, setBankReceiptError] = useState<string | null>(null);
+  const [bankReferenceNumber, setBankReferenceNumber] = useState('');
+  const [bankDepositDate, setBankDepositDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [bankCustomerNotes, setBankCustomerNotes] = useState('');
+  const [copiedAccount, setCopiedAccount] = useState(false);
+
+  const handleCopyAccountNumber = (accountNum: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(accountNum);
+      setCopiedAccount(true);
+      setTimeout(() => setCopiedAccount(false), 2000);
+    }
+  };
+
+  const handleReceiptFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setBankReceiptError('File size exceeds 10MB limit. Please choose an image or PDF under 10MB.');
+      return;
+    }
+
+    const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!allowedExts.includes(ext)) {
+      setBankReceiptError('Invalid file type. Only JPEG, PNG, WebP, and PDF files are allowed.');
+      return;
+    }
+
+    setBankReceiptFile(file);
+    setBankReceiptError(null);
+    setBankReceiptUploading(true);
+
+    try {
+      const uploadRes = await checkoutService.uploadBankReceipt(file);
+      setBankReceiptToken(uploadRes.receiptToken);
+      setBankReceiptFileName(uploadRes.originalFilename);
+      setBankReceiptFileSize(uploadRes.fileSizeBytes);
+    } catch (err: any) {
+      setBankReceiptError(err?.message || 'Failed to upload receipt slip. Please try again.');
+      setBankReceiptToken(null);
+    } finally {
+      setBankReceiptUploading(false);
+    }
+  };
+
+  // Fetch persisted checkout payment method settings
+  useEffect(() => {
+    let isSubscribed = true;
+    checkoutService
+      .fetchCheckoutSettings()
+      .then((settings) => {
+        if (!isSubscribed) return;
+        setPaymentSettings({
+          onlineCardEnabled: !!settings.onlineCardEnabled,
+          codEnabled: settings.codEnabled !== false,
+          bankTransferEnabled: !!settings.bankTransferEnabled,
+          bankTransfer: settings.bankTransfer || null,
+          isLoading: false,
+        });
+
+        setSelectedPaymentMethod((prev) => {
+          if (prev === 'CARD_PAYHERE' && !settings.onlineCardEnabled) {
+            if (settings.codEnabled !== false) return 'CASH_ON_DELIVERY';
+            if (settings.bankTransferEnabled) return 'BANK_TRANSFER';
+            return null;
+          }
+          if (prev === 'BANK_TRANSFER' && !settings.bankTransferEnabled) {
+            if (settings.codEnabled !== false) return 'CASH_ON_DELIVERY';
+            if (settings.onlineCardEnabled) return 'CARD_PAYHERE';
+            return null;
+          }
+          if (prev === 'CASH_ON_DELIVERY' && settings.codEnabled === false) {
+            if (settings.bankTransferEnabled) return 'BANK_TRANSFER';
+            if (settings.onlineCardEnabled) return 'CARD_PAYHERE';
+            return null;
+          }
+          if (!prev) {
+            if (settings.codEnabled !== false) return 'CASH_ON_DELIVERY';
+            if (settings.bankTransferEnabled) return 'BANK_TRANSFER';
+            if (settings.onlineCardEnabled) return 'CARD_PAYHERE';
+            return null;
+          }
+          return prev;
+        });
+      })
+      .catch(() => {
+        if (isSubscribed) {
+          setPaymentSettings((prev) => ({ ...prev, isLoading: false }));
+        }
+      });
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, []);
 
   // Sync customer details when currentUser loads or changes
   useEffect(() => {
@@ -111,7 +284,10 @@ export default function CheckoutPage() {
           city: activeAddr.city || '',
           district: activeAddr.district || 'Colombo',
           postalCode: activeAddr.postalCode || '',
-          province: activeAddr.province || 'Western',
+          province:
+            activeAddr.province ||
+            (activeAddr.district ? DISTRICT_TO_PROVINCE_MAP[activeAddr.district] : 'Western') ||
+            'Western',
         }));
       }
     }
@@ -129,43 +305,98 @@ export default function CheckoutPage() {
     return sid;
   }, []);
 
-  // Safe Warehouse Stock Hold Reservation (Phase C)
-  const initReservation = useCallback(async () => {
-    if (itemsToCheckout.length === 0) return;
+  // Safe Warehouse Stock Hold Reservation (Idempotent & Concurrency-Guarded)
+  const executeReservation = useCallback(
+    async (forceRetry = false) => {
+      const currentItems = itemsToCheckoutRef.current;
+      const currentSignature = cartSignatureRef.current;
 
-    setIsReserving(true);
-    setReservationError(null);
-    try {
-      const sessionId = getOrCreateCheckoutSessionId();
-      const reservationItems = itemsToCheckout.map((item) => ({
-        productId: item.productId,
-        variantId: item.variantId || null,
-        quantity: item.quantity,
-      }));
-
-      const res = await checkoutService.createReservation({
-        items: reservationItems,
-        sessionId,
-      });
-
-      setReservation(res);
-
-      if (res.isExpired || res.status === 'EXPIRED') {
-        setIsExpired(true);
-      } else {
-        setIsExpired(false);
+      if (currentItems.length === 0) {
+        if (isMountedRef.current) {
+          setIsReserving(false);
+          setReservation(null);
+          lastReservedSignatureRef.current = null;
+        }
+        return;
       }
-    } catch (err: any) {
-      setReservationError(err?.message || 'Failed to reserve warehouse stock for checkout.');
-    } finally {
-      setIsReserving(false);
-    }
-  }, [itemsToCheckout, getOrCreateCheckoutSessionId]);
 
+      // Concurrency lock: prevent simultaneous duplicate in-flight requests
+      if (isReservingRef.current) {
+        return;
+      }
+
+      // Deduplication: skip if already reserved for the identical cart state, unless explicit retry
+      const hasActiveValidReservation =
+        reservationRef.current &&
+        !isExpiredRef.current &&
+        reservationRef.current.status !== 'EXPIRED';
+
+      if (!forceRetry && lastReservedSignatureRef.current === currentSignature && hasActiveValidReservation) {
+        if (isMountedRef.current) {
+          setIsReserving(false);
+        }
+        return;
+      }
+
+      const requestedSignature = currentSignature;
+      isReservingRef.current = true;
+      if (isMountedRef.current) {
+        setIsReserving(true);
+        setReservationError(null);
+      }
+
+      try {
+        const sessionId = getOrCreateCheckoutSessionId();
+        const reservationItems = currentItems.map((item) => ({
+          productId: item.productId,
+          variantId: item.variantId || null,
+          quantity: item.quantity,
+        }));
+
+        const res = await checkoutService.createReservation({
+          items: reservationItems,
+          sessionId,
+        });
+
+        // Stale response or unmounted check
+        if (!isMountedRef.current) return;
+        // If cart items changed while the network request was in-flight, do not commit stale reservation
+        if (cartSignatureRef.current !== requestedSignature) return;
+
+        setReservation(res);
+        lastReservedSignatureRef.current = requestedSignature;
+
+        if (res.isExpired || res.status === 'EXPIRED') {
+          setIsExpired(true);
+        } else {
+          setIsExpired(false);
+        }
+      } catch (err: any) {
+        if (!isMountedRef.current) return;
+        // Do not update lastReservedSignatureRef on failure so retry or item updates can re-attempt
+        setReservationError(err?.message || 'Failed to reserve warehouse stock for checkout.');
+      } finally {
+        isReservingRef.current = false;
+        if (isMountedRef.current) {
+          setIsReserving(false);
+        }
+      }
+    },
+    [getOrCreateCheckoutSessionId]
+  );
+
+  // Trigger reservation when cart signature changes or on initial mount
   useEffect(() => {
     setMounted(true);
-    initReservation();
-  }, [initReservation]);
+    if (!cartSignature) {
+      setIsReserving(false);
+      return;
+    }
+
+    if (lastReservedSignatureRef.current !== cartSignature) {
+      executeReservation(false);
+    }
+  }, [cartSignature, executeReservation]);
 
   // Real-time stock subscription
   useEffect(() => {
@@ -198,7 +429,7 @@ export default function CheckoutPage() {
 
   const handleRenewReservation = async () => {
     if (!reservation) {
-      await initReservation();
+      await executeReservation(true);
       return;
     }
 
@@ -267,6 +498,35 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!selectedPaymentMethod) {
+      setSubmitError('Please select an available payment method before proceeding.');
+      return;
+    }
+
+    if (selectedPaymentMethod === 'CARD_PAYHERE' && !paymentSettings.onlineCardEnabled) {
+      setSubmitError('Online card payments are currently disabled. Please select an available payment method.');
+      return;
+    }
+
+    if (selectedPaymentMethod === 'BANK_TRANSFER') {
+      if (!paymentSettings.bankTransferEnabled) {
+        setSubmitError('Bank Transfer is currently unavailable. Please select another payment method.');
+        return;
+      }
+      if (!bankReceiptToken) {
+        setSubmitError('Please upload your bank transfer payment receipt slip before placing your order.');
+        return;
+      }
+      if (!bankReferenceNumber.trim()) {
+        setSubmitError('Please enter the transaction or reference number from your bank deposit.');
+        return;
+      }
+      if (!bankDepositDate) {
+        setSubmitError('Please select the date of your bank deposit.');
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -276,6 +536,15 @@ export default function CheckoutPage() {
         deliveryAddress: formData,
         paymentMethod: selectedPaymentMethod,
         voucherCode: appliedDiscount?.code || null,
+        bankTransferData:
+          selectedPaymentMethod === 'BANK_TRANSFER' && bankReceiptToken
+            ? {
+                receiptToken: bankReceiptToken,
+                referenceNumber: bankReferenceNumber.trim(),
+                depositDate: bankDepositDate,
+                customerNotes: bankCustomerNotes.trim() || null,
+              }
+            : null,
       });
 
       setAuthoritativeTotals(prePayResult.totals);
@@ -286,7 +555,53 @@ export default function CheckoutPage() {
         sessionStorage.setItem('last_order_email', effectiveEmail);
       }
 
-      // 3. Process payment / Create authoritative order via backend
+      // 3. Branching: PayHere Online Gateway vs Offline Payments
+      if (selectedPaymentMethod === 'CARD_PAYHERE') {
+        if (!prePayResult.payHerePayload) {
+          throw new Error('Failed to retrieve PayHere payment configuration. Please try again.');
+        }
+
+        const isLoaded = await loadPayHereScript();
+        if (!isLoaded || !window.payhere) {
+          throw new Error('Secure PayHere gateway could not be loaded. Please check your internet connection.');
+        }
+
+        const effectiveOrderId = prePayResult.payHerePayload.order_id || prePayResult.reservationId;
+
+        window.payhere.onCompleted = function onCompleted(completedOrderId: string) {
+          removePurchasedItems(
+            itemsToCheckout.map((i) => ({ productId: i.productId, variantId: i.variantId || null }))
+          );
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('dsl_checkout_session_id');
+          }
+          router.push(
+            `/checkout/result?orderId=${encodeURIComponent(
+              completedOrderId || effectiveOrderId
+            )}&payment=pending&email=${encodeURIComponent(effectiveEmail)}`
+          );
+        };
+
+        window.payhere.onDismissed = function onDismissed() {
+          setIsSubmitting(false);
+          setSubmitError(
+            'Payment window was closed before completion. You can retry paying with PayHere or select Cash on Delivery.'
+          );
+        };
+
+        window.payhere.onError = function onError(error: string) {
+          setIsSubmitting(false);
+          setSubmitError(
+            `PayHere error: ${error || 'The payment could not be processed.'}. Please try again.`
+          );
+        };
+
+        // Launch official PayHere sandbox popup
+        window.payhere.startPayment(prePayResult.payHerePayload as any);
+        return;
+      }
+
+      // Offline payment processing (Cash on Delivery / Bank Transfer)
       const idempotencyKey = `${reservation.reservationId}-${Date.now()}`;
       const res = await checkoutService.processPayment({
         reservationId: reservation.reservationId,
@@ -294,6 +609,15 @@ export default function CheckoutPage() {
         paymentMethod: selectedPaymentMethod,
         voucherCode: appliedDiscount?.code || null,
         idempotencyKey,
+        bankTransferData:
+          selectedPaymentMethod === 'BANK_TRANSFER' && bankReceiptToken
+            ? {
+                receiptToken: bankReceiptToken,
+                referenceNumber: bankReferenceNumber.trim(),
+                depositDate: bankDepositDate,
+                customerNotes: bankCustomerNotes.trim() || null,
+              }
+            : null,
       });
 
       const createdOrder = res.order;
@@ -397,18 +721,18 @@ export default function CheckoutPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       {/* Header and Step Back */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#C6E7FF]/40 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-4">
         <div>
           <button
             type="button"
             onClick={() => setCheckoutStep('gateway')}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0066CC] hover:underline mb-2"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0866E8] hover:underline mb-2"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Change Checkout Mode (Customer / Guest)</span>
           </button>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#292525]">Checkout &amp; Delivery</h1>
-          <p className="text-xs text-[#292525]/60 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#09285C]">Checkout &amp; Delivery</h1>
+          <p className="text-xs text-slate-500 mt-1">
             {currentUser ? (
               <span className="inline-flex items-center gap-1.5 text-emerald-700 font-semibold">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Checking out as registered customer ({currentUser.email})
@@ -504,7 +828,7 @@ export default function CheckoutPage() {
           </div>
           <button
             type="button"
-            onClick={initReservation}
+            onClick={() => executeReservation(true)}
             className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-lg shrink-0"
           >
             Retry Hold
@@ -627,72 +951,284 @@ export default function CheckoutPage() {
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* PayHere Online Gateway */}
-                <div
-                  onClick={() => setSelectedPaymentMethod('CARD_PAYHERE')}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                    selectedPaymentMethod === 'CARD_PAYHERE'
-                      ? 'border-[#0066CC] bg-[#F0F7FF]/50 shadow-xs'
-                      : 'border-stone-200 hover:border-stone-300'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-1.5 font-bold text-xs text-[#292525]">
-                        <CreditCard className="w-4 h-4 text-[#0066CC]" />
-                        <span>PayHere Online Payment</span>
+                {/* PayHere Online Gateway (Rendered only when onlineCardEnabled is true) */}
+                {paymentSettings.onlineCardEnabled && (
+                  <div
+                    onClick={() => setSelectedPaymentMethod('CARD_PAYHERE')}
+                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                      selectedPaymentMethod === 'CARD_PAYHERE'
+                        ? 'border-[#0066CC] bg-[#F0F7FF]/50 shadow-xs'
+                        : 'border-stone-200 hover:border-stone-300'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-1.5 font-bold text-xs text-[#292525]">
+                          <CreditCard className="w-4 h-4 text-[#0066CC]" />
+                          <span>PayHere Online Payment</span>
+                        </div>
+                        <p className="text-[11px] text-[#292525]/60 mt-1">
+                          Visa, MasterCard, Genie, FriMi &amp; Internet Banking
+                        </p>
                       </div>
-                      <p className="text-[11px] text-[#292525]/60 mt-1">
-                        Visa, MasterCard, Genie, FriMi &amp; Internet Banking
-                      </p>
-                    </div>
-                    <div
-                      className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                        selectedPaymentMethod === 'CARD_PAYHERE'
-                          ? 'border-[#0066CC] bg-[#0066CC]'
-                          : 'border-stone-300'
-                      }`}
-                    >
-                      {selectedPaymentMethod === 'CARD_PAYHERE' && (
-                        <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                      )}
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                          selectedPaymentMethod === 'CARD_PAYHERE'
+                            ? 'border-[#0066CC] bg-[#0066CC]'
+                            : 'border-stone-300'
+                        }`}
+                      >
+                        {selectedPaymentMethod === 'CARD_PAYHERE' && (
+                          <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Cash on Delivery */}
-                <div
-                  onClick={() => setSelectedPaymentMethod('CASH_ON_DELIVERY')}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                    selectedPaymentMethod === 'CASH_ON_DELIVERY'
-                      ? 'border-[#0066CC] bg-[#F0F7FF]/50 shadow-xs'
-                      : 'border-stone-200 hover:border-stone-300'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-1.5 font-bold text-xs text-[#292525]">
-                        <Banknote className="w-4 h-4 text-emerald-600" />
-                        <span>Cash on Delivery (COD)</span>
+                {paymentSettings.codEnabled && (
+                  <div
+                    onClick={() => setSelectedPaymentMethod('CASH_ON_DELIVERY')}
+                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                      selectedPaymentMethod === 'CASH_ON_DELIVERY'
+                        ? 'border-[#0066CC] bg-[#F0F7FF]/50 shadow-xs'
+                        : 'border-stone-200 hover:border-stone-300'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-1.5 font-bold text-xs text-[#292525]">
+                          <Banknote className="w-4 h-4 text-emerald-600" />
+                          <span>Cash on Delivery (COD)</span>
+                        </div>
+                        <p className="text-[11px] text-[#292525]/60 mt-1">
+                          Pay in cash upon doorstep delivery anywhere in Sri Lanka
+                        </p>
                       </div>
-                      <p className="text-[11px] text-[#292525]/60 mt-1">
-                        Pay in cash upon doorstep delivery anywhere in Sri Lanka
-                      </p>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                          selectedPaymentMethod === 'CASH_ON_DELIVERY'
+                            ? 'border-[#0066CC] bg-[#0066CC]'
+                            : 'border-stone-300'
+                        }`}
+                      >
+                        {selectedPaymentMethod === 'CASH_ON_DELIVERY' && (
+                          <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                        )}
+                      </div>
                     </div>
-                    <div
-                      className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                        selectedPaymentMethod === 'CASH_ON_DELIVERY'
-                          ? 'border-[#0066CC] bg-[#0066CC]'
-                          : 'border-stone-300'
-                      }`}
-                    >
-                      {selectedPaymentMethod === 'CASH_ON_DELIVERY' && (
-                        <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                  </div>
+                )}
+
+                {/* Bank Transfer */}
+                {paymentSettings.bankTransferEnabled && (
+                  <div
+                    onClick={() => setSelectedPaymentMethod('BANK_TRANSFER')}
+                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                      selectedPaymentMethod === 'BANK_TRANSFER'
+                        ? 'border-[#0066CC] bg-[#F0F7FF]/50 shadow-xs'
+                        : 'border-stone-200 hover:border-stone-300'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-1.5 font-bold text-xs text-[#292525]">
+                          <Building2 className="w-4 h-4 text-[#0066CC]" />
+                          <span>Bank Transfer</span>
+                        </div>
+                        <p className="text-[11px] text-[#292525]/60 mt-1">
+                          Direct corporate bank deposit or online fund transfer
+                        </p>
+                      </div>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                          selectedPaymentMethod === 'BANK_TRANSFER'
+                            ? 'border-[#0066CC] bg-[#0066CC]'
+                            : 'border-stone-300'
+                        }`}
+                      >
+                        {selectedPaymentMethod === 'BANK_TRANSFER' && (
+                          <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Bank Transfer Configuration & Receipt Slip Upload Form */}
+              {selectedPaymentMethod === 'BANK_TRANSFER' && paymentSettings.bankTransfer && (
+                <div className="p-5 sm:p-6 rounded-2xl bg-[#F0F7FF]/60 border border-[#C6E7FF] space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#C6E7FF]/60 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-5 h-5 text-[#0066CC]" />
+                      <h3 className="text-sm font-bold text-[#09285C]">DSL Stationery Bank Account Details</h3>
+                    </div>
+                    <span className="text-[11px] font-semibold text-[#0066CC] bg-white px-2.5 py-1 rounded-full border border-[#C6E7FF] w-fit">
+                      Deposit Amount: {formatLKR(displayTotalCents)}
+                    </span>
+                  </div>
+
+                  {/* Bank Details Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-white p-4 rounded-xl border border-stone-200 shadow-2xs">
+                    <div>
+                      <span className="text-[11px] text-[#292525]/50 block">Bank Name</span>
+                      <span className="font-bold text-[#292525]">{paymentSettings.bankTransfer.bankName}</span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-[#292525]/50 block">Account Holder Name</span>
+                      <span className="font-bold text-[#292525]">{paymentSettings.bankTransfer.accountHolderName}</span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-[#292525]/50 block">Account Number</span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="font-mono font-bold text-sm text-[#0066CC]">
+                          {paymentSettings.bankTransfer.accountNumber}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyAccountNumber(paymentSettings.bankTransfer!.accountNumber)}
+                          className="p-1 rounded hover:bg-stone-100 text-[#292525]/60 hover:text-[#0066CC] transition-colors cursor-pointer"
+                          title="Copy Account Number"
+                        >
+                          {copiedAccount ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-[#292525]/50 block">Branch</span>
+                      <span className="font-bold text-[#292525]">
+                        {paymentSettings.bankTransfer.branchName}
+                        {paymentSettings.bankTransfer.branchCode ? ` (${paymentSettings.bankTransfer.branchCode})` : ''}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Instructions */}
+                  {(paymentSettings.bankTransfer.paymentInstructions || paymentSettings.bankTransfer.referenceInstructions) && (
+                    <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200 text-xs text-amber-950 space-y-1">
+                      {paymentSettings.bankTransfer.paymentInstructions && (
+                        <p><span className="font-bold">Instructions:</span> {paymentSettings.bankTransfer.paymentInstructions}</p>
                       )}
+                      {paymentSettings.bankTransfer.referenceInstructions && (
+                        <p><span className="font-bold">Reference:</span> {paymentSettings.bankTransfer.referenceInstructions}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Customer Deposit Evidence Submission Form */}
+                  <div className="pt-2 border-t border-[#C6E7FF]/60 space-y-4">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#09285C]">
+                      Payment Evidence &amp; Verification (Required Before Placing Order)
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Transaction / Reference Number */}
+                      <div>
+                        <label className="block text-xs font-bold text-[#292525] mb-1">
+                          Transaction / Reference Number <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={bankReferenceNumber}
+                          onChange={(e) => setBankReferenceNumber(e.target.value)}
+                          placeholder="e.g. TXN987654321 or Deposit Slip #"
+                          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-none focus:border-[#0066CC] focus:ring-1 focus:ring-[#0066CC] bg-white font-mono"
+                          required
+                        />
+                      </div>
+
+                      {/* Deposit Date */}
+                      <div>
+                        <label className="block text-xs font-bold text-[#292525] mb-1">
+                          Deposit Date <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={bankDepositDate}
+                          onChange={(e) => setBankDepositDate(e.target.value)}
+                          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-none focus:border-[#0066CC] focus:ring-1 focus:ring-[#0066CC] bg-white"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* Receipt File Upload */}
+                    <div>
+                      <label className="block text-xs font-bold text-[#292525] mb-1">
+                        Bank Deposit Slip / Transfer Receipt <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative border-2 border-dashed border-[#C6E7FF] hover:border-[#0066CC] rounded-2xl p-4 text-center bg-white transition-colors">
+                        <input
+                          type="file"
+                          accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+                          onChange={handleReceiptFileChange}
+                          disabled={bankReceiptUploading}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                        />
+                        <div className="flex flex-col items-center justify-center gap-1.5">
+                          {bankReceiptUploading ? (
+                            <>
+                              <RefreshCw className="w-6 h-6 text-[#0066CC] animate-spin" />
+                              <span className="text-xs font-bold text-[#0066CC]">Uploading &amp; verifying receipt file...</span>
+                            </>
+                          ) : bankReceiptToken ? (
+                            <>
+                              <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                <CheckCircle2 className="w-5 h-5" />
+                              </div>
+                              <span className="text-xs font-bold text-emerald-800">
+                                Receipt Uploaded: {bankReceiptFileName}
+                              </span>
+                              <span className="text-[11px] text-stone-400">
+                                {bankReceiptFileSize ? `(${(bankReceiptFileSize / 1024).toFixed(1)} KB)` : ''} &bull; Click to replace
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-6 h-6 text-[#0066CC]" />
+                              <span className="text-xs font-bold text-[#292525]">
+                                Click or drag bank slip to upload
+                              </span>
+                              <span className="text-[11px] text-[#292525]/50">
+                                JPEG, PNG, WebP or PDF &bull; Maximum 10MB
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {bankReceiptError && (
+                        <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span>{bankReceiptError}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Customer Notes */}
+                    <div>
+                      <label className="block text-xs font-medium text-[#292525]/70 mb-1">
+                        Optional Payment Notes for Accounts Department
+                      </label>
+                      <input
+                        type="text"
+                        value={bankCustomerNotes}
+                        onChange={(e) => setBankCustomerNotes(e.target.value)}
+                        placeholder="e.g. Transferred from HNB corporate account"
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-[#0066CC] bg-white"
+                      />
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {!paymentSettings.onlineCardEnabled && !paymentSettings.codEnabled && !paymentSettings.bankTransferEnabled && !paymentSettings.isLoading && (
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>No payment methods are currently available. Please contact store support to place your order.</span>
+                </div>
+              )}
             </div>
 
             {/* Mobile Submit Button */}
@@ -702,21 +1238,33 @@ export default function CheckoutPage() {
                 disabled={
                   isSubmitting ||
                   isReserving ||
-                  (isExpired && reservation?.stockAvailable === false)
+                  !selectedPaymentMethod ||
+                  (!paymentSettings.onlineCardEnabled && !paymentSettings.codEnabled && !paymentSettings.bankTransferEnabled) ||
+                  (isExpired && reservation?.stockAvailable === false) ||
+                  (selectedPaymentMethod === 'BANK_TRANSFER' &&
+                    (!bankReceiptToken || !bankReferenceNumber.trim() || !bankDepositDate || bankReceiptUploading))
                 }
-                className="w-full bg-[#0066CC] hover:bg-[#0052a3] text-white font-bold py-4 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#0866E8] hover:bg-[#09285C] text-white font-bold py-4 rounded-full transition-all shadow-md flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
                     <span>Verifying Stock &amp; Payment...</span>
                   </>
+                ) : !selectedPaymentMethod || (!paymentSettings.onlineCardEnabled && !paymentSettings.codEnabled && !paymentSettings.bankTransferEnabled) ? (
+                  <span>Select an Available Payment Method</span>
+                ) : selectedPaymentMethod === 'BANK_TRANSFER' && bankReceiptUploading ? (
+                  <span>Uploading Receipt Slip...</span>
+                ) : selectedPaymentMethod === 'BANK_TRANSFER' && !bankReceiptToken ? (
+                  <span>Upload Receipt Slip to Place Order</span>
+                ) : selectedPaymentMethod === 'BANK_TRANSFER' && !bankReferenceNumber.trim() ? (
+                  <span>Enter Reference # to Place Order</span>
                 ) : isExpired && reservation?.stockAvailable === false ? (
                   <span>Item Unavailable (Update Cart)</span>
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    <span>Pay {formatLKR(displayTotalCents)} Authoritatively</span>
+                    <span>Place Order &bull; {formatLKR(displayTotalCents)}</span>
                   </>
                 )}
               </button>
@@ -726,33 +1274,33 @@ export default function CheckoutPage() {
 
         {/* Right 5 Columns: Authoritative Order Summary (Phase A Selective Items Only) */}
         <div className="lg:col-span-5 sticky top-24 space-y-6">
-          <div className="bg-white rounded-3xl border border-[#C6E7FF]/60 p-6 sm:p-8 space-y-6 shadow-sm">
-            <h2 className="text-base font-bold text-[#292525] border-b border-[#C6E7FF]/30 pb-3 flex items-center justify-between">
+          <div className="bg-white rounded-3xl border border-slate-100 p-5 sm:p-7 space-y-6 shadow-xs">
+            <h2 className="text-base font-bold text-[#09285C] border-b border-slate-100 pb-3 flex items-center justify-between">
               <span>Order Summary</span>
-              <span className="text-xs font-semibold text-[#0066CC] bg-[#F0F7FF] px-2.5 py-1 rounded-full border border-[#C6E7FF]">
+              <span className="text-xs font-semibold text-[#0866E8] bg-[#F7FAFF] px-2.5 py-1 rounded-full border border-blue-100">
                 {itemsToCheckout.length} {itemsToCheckout.length === 1 ? 'item' : 'items'} selected
               </span>
             </h2>
 
             {/* Selected Item List */}
-            <div className="divide-y divide-stone-100 max-h-64 overflow-y-auto pr-1">
+            <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto pr-1">
               {itemsToCheckout.map((item) => (
                 <div key={item.id} className="py-3 flex items-start justify-between gap-3 text-xs">
                   <div className="flex-1">
-                    <h4 className="font-bold text-[#292525]">{item.product.name}</h4>
+                    <h4 className="font-bold text-[#09285C]">{item.product.name}</h4>
                     {item.variantName && (
-                      <p className="text-[11px] text-[#292525]/60">{item.variantName}</p>
+                      <p className="text-[11px] text-slate-500">{item.variantName}</p>
                     )}
                     {item.bundleInfo && (
-                      <span className="inline-block mt-1 text-[10px] font-bold text-[#0066CC] bg-[#C6E7FF]/40 px-2 py-0.5 rounded-full">
+                      <span className="inline-block mt-1 text-[10px] font-bold text-[#0866E8] bg-blue-50 px-2 py-0.5 rounded-full">
                         🎒 {item.bundleInfo.packName}
                       </span>
                     )}
-                    <span className="text-[11px] text-[#292525]/50 block mt-0.5">
+                    <span className="text-[11px] text-slate-400 block mt-0.5">
                       Qty: {item.quantity} × {formatLKR(item.product.priceCents)}
                     </span>
                   </div>
-                  <span className="font-bold text-[#292525]">
+                  <span className="font-bold text-[#09285C]">
                     {formatLKR(item.quantity * item.product.priceCents)}
                   </span>
                 </div>
@@ -760,10 +1308,10 @@ export default function CheckoutPage() {
             </div>
 
             {/* Calculations Breakdown */}
-            <div className="border-t border-[#C6E7FF]/30 pt-4 space-y-2 text-xs">
-              <div className="flex justify-between text-[#292525]/70">
+            <div className="border-t border-slate-100 pt-4 space-y-2 text-xs">
+              <div className="flex justify-between text-slate-600">
                 <span>Subtotal</span>
-                <span className="font-medium text-[#292525]">{formatLKR(displaySubtotalCents)}</span>
+                <span className="font-medium text-[#09285C]">{formatLKR(displaySubtotalCents)}</span>
               </div>
 
               {/* School Pack bundle savings breakdown */}
@@ -776,7 +1324,7 @@ export default function CheckoutPage() {
 
               {/* Voucher promo discount breakdown */}
               {(authoritativeTotals?.voucherDiscountCents ?? 0) > 0 && (
-                <div className="flex justify-between text-[#0066CC] font-medium">
+                <div className="flex justify-between text-[#0866E8] font-medium">
                   <span>
                     Promo Discount ({authoritativeTotals?.voucherApplied?.code || appliedDiscount?.code})
                   </span>
@@ -785,7 +1333,7 @@ export default function CheckoutPage() {
               )}
 
               {/* Delivery Fee line with free delivery breakdown */}
-              <div className="flex justify-between text-[#292525]/70">
+              <div className="flex justify-between text-slate-600">
                 <span>Islandwide Delivery</span>
                 <span>
                   {displayDeliveryCents === 0 ? (
@@ -809,14 +1357,14 @@ export default function CheckoutPage() {
                 </p>
               )}
 
-              <div className="border-t border-[#C6E7FF]/30 pt-3 flex justify-between items-baseline">
+              <div className="border-t border-slate-100 pt-3 flex justify-between items-baseline">
                 <div>
-                  <strong className="text-sm font-bold text-[#292525]">Payable Total</strong>
-                  <span className="block text-[10px] text-[#292525]/50">
+                  <strong className="text-sm font-bold text-[#09285C]">Payable Total</strong>
+                  <span className="block text-[10px] text-slate-400">
                     Authoritative server total in LKR
                   </span>
                 </div>
-                <strong className="text-lg font-extrabold text-[#0066CC]">
+                <strong className="text-lg font-black text-[#0866E8]">
                   {formatLKR(displayTotalCents)}
                 </strong>
               </div>
@@ -829,21 +1377,33 @@ export default function CheckoutPage() {
                 disabled={
                   isSubmitting ||
                   isReserving ||
-                  (isExpired && reservation?.stockAvailable === false)
+                  !selectedPaymentMethod ||
+                  (!paymentSettings.onlineCardEnabled && !paymentSettings.codEnabled && !paymentSettings.bankTransferEnabled) ||
+                  (isExpired && reservation?.stockAvailable === false) ||
+                  (selectedPaymentMethod === 'BANK_TRANSFER' &&
+                    (!bankReceiptToken || !bankReferenceNumber.trim() || !bankDepositDate || bankReceiptUploading))
                 }
-                className="w-full bg-[#0066CC] hover:bg-[#0052a3] text-white font-bold py-3.5 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#0866E8] hover:bg-[#09285C] text-white font-bold py-3.5 rounded-full transition-all shadow-md flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
                     <span>Verifying Stock &amp; Payment...</span>
                   </>
+                ) : !selectedPaymentMethod || (!paymentSettings.onlineCardEnabled && !paymentSettings.codEnabled && !paymentSettings.bankTransferEnabled) ? (
+                  <span>Select an Available Payment Method</span>
+                ) : selectedPaymentMethod === 'BANK_TRANSFER' && bankReceiptUploading ? (
+                  <span>Uploading Receipt Slip...</span>
+                ) : selectedPaymentMethod === 'BANK_TRANSFER' && !bankReceiptToken ? (
+                  <span>Upload Receipt Slip to Place Order</span>
+                ) : selectedPaymentMethod === 'BANK_TRANSFER' && !bankReferenceNumber.trim() ? (
+                  <span>Enter Reference # to Place Order</span>
                 ) : isExpired && reservation?.stockAvailable === false ? (
                   <span>Item Unavailable (Update Cart)</span>
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    <span>Pay {formatLKR(displayTotalCents)}</span>
+                    <span>Place Order &bull; {formatLKR(displayTotalCents)}</span>
                   </>
                 )}
               </button>

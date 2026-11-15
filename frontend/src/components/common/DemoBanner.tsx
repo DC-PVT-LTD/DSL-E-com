@@ -1,99 +1,61 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, ShieldCheck, RotateCcw, Check } from 'lucide-react';
-import { resetAllDemoData } from '@/services/resetDemoService';
-
-const ANNOUNCEMENT_MESSAGES = [
-  'Free Islandwide Delivery On Orders Over Rs. 5,000! 🚚',
-  '🌸 New Term & School Essentials Collection Now Live!',
-  'Save up to 15% on All Grade-Specific School Stationery Packs ✏️',
-  '100% Genuine Brands • Atlas, Faber-Castell, Promate, Nataraj ✨',
-];
+import { announcementService, AnnouncementAd, DEFAULT_ANNOUNCEMENTS } from '@/services/announcementService';
 
 export const DemoBanner: React.FC = () => {
-  const [resetSuccess, setResetSuccess] = useState(false);
-  const [currentIdx, setCurrentIdx] = useState(0);
+  const [items, setItems] = useState<AnnouncementAd[]>(DEFAULT_ANNOUNCEMENTS);
 
-  const handleReset = () => {
-    resetAllDemoData();
-    setResetSuccess(true);
-    setTimeout(() => {
-      setResetSuccess(false);
-      window.location.reload();
-    }, 800);
-  };
+  useEffect(() => {
+    // Initial sync load
+    const active = announcementService.getActive();
+    if (active.length > 0) {
+      setItems(active);
+    }
 
-  const handlePrev = () => {
-    setCurrentIdx((prev) => (prev === 0 ? ANNOUNCEMENT_MESSAGES.length - 1 : prev - 1));
-  };
+    // Subscribe to admin additions and updates
+    const unsubscribe = announcementService.subscribe(() => {
+      const updated = announcementService.getActive();
+      setItems(updated.length > 0 ? updated : DEFAULT_ANNOUNCEMENTS);
+    });
 
-  const handleNext = () => {
-    setCurrentIdx((prev) => (prev === ANNOUNCEMENT_MESSAGES.length - 1 ? 0 : prev + 1));
-  };
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  if (items.length === 0) return null;
 
   return (
-    <div className="bg-[#0066CC] text-white text-[11px] sm:text-xs font-semibold py-1.5 px-4 sm:px-8 lg:px-12 xl:px-16 select-none transition-colors">
-      <div className="w-full flex items-center justify-between gap-2">
-        {/* Left spacer / admin badge */}
-        <div className="hidden lg:flex items-center gap-2">
-          <Link
-            href="/admin/dashboard"
-            className="inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 text-white px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide transition-colors"
-            title="Switch to Store Admin Backoffice"
-          >
-            <ShieldCheck className="w-3 h-3" />
-            <span>Admin Portal</span>
-          </Link>
-        </div>
+    <aside
+      aria-label="Store Announcements"
+      className="bg-[#0866F5] text-white text-xs font-black h-[38px] flex items-center overflow-hidden select-none relative z-40 border-b border-blue-600/40 shadow-xs group"
+    >
+      {/* Edge gradient masks for smooth fade */}
+      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[#0866F5] to-transparent z-10" />
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[#0866F5] to-transparent z-10" />
 
-        {/* Center: Slim coral announcement with controls matching screenshot */}
-        <div className="flex-1 flex items-center justify-center gap-2 text-center text-white">
-          <button
-            onClick={handlePrev}
-            className="p-0.5 hover:bg-white/20 rounded-full transition-colors text-white/90 hover:text-white"
-            aria-label="Previous announcement"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-
-          <span className="tracking-wide font-medium">
-            {ANNOUNCEMENT_MESSAGES[currentIdx]}
-          </span>
-
-          <button
-            onClick={handleNext}
-            className="p-0.5 hover:bg-white/20 rounded-full transition-colors text-white/90 hover:text-white"
-            aria-label="Next announcement"
-          >
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Right: Quick Demo Reset & Currency notice */}
-        <div className="hidden sm:flex items-center gap-2.5">
-          <button
-            onClick={handleReset}
-            disabled={resetSuccess}
-            className="text-white/90 hover:text-white flex items-center gap-1 text-[10px] font-medium bg-black/10 hover:bg-black/20 px-2 py-0.5 rounded-full transition-colors"
-            title="Reset mock products and cart state"
-          >
-            {resetSuccess ? (
-              <>
-                <Check className="w-3 h-3 text-emerald-200" />
-                <span className="text-emerald-100">Reset!</span>
-              </>
+      {/* Continuous Marquee Scrolling to the RIGHT */}
+      <div className="animate-marquee-right flex items-center whitespace-nowrap">
+        {[...items, ...items].map((ad, idx) => (
+          <div key={`announcement-${ad.id}-${idx}`} className="flex items-center gap-3 px-6 shrink-0">
+            {ad.link ? (
+              <Link
+                href={ad.link}
+                className="tracking-wide uppercase text-[11px] sm:text-xs font-black hover:text-[#FFD84D] transition-colors cursor-pointer"
+              >
+                {ad.text}
+              </Link>
             ) : (
-              <>
-                <RotateCcw className="w-3 h-3" />
-                <span>Reset Demo</span>
-              </>
+              <span className="tracking-wide uppercase text-[11px] sm:text-xs font-black">
+                {ad.text}
+              </span>
             )}
-          </button>
-        </div>
+            <span className="text-[#FFD84D] text-xs select-none">•</span>
+          </div>
+        ))}
       </div>
-    </div>
+    </aside>
   );
 };
-

@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { Test, TestingModule } from '@nestjs/testing';
 import {
   NotificationsService,
   DefiniteDeliveryException,
   UncertainDeliveryTimeoutException,
 } from './notifications.service';
-import { ConfigService } from '@nestjs/config';
+import { ConfigService, ConfigModule } from '@nestjs/config';
+import { NotificationsModule } from './notifications.module';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
@@ -15,6 +17,25 @@ describe('NotificationsService', () => {
       get: vi.fn().mockImplementation((key: string, defaultVal: any) => defaultVal),
     };
     service = new NotificationsService(configServiceMock);
+  });
+
+  describe('Dependency Injection Resolution', () => {
+    it('successfully resolves NotificationsService with injected ConfigService from NestJS testing module', async () => {
+      const module: TestingModule = await Test.createTestingModule({
+        imports: [
+          ConfigModule.forRoot({
+            isGlobal: true,
+            ignoreEnvFile: true,
+            load: [() => ({ SMTP_HOST: 'smtp.mailtrap.io', SMTP_PORT: 2525 })],
+          }),
+          NotificationsModule,
+        ],
+      }).compile();
+
+      const resolvedService = module.get<NotificationsService>(NotificationsService);
+      expect(resolvedService).toBeDefined();
+      expect(resolvedService).toBeInstanceOf(NotificationsService);
+    });
   });
 
   describe('sendBackInStockAlert', () => {

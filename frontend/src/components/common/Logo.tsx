@@ -10,35 +10,36 @@ interface LogoProps {
   showSubtitle?: boolean;
 }
 
-export const Logo: React.FC<LogoProps> = ({ className = '', href = '/' }) => {
+export const Logo: React.FC<LogoProps> = ({
+  className = '',
+  href = '/home',
+  variant = 'light',
+  showSubtitle = true,
+}) => {
+  const isDark = variant === 'dark';
+
   return (
     <Link
       href={href}
-      className={`inline-flex items-baseline gap-1.5 group select-none ${className}`}
-      title="DSL Stationery"
+      className={`inline-flex items-center group select-none ${className}`}
+      title="DSL Enterprises (Pvt) Ltd - Stationery Distributors"
     >
-      <span className="relative inline-block">
-        <span className="font-extrabold text-2xl sm:text-[28px] tracking-tight text-[#10285D] lowercase leading-none">
-          dsl
-        </span>
-        {/* Soft yellow curved arc / smile stroke under 'dsl' */}
-        <svg
-          className="absolute -bottom-1.5 left-0 w-full h-2 overflow-visible pointer-events-none"
-          viewBox="0 0 38 8"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M 2 2.5 Q 19 8 36 2.5"
-            stroke="#FFD84D"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-        </svg>
-      </span>
-      <span className="font-normal text-xl sm:text-[23px] text-[#10285D] tracking-tight leading-none">
-        Stationery
-      </span>
+      <div className="flex flex-col items-start justify-center">
+        <img
+          src="/images/dsl-logo-header.png"
+          alt="DSL Enterprises (Pvt) Ltd"
+          className="h-10 sm:h-12 md:h-13 lg:h-14 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+        />
+        {showSubtitle && (
+          <span
+            className={`text-[8.5px] sm:text-[9.5px] md:text-[10px] font-black uppercase tracking-[0.26em] pl-12 sm:pl-14 md:pl-16 -mt-0.5 hidden sm:block ${
+              isDark ? 'text-sky-200/90' : 'text-[#102A5E]/85'
+            }`}
+          >
+            Stationery Distributors
+          </span>
+        )}
+      </div>
     </Link>
   );
 };

@@ -386,11 +386,28 @@ exports.Prisma.RefundRecordScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
   amountCents: 'amountCents',
+  currency: 'currency',
   method: 'method',
+  status: 'status',
   reference: 'reference',
+  externalReference: 'externalReference',
+  idempotencyKey: 'idempotencyKey',
+  payloadHash: 'payloadHash',
   reason: 'reason',
+  failureReason: 'failureReason',
+  maskedAccountNumber: 'maskedAccountNumber',
+  encryptedBankDetails: 'encryptedBankDetails',
   processedBy: 'processedBy',
-  createdAt: 'createdAt'
+  processedById: 'processedById',
+  requestedById: 'requestedById',
+  approvedById: 'approvedById',
+  approvedAt: 'approvedAt',
+  completedById: 'completedById',
+  completedAt: 'completedAt',
+  orderReturnRequestId: 'orderReturnRequestId',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.StockReservationScalarFieldEnum = {
@@ -427,6 +444,27 @@ exports.Prisma.PaymentAttemptScalarFieldEnum = {
   idempotencyKey: 'idempotencyKey',
   gatewayPayload: 'gatewayPayload',
   failureReason: 'failureReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BankDepositSubmissionScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  paymentAttemptId: 'paymentAttemptId',
+  receiptStorageKey: 'receiptStorageKey',
+  originalFilename: 'originalFilename',
+  fileSizeBytes: 'fileSizeBytes',
+  mimeType: 'mimeType',
+  fileHashSha256: 'fileHashSha256',
+  referenceNumber: 'referenceNumber',
+  depositDate: 'depositDate',
+  amountCents: 'amountCents',
+  customerNotes: 'customerNotes',
+  status: 'status',
+  rejectionReason: 'rejectionReason',
+  reviewedById: 'reviewedById',
+  reviewedAt: 'reviewedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -495,52 +533,6 @@ exports.Prisma.PromotionRedemptionScalarFieldEnum = {
   redeemedAt: 'redeemedAt'
 };
 
-exports.Prisma.UploadedDocumentScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  sessionId: 'sessionId',
-  fileName: 'fileName',
-  fileUrl: 'fileUrl',
-  storagePath: 'storagePath',
-  fileSizeBytes: 'fileSizeBytes',
-  fileType: 'fileType',
-  pageCount: 'pageCount',
-  status: 'status',
-  isSimulatedOCR: 'isSimulatedOCR',
-  ocrProvider: 'ocrProvider',
-  customerNotes: 'customerNotes',
-  processingError: 'processingError',
-  attempts: 'attempts',
-  processedAt: 'processedAt',
-  confirmedAt: 'confirmedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.ExtractedStationeryItemScalarFieldEnum = {
-  id: 'id',
-  documentId: 'documentId',
-  rawText: 'rawText',
-  itemDescription: 'itemDescription',
-  quantity: 'quantity',
-  unit: 'unit',
-  confidence: 'confidence',
-  confidenceScore: 'confidenceScore',
-  extractionConfidence: 'extractionConfidence',
-  matchConfidence: 'matchConfidence',
-  matchReason: 'matchReason',
-  matchedProductId: 'matchedProductId',
-  matchedVariantId: 'matchedVariantId',
-  candidateProductIds: 'candidateProductIds',
-  status: 'status',
-  isConfirmed: 'isConfirmed',
-  confirmedProductId: 'confirmedProductId',
-  confirmedVariantId: 'confirmedVariantId',
-  confirmedQuantity: 'confirmedQuantity',
-  isSubstituted: 'isSubstituted',
-  createdAt: 'createdAt'
-};
-
 exports.Prisma.WishlistItemScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -601,6 +593,7 @@ exports.Prisma.HomepageBannerScalarFieldEnum = {
   imageAltText: 'imageAltText',
   buttonText: 'buttonText',
   buttonLink: 'buttonLink',
+  placement: 'placement',
   sortOrder: 'sortOrder',
   status: 'status',
   startAt: 'startAt',
@@ -631,6 +624,15 @@ exports.Prisma.StoreSettingsScalarFieldEnum = {
   codEnabled: 'codEnabled',
   bankTransferEnabled: 'bankTransferEnabled',
   onlineCardEnabled: 'onlineCardEnabled',
+  bankName: 'bankName',
+  accountHolderName: 'accountHolderName',
+  accountNumber: 'accountNumber',
+  branchName: 'branchName',
+  branchCode: 'branchCode',
+  bankCode: 'bankCode',
+  paymentInstructions: 'paymentInstructions',
+  referenceInstructions: 'referenceInstructions',
+  bankLogoUrl: 'bankLogoUrl',
   updatedAt: 'updatedAt'
 };
 
@@ -873,6 +875,7 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   PENDING: 'PENDING',
   PAID: 'PAID',
   FAILED: 'FAILED',
+  PARTIALLY_REFUNDED: 'PARTIALLY_REFUNDED',
   REFUNDED: 'REFUNDED'
 };
 
@@ -901,6 +904,15 @@ exports.ReturnItemStatus = exports.$Enums.ReturnItemStatus = {
   REFUNDED: 'REFUNDED'
 };
 
+exports.RefundStatus = exports.$Enums.RefundStatus = {
+  REQUESTED: 'REQUESTED',
+  APPROVED: 'APPROVED',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  REJECTED: 'REJECTED'
+};
+
 exports.ReservationStatus = exports.$Enums.ReservationStatus = {
   ACTIVE: 'ACTIVE',
   CONSUMED: 'CONSUMED',
@@ -915,6 +927,12 @@ exports.PaymentAttemptStatus = exports.$Enums.PaymentAttemptStatus = {
   SUCCEEDED: 'SUCCEEDED',
   FAILED: 'FAILED',
   EXPIRED: 'EXPIRED'
+};
+
+exports.BankDepositStatus = exports.$Enums.BankDepositStatus = {
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  REJECTED: 'REJECTED'
 };
 
 exports.PromotionType = exports.$Enums.PromotionType = {
@@ -938,32 +956,6 @@ exports.PromotionStatus = exports.$Enums.PromotionStatus = {
   ACTIVE: 'ACTIVE',
   EXPIRED: 'EXPIRED',
   DISABLED: 'DISABLED'
-};
-
-exports.DocumentStatus = exports.$Enums.DocumentStatus = {
-  UPLOADED: 'UPLOADED',
-  PROCESSING: 'PROCESSING',
-  REVIEW_REQUIRED: 'REVIEW_REQUIRED',
-  READY_FOR_CONFIRMATION: 'READY_FOR_CONFIRMATION',
-  CONFIRMED: 'CONFIRMED',
-  FAILED: 'FAILED',
-  PROCESSED: 'PROCESSED',
-  REVIEWED: 'REVIEWED',
-  CONVERTED_TO_CART: 'CONVERTED_TO_CART'
-};
-
-exports.ItemConfidence = exports.$Enums.ItemConfidence = {
-  HIGH: 'HIGH',
-  MEDIUM: 'MEDIUM',
-  LOW: 'LOW'
-};
-
-exports.MatchStatus = exports.$Enums.MatchStatus = {
-  MATCHED: 'MATCHED',
-  UNMATCHED: 'UNMATCHED',
-  CUSTOM_SELECTED: 'CUSTOM_SELECTED',
-  SKIPPED: 'SKIPPED',
-  CONFIRMED: 'CONFIRMED'
 };
 
 exports.BannerStatus = exports.$Enums.BannerStatus = {
@@ -1039,13 +1031,12 @@ exports.Prisma.ModelName = {
   StockReservation: 'StockReservation',
   StockReservationItem: 'StockReservationItem',
   PaymentAttempt: 'PaymentAttempt',
+  BankDepositSubmission: 'BankDepositSubmission',
   Promotion: 'Promotion',
   PromotionCode: 'PromotionCode',
   PromotionProduct: 'PromotionProduct',
   PromotionCategory: 'PromotionCategory',
   PromotionRedemption: 'PromotionRedemption',
-  UploadedDocument: 'UploadedDocument',
-  ExtractedStationeryItem: 'ExtractedStationeryItem',
   WishlistItem: 'WishlistItem',
   SavedStationeryList: 'SavedStationeryList',
   SavedList: 'SavedList',

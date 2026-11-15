@@ -47,7 +47,7 @@ export const DynamicHeroBanners: React.FC = () => {
 
     timerRef.current = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % banners.length);
-    }, 6000);
+    }, 5000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -77,6 +77,10 @@ export const DynamicHeroBanners: React.FC = () => {
     setCurrentIndex((prev) => (prev + 1) % banners.length);
   };
 
+  const isReadyMadeGraphic =
+    currentBanner.subtitle === '__GRAPHIC_ONLY__' ||
+    (!currentBanner.subtitle && !currentBanner.description && !currentBanner.buttonText);
+
   return (
     <section
       className="relative w-full overflow-hidden select-none bg-slate-900"
@@ -96,50 +100,69 @@ export const DynamicHeroBanners: React.FC = () => {
             alt={currentBanner.imageAltText || currentBanner.title}
             className="w-full h-full object-cover object-center transition-opacity duration-700 ease-in-out"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/images/hero/hero_section_2x.png';
+              const img = e.target as HTMLImageElement;
+              if (img.src.includes(':3000/uploads/')) {
+                img.src = img.src.replace(':3000/uploads/', ':4000/uploads/');
+              } else {
+                img.src = '/images/hero/hero_section_2x.png';
+              }
             }}
           />
         </picture>
 
-        {/* Soft Contrast Gradient Overlay to guarantee readable text */}
-        <div className="absolute inset-0 bg-linear-to-r from-black/75 via-black/35 to-transparent z-10" />
+        {/* If ready-made graphic banner with destination link, make entire banner clickable */}
+        {isReadyMadeGraphic && currentBanner.buttonLink ? (
+          <Link
+            href={currentBanner.buttonLink}
+            className="absolute inset-0 z-20 cursor-pointer block focus:outline-hidden focus:ring-2 focus:ring-[#FFD84D]"
+            aria-label={currentBanner.title}
+          />
+        ) : null}
 
-        {/* Content Box */}
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 py-12 flex flex-col justify-center">
-          <div className="max-w-xl text-left space-y-4">
-            {/* Subtitle / Badge */}
-            {currentBanner.subtitle && (
-              <span className="inline-block px-3 py-1 rounded-full bg-[#FFD84D] text-[#10285D] text-xs font-black uppercase tracking-wider shadow-md">
-                {currentBanner.subtitle}
-              </span>
-            )}
+        {/* DYNAMIC TYPOGRAPHY: Only rendered when NOT a ready-made graphic banner */}
+        {!isReadyMadeGraphic && (
+          <>
+            {/* Soft Contrast Gradient Overlay to guarantee readable text */}
+            <div className="absolute inset-0 bg-linear-to-r from-black/75 via-black/35 to-transparent z-10 pointer-events-none" />
 
-            {/* Title */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight drop-shadow-md">
-              {currentBanner.title}
-            </h1>
+            {/* Content Box */}
+            <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 py-12 flex flex-col justify-center">
+              <div className="max-w-xl text-left space-y-4">
+                {/* Subtitle / Badge */}
+                {currentBanner.subtitle && (
+                  <span className="inline-block px-3 py-1 rounded-full bg-[#FFD84D] text-[#10285D] text-xs font-black uppercase tracking-wider shadow-md">
+                    {currentBanner.subtitle}
+                  </span>
+                )}
 
-            {/* Description */}
-            {currentBanner.description && (
-              <p className="text-sm sm:text-base text-slate-200 line-clamp-3 leading-relaxed drop-shadow-sm font-medium">
-                {currentBanner.description}
-              </p>
-            )}
+                {/* Title */}
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight drop-shadow-md">
+                  {currentBanner.title}
+                </h1>
 
-            {/* Call to Action Button */}
-            {currentBanner.buttonText && currentBanner.buttonLink && (
-              <div className="pt-2">
-                <Link
-                  href={currentBanner.buttonLink}
-                  className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#FFD84D] hover:bg-[#FFE37A] text-[#10285D] font-black text-sm shadow-xl transition-all hover:scale-105 active:scale-95"
-                >
-                  <span>{currentBanner.buttonText}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                {/* Description */}
+                {currentBanner.description && (
+                  <p className="text-sm sm:text-base text-slate-200 line-clamp-3 leading-relaxed drop-shadow-sm font-medium">
+                    {currentBanner.description}
+                  </p>
+                )}
+
+                {/* Call to Action Button */}
+                {currentBanner.buttonText && currentBanner.buttonLink && (
+                  <div className="pt-2">
+                    <Link
+                      href={currentBanner.buttonLink}
+                      className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#FFD84D] hover:bg-[#FFE37A] text-[#10285D] font-black text-sm shadow-xl transition-all hover:scale-105 active:scale-95"
+                    >
+                      <span>{currentBanner.buttonText}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </>
+        )}
 
         {/* Navigation Arrows (if more than 1 banner) */}
         {banners.length > 1 && (

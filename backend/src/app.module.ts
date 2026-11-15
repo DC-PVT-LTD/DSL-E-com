@@ -17,7 +17,6 @@ import { AuditModule } from './modules/audit/audit.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { CartModule } from './modules/cart/cart.module';
-import { UploadedDocumentsModule } from './modules/uploaded-documents/uploaded-documents.module';
 import { SchoolPacksModule } from './modules/school-packs/school-packs.module';
 import { CheckoutModule } from './modules/checkout/checkout.module';
 import { OrdersModule } from './modules/orders/orders.module';
@@ -31,6 +30,10 @@ import { NewsletterModule } from './modules/newsletter/newsletter.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
 import { AdminUsersModule } from './modules/admin-users/admin-users.module';
 import { RolesModule } from './modules/admin/roles/roles.module';
+import { BulkOrderModule } from './modules/bulk-order/bulk-order.module';
+import { CustomersModule } from './modules/customers/customers.module';
+import { StoreSettingsModule } from './modules/store-settings/store-settings.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -56,8 +59,8 @@ import { RolesModule } from './modules/admin/roles/roles.module';
     ProductsModule,
     InventoryModule,
     CartModule,
-    UploadedDocumentsModule,
     SchoolPacksModule,
+    BulkOrderModule,
     CheckoutModule,
     OrdersModule,
     NotificationsModule,
@@ -70,6 +73,9 @@ import { RolesModule } from './modules/admin/roles/roles.module';
     PromotionsModule,
     AdminUsersModule,
     RolesModule,
+    CustomersModule,
+    StoreSettingsModule,
+    PaymentsModule,
   ],
   providers: [
     {

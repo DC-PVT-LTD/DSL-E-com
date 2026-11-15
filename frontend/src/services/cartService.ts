@@ -114,6 +114,49 @@ class CartService {
     return this.handleResponse(res.data);
   }
 
+  public async addBulkItems(
+    items: Array<{ productId: string; variantId?: string | null; quantity: number }>
+  ): Promise<{
+    cart: BackendCartResponse;
+    results: Array<{
+      productId: string;
+      variantId?: string | null;
+      sku?: string;
+      name?: string;
+      requestedQuantity: number;
+      addedQuantity: number;
+      success: boolean;
+      error?: string;
+    }>;
+    addedCount: number;
+    failedCount: number;
+  }> {
+    const res = await apiClient.post<{
+      success: boolean;
+      data: {
+        cart: BackendCartResponse;
+        results: Array<{
+          productId: string;
+          variantId?: string | null;
+          sku?: string;
+          name?: string;
+          requestedQuantity: number;
+          addedQuantity: number;
+          success: boolean;
+          error?: string;
+        }>;
+        addedCount: number;
+        failedCount: number;
+      };
+    }>(
+      '/cart/items/bulk',
+      { items },
+      { headers: this.getHeaders() }
+    );
+    this.handleResponse(res.data.cart);
+    return res.data;
+  }
+
   public async addSchoolPack(
     packId: string,
     items: { productId: string; variantId?: string | null; quantity: number }[]

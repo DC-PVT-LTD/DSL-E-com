@@ -81,6 +81,25 @@ export interface PrePayValidationResult {
   payHerePayload?: Record<string, any> | null;
 }
 
+export interface BankTransferConfig {
+  bankName: string;
+  accountHolderName: string;
+  accountNumber: string;
+  branchName: string;
+  branchCode?: string | null;
+  bankCode?: string | null;
+  paymentInstructions: string;
+  referenceInstructions: string;
+  bankLogoUrl?: string | null;
+}
+
+export interface BankTransferCheckoutData {
+  receiptToken: string;
+  referenceNumber: string;
+  depositDate: string;
+  customerNotes?: string | null;
+}
+
 export interface ProcessPaymentPayload {
   reservationId: string;
   deliveryAddress: ShippingAddress;
@@ -88,6 +107,7 @@ export interface ProcessPaymentPayload {
   voucherCode?: string | null;
   idempotencyKey: string;
   paymentData?: Record<string, any> | null;
+  bankTransferData?: BankTransferCheckoutData | null;
   packSelections?: PackSelectionItem[] | null;
 }
 
@@ -160,6 +180,7 @@ class CheckoutService {
     paymentMethod: PaymentMethod;
     voucherCode?: string | null;
     idempotencyKey?: string | null;
+    bankTransferData?: BankTransferCheckoutData | null;
     packSelections?: PackSelectionItem[] | null;
   }): Promise<PrePayValidationResult> {
     const res = await apiClient.post<BackendApiResponse<PrePayValidationResult>>(
@@ -218,6 +239,80 @@ class CheckoutService {
       `/checkout/status/${encodeURIComponent(idOrNumber)}`
     );
     return res.data;
+  }
+
+  /**
+   * Uploads customer bank transfer payment slip to private backend storage.
+   */
+  async uploadBankReceipt(file: File): Promise<{
+    receiptToken: string;
+    storageKey: string;
+    originalFilename: string;
+    fileSizeBytes: number;
+    mimeType: string;
+  }> {
+    const formData = new FormData();
+    formData.append('receipt', file);
+
+    const res = await apiClient.post<
+      BackendApiResponse<{
+        receiptToken: string;
+        storageKey: string;
+        originalFilename: string;
+        fileSizeBytes: number;
+        mimeType: string;
+      }>
+    >('/checkout/bank-receipt-upload', formData);
+
+    if (!res?.data?.receiptToken) {
+      throw new Error(res?.message || 'Failed to upload bank transfer receipt');
+    }
+    return res.data;
+  }
+
+  /**
+   * Fetches public checkout settings and payment method availability from backend.
+   */
+  async fetchCheckoutSettings(): Promise<{
+    onlineCardEnabled: boolean;
+    codEnabled: boolean;
+    bankTransferEnabled: boolean;
+    flatDeliveryFeeCents: number;
+    freeDeliveryThresholdCents: number;
+    bankTransfer?: BankTransferConfig | null;
+  }> {
+    try {
+      const res = await apiClient.get<
+        BackendApiResponse<{
+          onlineCardEnabled: boolean;
+          codEnabled: boolean;
+          bankTransferEnabled: boolean;
+          flatDeliveryFeeCents: number;
+          freeDeliveryThresholdCents: number;
+          bankTransfer?: BankTransferConfig | null;
+        }>
+      >('/checkout/settings');
+      if (res?.data) {
+        return res.data;
+      }
+      return {
+        onlineCardEnabled: false,
+        codEnabled: true,
+        bankTransferEnabled: false,
+        flatDeliveryFeeCents: 35000,
+        freeDeliveryThresholdCents: 500000,
+        bankTransfer: null,
+      };
+    } catch {
+      return {
+        onlineCardEnabled: false,
+        codEnabled: true,
+        bankTransferEnabled: false,
+        flatDeliveryFeeCents: 35000,
+        freeDeliveryThresholdCents: 500000,
+        bankTransfer: null,
+      };
+    }
   }
 }
 

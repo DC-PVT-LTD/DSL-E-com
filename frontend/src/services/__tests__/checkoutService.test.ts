@@ -94,5 +94,93 @@ describe('checkoutService', () => {
     expect(renewed.reservationId).toBe('res-renewed');
     expect(renewed.status).toBe('ACTIVE');
   });
+
+  it('fetches checkout settings and payment method availability', async () => {
+    vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
+      success: true,
+      data: {
+        onlineCardEnabled: false,
+        codEnabled: true,
+        bankTransferEnabled: true,
+        flatDeliveryFeeCents: 35000,
+        freeDeliveryThresholdCents: 500000,
+      },
+    });
+
+    const settings = await checkoutService.fetchCheckoutSettings();
+    expect(settings.onlineCardEnabled).toBe(false);
+    expect(settings.codEnabled).toBe(true);
+    expect(settings.flatDeliveryFeeCents).toBe(35000);
+  });
+
+  it('uploads bank receipt slip via FormData and returns receiptToken', async () => {
+    vi.spyOn(apiClient, 'post').mockResolvedValueOnce({
+      success: true,
+      data: {
+        receiptToken: 'sample-token-abc',
+        storageKey: '1731600000000_uuid.pdf',
+        originalFilename: 'slip.pdf',
+        fileSizeBytes: 20480,
+        mimeType: 'application/pdf',
+      },
+    });
+
+    const file = new File(['%PDF-1.4 dummy'], 'slip.pdf', { type: 'application/pdf' });
+    const res = await checkoutService.uploadBankReceipt(file);
+
+    expect(res.receiptToken).toBe('sample-token-abc');
+    expect(res.originalFilename).toBe('slip.pdf');
+    expect(apiClient.post).toHaveBeenCalledWith('/checkout/bank-receipt-upload', expect.any(FormData));
+  });
+
+  it('processes payment with bankTransferData correctly', async () => {
+    vi.spyOn(apiClient, 'post').mockResolvedValueOnce({
+      success: true,
+      data: {
+        order: {
+          id: 'ord-bank-1',
+          orderNumber: 'DSL-2026-BANK1',
+          orderStatus: 'PENDING',
+          paymentStatus: 'PENDING',
+          paymentMethod: 'BANK_TRANSFER',
+        },
+        isDuplicate: false,
+      },
+    });
+
+    const res = await checkoutService.processPayment({
+      reservationId: 'res-123',
+      deliveryAddress: {
+        fullName: 'Customer Name',
+        phone: '+94771234567',
+        email: 'customer@dsl.lk',
+        addressLine1: 'Road 1',
+        city: 'Colombo',
+        district: 'Colombo',
+      },
+      paymentMethod: 'BANK_TRANSFER',
+      idempotencyKey: 'idemp-bt-test',
+      bankTransferData: {
+        receiptToken: 'sample-token-abc',
+        referenceNumber: 'REF123456',
+        depositDate: '2026-11-14',
+      },
+    });
+
+    expect(res.order.paymentMethod).toBe('BANK_TRANSFER');
+    expect(res.order.orderStatus).toBe('PENDING');
+    expect(res.order.paymentStatus).toBe('PENDING');
+    expect(apiClient.post).toHaveBeenCalledWith(
+      '/checkout/pay',
+      expect.objectContaining({
+        paymentMethod: 'BANK_TRANSFER',
+        bankTransferData: {
+          receiptToken: 'sample-token-abc',
+          referenceNumber: 'REF123456',
+          depositDate: '2026-11-14',
+        },
+      })
+    );
+  });
 });
 

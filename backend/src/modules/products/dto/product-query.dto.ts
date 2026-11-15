@@ -112,6 +112,8 @@ export const productQuerySchema = createPaginationSchema(productSortFields, 'cre
   .extend({
     search: z.string().optional(),
     q: z.string().optional(),
+    sku: z.string().optional(),
+    productId: z.string().optional(),
     categoryId: z.string().optional(),
     categorySlug: z.string().optional(),
     subcategoryId: z.string().optional(),
@@ -119,6 +121,8 @@ export const productQuerySchema = createPaginationSchema(productSortFields, 'cre
     brandSlug: z.string().optional(),
     minPrice: priceQueryTransform,
     maxPrice: priceQueryTransform,
+    status: z.enum(['active', 'inactive', 'all']).optional(),
+    stockStatus: z.enum(['HEALTHY', 'LOW_STOCK', 'OUT_OF_STOCK', 'all']).optional(),
     inStockOnly: strictBooleanQuery,
     isFeatured: strictBooleanQuery,
     isNewArrival: strictBooleanQuery,
@@ -192,4 +196,16 @@ export class ProductQueryDto {
 
   @ApiPropertyOptional({ description: 'Filter to best seller products', example: true })
   isBestSeller?: boolean;
+
+  @ApiPropertyOptional({ description: 'Filter by exact or partial SKU', example: 'DSL-PEN-001' })
+  sku?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by exact product ID', example: 'cmw01abc10000pous00010001' })
+  productId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by active status', enum: ['active', 'inactive', 'all'], example: 'active' })
+  status?: 'active' | 'inactive' | 'all';
+
+  @ApiPropertyOptional({ description: 'Filter by inventory stock health status', enum: ['HEALTHY', 'LOW_STOCK', 'OUT_OF_STOCK', 'all'], example: 'HEALTHY' })
+  stockStatus?: 'HEALTHY' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'all';
 }

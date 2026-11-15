@@ -5,7 +5,16 @@ import { INITIAL_PRODUCTS } from '@/mocks/products';
 
 describe('useCartStore', () => {
   beforeEach(() => {
-    useCartStore.getState().clearCart();
+    vi.restoreAllMocks();
+    vi.spyOn(cartService, 'addItem').mockImplementation(async () => {
+      const err = new Error('fetch failed');
+      (err as any).isNetworkError = true;
+      throw err;
+    });
+    vi.spyOn(cartService, 'clearCart').mockImplementation(async () => {
+      return { id: 'cart-1', items: [], sessionId: 'test', subtotalCents: 0, totalCents: 0 } as any;
+    });
+    useCartStore.getState().clearCartLocal();
   });
 
   it('adds a product to cart and calculates subtotal correctly', () => {

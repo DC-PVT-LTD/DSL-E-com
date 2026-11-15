@@ -22,6 +22,10 @@ export interface Brand {
   logo?: string;
   description: string;
   originCountry: string;
+  featured?: boolean;
+  itemCount?: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface ProductVariant {
@@ -118,9 +122,41 @@ export interface ImportSummary {
 }
 
 export interface ImportPreviewResult {
+  previewId?: string | null;
+  previewChecksum?: string;
+  expiresAt?: string | null;
   summary: ImportSummary;
   rows: ImportPreviewRow[];
   fileName: string;
   fileSizeBytes: number;
   parsedAt: string;
 }
+
+export interface ExecuteImportPayload {
+  previewId: string;
+  previewChecksum: string;
+  stockMode?: 'SET_STOCK' | 'ADD_STOCK';
+  allowUpdates?: boolean;
+  idempotencyKey?: string;
+}
+
+export interface ImportBatchResponse {
+  batchId: string;
+  status: string;
+  progressPercent?: number;
+  totalRows?: number;
+  processedRows?: number;
+  successRows?: number;
+  failedRows?: number;
+  errors?: Array<{ rowNumber?: number; sku?: string; error?: string; message?: string }>;
+  [key: string]: any;
+}
+
+export interface ImportHistoryResponse {
+  items: any[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages?: number;
+}
+

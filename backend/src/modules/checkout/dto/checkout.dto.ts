@@ -50,6 +50,17 @@ export const packSelectionItemSchema = z.object({
 
 export type PackSelectionItemDto = z.infer<typeof packSelectionItemSchema>;
 
+export const bankTransferDataSchema = z.object({
+  receiptToken: z.string().min(1, 'Receipt token is required'),
+  referenceNumber: z.string().trim().min(2, 'Reference / Transaction number is required').max(100),
+  depositDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: 'Valid deposit date is required',
+  }),
+  customerNotes: z.string().trim().max(500).optional().nullable(),
+});
+
+export type BankTransferDataDto = z.infer<typeof bankTransferDataSchema>;
+
 export const validatePaySchema = z.object({
   reservationId: z.string().min(1, 'Reservation ID is required'),
   sessionId: z.string().optional().nullable(),
@@ -57,6 +68,7 @@ export const validatePaySchema = z.object({
   paymentMethod: z.enum(['CASH_ON_DELIVERY', 'BANK_TRANSFER', 'CARD_PAYHERE']),
   voucherCode: z.string().optional().nullable(),
   idempotencyKey: z.string().optional().nullable(),
+  bankTransferData: bankTransferDataSchema.optional().nullable(),
   packSelections: z.array(packSelectionItemSchema).optional().nullable(),
 });
 
@@ -70,6 +82,7 @@ export const processPaymentSchema = z.object({
   voucherCode: z.string().optional().nullable(),
   idempotencyKey: z.string().min(1, 'Idempotency key is required'),
   paymentData: z.record(z.any()).optional().nullable(),
+  bankTransferData: bankTransferDataSchema.optional().nullable(),
   packSelections: z.array(packSelectionItemSchema).optional().nullable(),
 });
 

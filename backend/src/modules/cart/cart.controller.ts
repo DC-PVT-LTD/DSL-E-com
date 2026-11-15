@@ -30,10 +30,12 @@ import {
   UpdateCartItemDto,
   MergeCartDto,
   AddSchoolPackToCartDto,
+  AddBulkItemsToCartDto,
   addToCartSchema,
   updateCartItemSchema,
   mergeCartSchema,
   addSchoolPackToCartSchema,
+  addBulkItemsToCartSchema,
 } from './dto/cart.dto';
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
@@ -123,6 +125,37 @@ export class CartController {
 
     this.setGuestHeader(res, cart.sessionId);
     return createApiResponse(cart, 'Item added to cart successfully');
+  }
+
+  @Post('items/bulk')
+  @UseGuards(OptionalJwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Add multiple items to cart in bulk',
+    description: 'Validates real database stock, merges existing lines, recalculates prices, and returns updated cart.',
+  })
+  @ApiHeader({
+    name: 'x-guest-session-id',
+    required: false,
+    description: 'Session identifier for anonymous guest carts',
+  })
+  @ApiBody({ type: AddBulkItemsToCartDto })
+  @ApiResponse({ status: 200, description: 'Bulk items processed' })
+  async addBulkItems(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body(createZodPipe(addBulkItemsToCartSchema)) dto: AddBulkItemsToCartDto,
+    @CurrentUser() user?: AuthenticatedUser
+  ) {
+    const guestSessionId = this.getGuestSessionId(req);
+    const bulkResponse = await this.cartService.addBulkItems(
+      dto,
+      user?.id || null,
+      guestSessionId
+    );
+
+    this.setGuestHeader(res, bulkResponse.cart.sessionId);
+    return createApiResponse(bulkResponse, 'Bulk items processed successfully');
   }
 
   @Post('school-packs')

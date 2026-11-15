@@ -11,7 +11,9 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -84,6 +86,43 @@ export class CategoriesController {
   async getCategoryTree() {
     const tree = await this.categoriesService.getCategoryTree();
     return createApiResponse(tree);
+  }
+
+  @ApiTags('Admin API', 'Categories')
+  @Get('admin/analytics')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Get category analytics and distribution metrics',
+    description: 'Returns real database metrics on category hierarchy, product usage, and top categories.',
+  })
+  async getCategoryAnalytics() {
+    const analytics = await this.categoriesService.getAdminAnalytics();
+    return createApiResponse(analytics, 'Category analytics retrieved successfully');
+  }
+
+  @ApiTags('Admin API', 'Categories', 'Export')
+  @Get('export')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @ApiBearerAuth('bearerAuth')
+  @ApiCookieAuth('dsl_access_token')
+  @ApiOperation({
+    summary: 'Export categories to CSV or Excel',
+    description: 'Exports category hierarchy and product counts to CSV or XLSX format.',
+  })
+  async exportCategories(
+    @Query('format') format: 'csv' | 'xlsx',
+    @Query('selectedIds') selectedIdsStr: string,
+    @Res() res: Response
+  ) {
+    const selectedIds = selectedIdsStr ? selectedIdsStr.split(',').filter(Boolean) : undefined;
+    const file = await this.categoriesService.exportCategories(format || 'xlsx', selectedIds);
+    res.setHeader('Content-Type', file.mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
+    res.send(file.buffer);
   }
 
   @ApiTags('Categories')

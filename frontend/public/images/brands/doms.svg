@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 50" width="160" height="50">
+  <rect width="160" height="50" rx="8" fill="#E11D48" />
+  <text x="80" y="35" font-family="'Arial Black', Impact, sans-serif" font-weight="900" font-size="26" fill="#FFFFFF" text-anchor="middle" letter-spacing="3">DOMS</text>
+  <rect x="25" y="40" width="110" height="2" fill="#FFFFFF" opacity="0.6" />
+</svg>

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { brandService } from '../brandService';
 import { apiClient } from '@/lib/api/apiClient';
+import { INITIAL_BRANDS } from '@/mocks/brands';
 
 describe('brandService', () => {
   beforeEach(() => {
@@ -46,9 +47,37 @@ describe('brandService', () => {
     } as any);
 
     const result = await brandService.fetchBrands();
-    expect(result.length).toBe(2);
-    expect(result[0].name).toBe('Speed');
+
+    // 1. Exact count: 13 default items with 2 merged/updated items
+    expect(result.length).toBe(INITIAL_BRANDS.length);
+
+    // 2. Strict uniqueness verification across IDs and Slugs
+    const uniqueIds = new Set(result.map((b) => b.id));
+    expect(uniqueIds.size).toBe(result.length);
+    const uniqueSlugs = new Set(result.map((b) => b.slug));
+    expect(uniqueSlugs.size).toBe(result.length);
+
+    // 3. Expected API-fetched records and API-over-default override behavior
+    const speed = result.find((b) => b.slug === 'speed');
+    expect(speed).toBeDefined();
+    expect(speed?.name).toBe('Speed');
+    expect(speed?.description).toBe('Quality stationery manufacturer');
+    expect(speed?.originCountry).toBe('Sri Lanka');
+
+    const linc = result.find((b) => b.slug === 'linc');
+    expect(linc).toBeDefined();
+    expect(linc?.name).toBe('Linc');
+    expect(linc?.description).toBe('Writing instruments');
+    expect(linc?.originCountry).toBe('India');
+
+    // 4. Preservation of non-overridden default brands
+    const doms = result.find((b) => b.slug === 'doms');
+    expect(doms).toBeDefined();
+    expect(doms?.name).toBe('Doms');
+
+    // 5. Query helpers return accurate entity attributes
     expect(brandService.getBrandBySlug('speed')?.originCountry).toBe('Sri Lanka');
+    expect(brandService.getBrandBySlug('linc')?.originCountry).toBe('India');
   });
 
   it('fetches brand details by slug via backend API', async () => {

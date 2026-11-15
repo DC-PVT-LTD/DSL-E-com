@@ -375,8 +375,8 @@ function SchoolPackCustomizerContent() {
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-20 text-center space-y-4">
-        <div className="w-10 h-10 border-4 border-[#0066CC] border-t-transparent rounded-full animate-spin mx-auto"></div>
-        <p className="text-xs text-[#292525]/60 font-medium">Loading school pack configuration...</p>
+        <div className="w-10 h-10 border-4 border-[#0866E8] border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <p className="text-xs text-slate-500 font-medium">Loading school pack configuration...</p>
       </div>
     );
   }
@@ -384,13 +384,13 @@ function SchoolPackCustomizerContent() {
   if (!pack) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-xl font-bold text-[#292525]">School Pack Not Found</h1>
-        <p className="text-xs text-[#292525]/60 mt-1">
+        <h1 className="text-xl font-bold text-[#09285C]">School Pack Not Found</h1>
+        <p className="text-xs text-slate-500 mt-1">
           The requested pack may be retired or unavailable.
         </p>
         <Link
           href="/school-packs"
-          className="mt-4 inline-flex items-center gap-1.5 bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-bold px-5 py-2.5 rounded-full shadow-sm"
+          className="mt-4 inline-flex items-center gap-1.5 bg-[#0866E8] hover:bg-[#09285C] text-white text-xs font-bold px-5 py-2.5 rounded-full shadow-sm transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to School Packs</span>
@@ -400,58 +400,58 @@ function SchoolPackCustomizerContent() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-10">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 pb-32 lg:pb-16">
       {/* Breadcrumb Navigation */}
-      <nav className="flex items-center gap-1.5 text-xs text-[#292525]/50 font-medium">
-        <Link href="/home" className="hover:text-[#0066CC]">Home</Link>
-        <ChevronRight className="w-3.5 h-3.5" />
-        <Link href="/school-packs" className="hover:text-[#0066CC]">School Packs</Link>
-        <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-[#292525] font-bold">{pack.name}</span>
+      <nav className="flex items-center gap-1.5 text-xs text-slate-500 font-medium flex-wrap">
+        <Link href="/home" className="hover:text-[#0866E8]">Home</Link>
+        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+        <Link href="/school-packs" className="hover:text-[#0866E8]">School Packs</Link>
+        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+        <span className="text-[#09285C] font-bold line-clamp-1">{pack.name}</span>
       </nav>
 
       {/* Hero Card */}
-      <div className="bg-white rounded-3xl border border-[#C6E7FF]/60 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+      <div className="bg-white rounded-3xl border border-slate-100 p-5 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
         <div>
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className="text-xs font-bold text-[#292525] bg-[#FFFDF0] border border-[#C6E7FF] px-3 py-0.5 rounded-full">
+          <div className="flex items-center gap-2 mb-2.5 flex-wrap">
+            <span className="text-xs font-bold text-[#09285C] bg-[#EAF4FF] border border-blue-200/60 px-3 py-1 rounded-full">
               {pack.grade}
             </span>
-            <span className="text-[10px] font-black uppercase tracking-wider text-[#594300] bg-[#FFD84D] px-2.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[#594300] bg-[#FFD84D] px-2.5 py-1 rounded-full">
               {pack.tier} tier
             </span>
             {packStockStatus === 'IN_STOCK' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>All Components In Stock</span>
+                <span>All In Stock</span>
               </span>
             )}
             {packStockStatus === 'LIMITED_STOCK' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
                 <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-                <span>Limited Stock Available</span>
+                <span>Limited Stock</span>
               </span>
             )}
             {packStockStatus === 'OUT_OF_STOCK' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-full">
                 <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
-                <span>Components Out of Stock</span>
+                <span>Out of Stock</span>
               </span>
             )}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#292525] leading-tight">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[#09285C] leading-tight">
             {pack.name}
           </h1>
-          <p className="text-xs sm:text-sm text-[#292525]/70 mt-2 max-w-xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-xl leading-relaxed">
             {pack.description}
           </p>
         </div>
 
-        <div className="bg-[#FFFDF0] border border-[#C6E7FF] rounded-2xl p-5 text-center shrink-0">
-          <span className="text-[10px] font-bold text-[#292525]/50 uppercase tracking-wider block">
+        <div className="bg-[#F7FAFF] border border-[#EAF4FF] rounded-2xl p-5 text-center shrink-0">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
             Customized Total (LKR)
           </span>
-          <span className="text-2xl sm:text-3xl font-black text-[#0066CC] block mt-0.5">
+          <span className="text-2xl sm:text-3xl font-black text-[#0866E8] block mt-0.5">
             {formatLKR(serverTotalCents)}
           </span>
           <span className="text-[11px] font-bold text-emerald-600 block mt-1">
@@ -469,7 +469,7 @@ function SchoolPackCustomizerContent() {
           </div>
           <button
             onClick={() => setLiveStockWarning(null)}
-            className="text-amber-800 hover:text-black font-bold text-xs underline shrink-0 cursor-pointer"
+            className="text-amber-800 hover:text-black font-bold text-xs underline shrink-0 cursor-pointer p-1"
           >
             Dismiss
           </button>
@@ -482,7 +482,7 @@ function SchoolPackCustomizerContent() {
           <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
           <div>
             <p className="font-bold">Pack currently cannot be fulfilled:</p>
-            <p className="mt-0.5">
+            <p className="mt-0.5 text-rose-700">
               One or more items in this school pack have run out of stock or requested quantity exceeds available stock. Please swap out-of-stock items with available substitutes below or adjust quantities.
             </p>
           </div>
@@ -495,32 +495,32 @@ function SchoolPackCustomizerContent() {
           <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
           <div>
             <p className="font-bold">Cannot add school pack to bag:</p>
-            <p className="mt-0.5">{cartError}</p>
+            <p className="mt-0.5 text-rose-700">{cartError}</p>
           </div>
         </div>
       )}
 
       {/* Items Customization */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[#292525]">Customize Pack Contents</h2>
-          <span className="text-xs text-[#292525]/50">Adjust quantities or substitute brands</span>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h2 className="text-base sm:text-lg font-bold text-[#09285C]">Customize Pack Contents</h2>
+          <span className="text-xs text-slate-500">Adjust quantities or substitute brands</span>
         </div>
 
         <div className="space-y-3">
           {items.map((item) => (
             <div
               key={item.itemId}
-              className={`bg-white rounded-2xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs transition-all ${
+              className={`bg-white rounded-2xl border p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs transition-all ${
                 item.stockQuantity <= 0
                   ? 'border-rose-300 bg-rose-50/20'
                   : item.quantity > item.stockQuantity
                   ? 'border-amber-300 bg-amber-50/20'
-                  : 'border-[#C6E7FF]/60 hover:border-[#0066CC]'
+                  : 'border-slate-100 hover:border-[#0866E8]'
               }`}
             >
-              <div className="flex items-center gap-3.5">
-                <div className="w-14 h-14 rounded-2xl bg-[#FFFDF0] border border-[#C6E7FF] overflow-hidden flex items-center justify-center text-[#0066CC] font-bold text-base shrink-0">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#F7FAFF] border border-[#EAF4FF] overflow-hidden flex items-center justify-center text-[#0866E8] font-bold text-base shrink-0">
                   {item.imageUrl ? (
                     <img
                       src={item.imageUrl}
@@ -532,9 +532,9 @@ function SchoolPackCustomizerContent() {
                   )}
                 </div>
 
-                <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-[#292525]">{item.productName}</h3>
-                  <div className="flex items-center gap-3 text-[11px] text-[#292525]/60 mt-0.5 flex-wrap">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xs sm:text-sm font-bold text-[#09285C] break-words">{item.productName}</h3>
+                  <div className="flex items-center gap-2.5 text-[11px] text-slate-500 mt-0.5 flex-wrap">
                     <span>Unit: {formatLKR(item.unitPriceCents)}</span>
                     {item.stockQuantity <= 0 ? (
                       <span className="text-rose-600 font-bold flex items-center gap-1">
@@ -553,8 +553,8 @@ function SchoolPackCustomizerContent() {
 
                   {/* Substitute Options */}
                   {item.substitutes && item.substitutes.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 mt-2">
-                      <span className="text-[10px] font-semibold text-[#292525]/50">Swap Brand:</span>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                      <span className="text-[10px] font-semibold text-slate-400">Swap:</span>
                       {item.substitutes.map((sub, sIdx) => {
                         const subId = sub.id || sub.productId || `sub-${sIdx}`;
                         const subName = sub.name || sub.productName || 'Substitute';
@@ -565,10 +565,10 @@ function SchoolPackCustomizerContent() {
                             key={subId}
                             onClick={() => handleSubstitute(item.itemId, sub)}
                             disabled={subStock <= 0}
-                            className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 transition-all ${
+                            className={`text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 transition-all ${
                               subId === item.productId
-                                ? 'bg-[#0066CC] text-white shadow-xs'
-                                : 'text-[#0066CC] hover:underline bg-[#FFFDF0] border border-[#C6E7FF]/60'
+                                ? 'bg-[#0866E8] text-white shadow-xs'
+                                : 'text-[#0866E8] hover:bg-blue-50 bg-[#F7FAFF] border border-blue-100'
                             } disabled:opacity-40 disabled:cursor-not-allowed`}
                           >
                             <RefreshCw className="w-2.5 h-2.5" />
@@ -583,28 +583,30 @@ function SchoolPackCustomizerContent() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between sm:justify-end gap-6 pl-16 sm:pl-0">
+              <div className="flex items-center justify-between md:justify-end gap-4 pt-2 md:pt-0 border-t border-slate-100 md:border-0">
                 {/* Quantity Controls */}
-                <div className="flex items-center border border-[#C6E7FF] rounded-full overflow-hidden bg-[#FFFDF0]">
+                <div className="flex items-center border border-slate-200 rounded-full overflow-hidden bg-[#F7FAFF]">
                   <button
                     onClick={() => handleUpdateQty(item.itemId, item.quantity - 1)}
                     disabled={item.quantity <= 1}
-                    className="p-1.5 hover:bg-[#C6E7FF]/40 text-[#292525] disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-8 h-8 flex items-center justify-center hover:bg-blue-50 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    aria-label="Decrease quantity"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="px-3 text-xs font-bold text-[#292525]">{item.quantity}</span>
+                  <span className="px-3 text-xs font-bold text-[#09285C] min-w-8 text-center">{item.quantity}</span>
                   <button
                     onClick={() => handleUpdateQty(item.itemId, item.quantity + 1)}
                     disabled={item.quantity >= item.stockQuantity || item.stockQuantity <= 0}
-                    className="p-1.5 hover:bg-[#C6E7FF]/40 text-[#292525] disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-8 h-8 flex items-center justify-center hover:bg-blue-50 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    aria-label="Increase quantity"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                <div className="text-right min-w-24">
-                  <span className="text-sm font-black text-[#0066CC] block">
+                <div className="text-right min-w-20">
+                  <span className="text-sm font-black text-[#0866E8] block">
                     {formatLKR(item.unitPriceCents * item.quantity)}
                   </span>
                 </div>
@@ -614,14 +616,14 @@ function SchoolPackCustomizerContent() {
         </div>
       </div>
 
-      {/* Sticky Bottom Bar */}
-      <div className="bg-white rounded-3xl border border-[#C6E7FF]/60 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md sticky bottom-6 z-10">
-        <div>
-          <span className="text-xs text-[#292525]/60 block">
+      {/* Floating / Sticky Bottom Bar */}
+      <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/80 p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl sticky bottom-20 lg:bottom-6 z-20">
+        <div className="w-full sm:w-auto text-center sm:text-left">
+          <span className="text-xs text-slate-500 block">
             Bundle Price ({items.length} items customized):
           </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#0066CC]">{formatLKR(serverTotalCents)}</span>
+          <div className="flex items-baseline justify-center sm:justify-start gap-2">
+            <span className="text-2xl font-black text-[#0866E8]">{formatLKR(serverTotalCents)}</span>
             <span className="text-xs text-emerald-600 font-bold">
               Save {formatLKR(serverSavingsCents)} ({pack.savingsPercentage}% Off)
             </span>
@@ -633,8 +635,8 @@ function SchoolPackCustomizerContent() {
           disabled={added || isCalculating || packStockStatus === 'OUT_OF_STOCK'}
           className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 font-bold text-sm px-8 py-3.5 rounded-full shadow-md transition-all ${
             packStockStatus === 'OUT_OF_STOCK'
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
-              : 'bg-[#0066CC] hover:bg-[#0052a3] text-white hover:shadow-lg disabled:opacity-75'
+              ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+              : 'bg-[#0866E8] hover:bg-[#09285C] text-white hover:shadow-lg disabled:opacity-75'
           }`}
         >
           {added ? (
@@ -644,7 +646,7 @@ function SchoolPackCustomizerContent() {
             </>
           ) : packStockStatus === 'OUT_OF_STOCK' ? (
             <>
-              <AlertCircle className="w-4 h-4 text-gray-500" />
+              <AlertCircle className="w-4 h-4 text-slate-400" />
               <span>Unavailable — Components Out of Stock</span>
             </>
           ) : (
