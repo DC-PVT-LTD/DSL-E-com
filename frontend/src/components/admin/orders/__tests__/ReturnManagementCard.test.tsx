@@ -141,4 +141,102 @@ describe('ReturnManagementCard (Stage 1)', () => {
       });
     });
   });
+
+  it('AUD-01: displays error state with retry button when return fetching fails', async () => {
+    vi.spyOn(orderService, 'fetchOrderReturns').mockRejectedValueOnce(
+      new Error('Internal Server Error 500')
+    );
+
+    render(<ReturnManagementCard orderId="ord-1" orderNumber="DSL-1001" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to Load Return Requests')).toBeDefined();
+      expect(
+        screen.getByText('Failed to retrieve return requests. Please try again.')
+      ).toBeDefined();
+      expect(screen.getByText('Retry')).toBeDefined();
+    });
+
+    // Verify it does NOT display the empty state falsely
+    expect(screen.queryByText('No Return Requests Registered')).toBeNull();
+
+    // Now clicking Retry recovers when service succeeds
+    vi.spyOn(orderService, 'fetchOrderReturns').mockResolvedValueOnce(mockReturns);
+    fireEvent.click(screen.getByText('Retry'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Return #RET-1001')).toBeDefined();
+      expect(screen.queryByText('Failed to Load Return Requests')).toBeNull();
+    });
+  });
+
+  it('AUD-01: displays network-friendly message when a network failure occurs', async () => {
+    vi.spyOn(orderService, 'fetchOrderReturns').mockRejectedValueOnce({
+      isNetworkError: true,
+      message: 'Network request failed',
+    });
+
+    render(<ReturnManagementCard orderId="ord-1" orderNumber="DSL-1001" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to Load Return Requests')).toBeDefined();
+      expect(
+        screen.getByText('Unable to connect to the server. Please check your network connection.')
+      ).toBeDefined();
+    });
+  });
+
+  it('AUD-01: displays empty state when returns list is legitimately empty', async () => {
+    vi.spyOn(orderService, 'fetchOrderReturns').mockResolvedValueOnce([]);
+
+    render(<ReturnManagementCard orderId="ord-1" orderNumber="DSL-1001" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('No Return Requests Registered')).toBeDefined();
+      expect(screen.queryByText('Failed to Load Return Requests')).toBeNull();
+    });
+  });
+
+  it('AUD-02: displays inline error banner instead of browser alert when action fails', async () => {
+    const alertMock = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    vi.spyOn(orderService, 'processReturnAction').mockResolvedValueOnce({
+      success: false,
+      error: 'Cannot approve return in current status',
+    });
+
+    render(<ReturnManagementCard orderId="ord-1" orderNumber="DSL-1001" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Approve Return')).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByText('Approve Return'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Cannot approve return in current status')).toBeDefined();
+      expect(screen.getByText('Action Failed:')).toBeDefined();
+    });
+
+    // Native browser alert must NOT be called
+    expect(alertMock).not.toHaveBeenCalled();
+    alertMock.mockRestore();
+  });
+
+  it('AUD-02: displays inline success notice upon successful action', async () => {
+    vi.spyOn(orderService, 'processReturnAction').mockResolvedValueOnce({
+      success: true,
+    });
+
+    render(<ReturnManagementCard orderId="ord-1" orderNumber="DSL-1001" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Approve Return')).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByText('Approve Return'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Return request approved successfully.')).toBeDefined();
+    });
+  });
 });

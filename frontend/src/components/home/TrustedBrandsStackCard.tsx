@@ -1,16 +1,14 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import { motion, useReducedMotion, Variants } from 'framer-motion';
-import SplitText from '@/components/common/SplitText';
+import LightCardWavesBackground from '@/components/common/LightCardWavesBackground';
 
 interface BrandItem {
   id: string;
   name: string;
   logo: string;
   slug: string;
-  isGolden?: boolean;
 }
 
 const BRANDS: BrandItem[] = [
@@ -19,46 +17,41 @@ const BRANDS: BrandItem[] = [
     name: 'LINC',
     logo: '/images/brands/linc.png',
     slug: 'linc',
-    isGolden: false,
   },
   {
     id: 'doms',
     name: 'DOMS',
     logo: '/images/brands/doms.png',
     slug: 'doms',
-    isGolden: false,
   },
   {
     id: 'speed',
     name: 'Speed',
     logo: '/images/brands/speed.png',
     slug: 'speed',
-    isGolden: true,
   },
   {
     id: 'flexoffice',
     name: 'flexoffice',
     logo: '/images/brands/flexoffice.png',
     slug: 'flexoffice',
-    isGolden: false,
   },
   {
     id: 'amico',
     name: 'amico',
     logo: '/images/brands/amico.png',
     slug: 'amico',
-    isGolden: false,
   },
   {
     id: 'pentonic',
     name: 'pentonic',
     logo: '/images/brands/pentonic.png',
     slug: 'pentonic',
-    isGolden: true,
   },
 ];
 
 export const TrustedBrandsStackCard: React.FC = () => {
+  const [activeBrandId, setActiveBrandId] = useState<string>('speed');
   const prefersReducedMotion = useReducedMotion();
 
   const containerVariants: Variants = {
@@ -103,54 +96,36 @@ export const TrustedBrandsStackCard: React.FC = () => {
 
   return (
     <motion.div
-      className="w-full h-full flex flex-col justify-center gap-8 sm:gap-12 lg:gap-16 select-none py-6"
+      className="relative w-full h-full flex flex-col justify-center gap-6 sm:gap-8 lg:gap-10 select-none py-6 sm:py-8 px-4 sm:px-8 lg:px-12 overflow-hidden rounded-[28px]"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
       variants={containerVariants}
     >
+      {/* Light Silk Waves Background matching uploaded reference */}
+      <LightCardWavesBackground />
+
       {/* 1. Header Section */}
-      <motion.div className="text-center w-full max-w-3xl mx-auto" variants={headerVariants}>
-        {/* Label: OUR BRANDS with horizontal lines */}
-        <div className="inline-flex items-center justify-center gap-3 sm:gap-4 mb-2 sm:mb-3">
-          <span className="h-[1px] w-6 sm:w-12 bg-gradient-to-r from-transparent via-blue-400/50 to-blue-400" />
-          <SplitText
-            text="OUR BRANDS"
-            tag="span"
-            className="text-[10px] sm:text-xs font-black tracking-[0.28em] text-[#60A5FA] uppercase select-none inline-block"
-            effect="fade"
-            splitType="chars"
-            delay={30}
-            duration={0.8}
-            trigger="view"
-          />
-          <span className="h-[1px] w-6 sm:w-12 bg-gradient-to-l from-transparent via-blue-400/50 to-blue-400" />
+      <motion.div className="relative z-10 text-center w-full max-w-3xl mx-auto" variants={headerVariants}>
+        {/* Label: OUR BRANDS with vibrant golden lines and high contrast */}
+        <div className="inline-flex items-center justify-center gap-3 sm:gap-4 mb-2.5 sm:mb-3.5">
+          <span className="h-[2.5px] w-8 sm:w-14 bg-gradient-to-r from-transparent via-[#FFB800] to-[#FF9E0B] rounded-full inline-block shadow-[0_0_8px_rgba(255,184,0,0.45)]" />
+          <span className="px-3.5 py-1 rounded-full bg-white/85 border border-blue-200/60 shadow-[0_2px_8px_rgba(8,102,232,0.08)] backdrop-blur-md text-xs sm:text-sm font-extrabold tracking-[0.24em] text-[#0866E8] uppercase select-none inline-block drop-shadow-xs">
+            OUR BRANDS
+          </span>
+          <span className="h-[2.5px] w-8 sm:w-14 bg-gradient-to-r from-[#FF9E0B] via-[#FFB800] to-transparent rounded-full inline-block shadow-[0_0_8px_rgba(255,184,0,0.45)]" />
         </div>
 
-        {/* Main Heading: Trusted by the Best with yellow underline */}
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-black tracking-tight text-white leading-tight flex items-center justify-center flex-wrap gap-x-2.5">
-          <SplitText
-            text="Trusted by the"
-            tag="span"
-            effect="rise"
-            splitType="words, chars"
-            delay={35}
-            duration={1.0}
-            trigger="view"
-            className="text-white inline-block"
-          />
-          <span className="relative inline-block text-[#FFD84D]">
-            <SplitText
-              text="Best"
-              tag="span"
-              effect="rise"
-              splitType="chars"
-              delay={45}
-              duration={1.0}
-              trigger="view"
-              className="text-[#FFD84D] inline-block"
-            />
-            {/* Curved yellow underline */}
+        {/* Main Heading: Trusted by the Best with fully visible 't' in Best */}
+        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-black tracking-tight leading-tight flex items-center justify-center flex-wrap gap-x-2.5">
+          <span className="text-[#0F2752] inline-block font-black">
+            Trusted by the
+          </span>
+          <span className="relative inline-block text-[#0866E8] italic font-black pl-1 pr-3 sm:pr-4">
+            <span className="text-[#0866E8] italic font-black inline-block pr-1">
+              Best
+            </span>
+            {/* Curved yellow underline matching reference */}
             <svg
               className="absolute -bottom-2 sm:-bottom-2.5 left-0 w-full h-2.5 sm:h-3.5 overflow-visible pointer-events-none"
               viewBox="0 0 100 14"
@@ -159,8 +134,8 @@ export const TrustedBrandsStackCard: React.FC = () => {
             >
               <path
                 d="M 2 4 Q 50 14 98 4"
-                stroke="#FFD84D"
-                strokeWidth="3.2"
+                stroke="#FFC72C"
+                strokeWidth="3.4"
                 strokeLinecap="round"
               />
             </svg>
@@ -168,101 +143,136 @@ export const TrustedBrandsStackCard: React.FC = () => {
         </h2>
 
         {/* Supporting text */}
-        <SplitText
-          text="Proud to partner with leading stationery brands known for quality, reliability and innovation."
-          tag="p"
-          className="text-blue-100/80 text-xs sm:text-sm md:text-base font-normal leading-relaxed max-w-xl mx-auto mt-2.5 sm:mt-3 px-4"
-          effect="fade"
-          splitType="words"
-          delay={25}
-          duration={0.85}
-          trigger="view"
-          textAlign="center"
-        />
+        <p className="text-[#475569] text-xs sm:text-sm md:text-base font-medium leading-relaxed max-w-xl mx-auto mt-2.5 sm:mt-3 px-4">
+          Proud to partner with leading stationery brands known for quality, reliability and innovation.
+        </p>
       </motion.div>
 
-      {/* 2. Six Brand Glass Cards in One Row */}
-      <div className="w-full mt-6 sm:mt-8 pb-3 sm:pb-5">
+      {/* 2. Six Brand 3D Glass Cards in One Row */}
+      {/* Requirement: Only Speed has the orange line; when user clicks other brands, they do NOT get any colour in 1st card */}
+      <div className="relative z-10 w-full mt-6 sm:mt-8 pb-3 sm:pb-5">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4 md:gap-4 xl:gap-5 w-full items-stretch">
-          {BRANDS.map((brand) => (
-            <motion.div
-              key={brand.id}
-              variants={cardVariants}
-              className="relative flex flex-col items-center"
-            >
-              <Link
-                href={`/brands/${brand.slug}`}
-                className={`brand-glass-card group/card relative w-full h-24 sm:h-28 md:h-32 rounded-2xl flex items-center justify-center p-3 sm:p-4 transition-all duration-300 cursor-pointer overflow-hidden ${brand.isGolden ? 'is-golden' : ''
+          {BRANDS.map((brand) => {
+            const isSpeed = brand.id === 'speed';
+            const isSelected = activeBrandId === brand.id;
+
+            return (
+              <motion.div
+                key={brand.id}
+                variants={cardVariants}
+                className="relative flex flex-col items-center [perspective:1000px]"
+              >
+                <div
+                  onClick={() => setActiveBrandId(brand.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setActiveBrandId(brand.id);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  className={`brand-glass-card group/card relative w-full h-24 sm:h-28 md:h-32 rounded-2xl flex items-center justify-center p-3 sm:p-4 transition-all duration-300 cursor-pointer overflow-hidden ${
+                    isSpeed ? 'is-speed-card' : ''
                   }`}
-                aria-label={`Explore ${brand.name} Products`}
-              >
-                {/* Golden edge highlight accent on selected cards */}
-                {brand.isGolden && (
-                  <div className="golden-edge-highlight absolute top-0 inset-x-3 h-[2px] bg-gradient-to-r from-transparent via-[#FFD84D] to-transparent rounded-full pointer-events-none z-10" />
-                )}
+                  aria-label={`Select ${brand.name}`}
+                  aria-pressed={isSelected}
+                >
+                  {/* Glowing orange edge line at top ONLY for Speed card */}
+                  {isSpeed && (
+                    <div className="golden-edge-highlight absolute top-0 inset-x-2.5 h-[3px] bg-gradient-to-r from-transparent via-[#FF9E0B] to-transparent rounded-full pointer-events-none z-20 shadow-[0_0_12px_rgba(255,158,11,1)]" />
+                  )}
 
-                {/* Subtle top specular sheen */}
-                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none rounded-t-2xl" />
+                  {/* 3D Diagonal Specular Glass Surface Glare */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/10 to-transparent pointer-events-none rounded-2xl opacity-80 z-10" />
 
-                {/* Inner Logo Capsule / Bed ensuring 100% clarity and brand color preservation */}
-                <div className="relative z-10 w-full h-full flex items-center justify-center rounded-xl bg-white/95 backdrop-blur-sm p-2 sm:p-2.5 shadow-sm group-hover/card:bg-white group-hover/card:shadow-md transition-all duration-300">
-                  <img
-                    src={brand.logo}
-                    alt={`${brand.name} Logo`}
-                    className="max-h-full max-w-full object-contain select-none transition-transform duration-300 group-hover/card:scale-105"
-                    draggable={false}
-                  />
+                  {/* Inner 3D Logo Capsule / Bed */}
+                  <div className="relative z-10 w-full h-full flex items-center justify-center rounded-xl bg-white/94 backdrop-blur-md p-2 sm:p-2.5 shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),0_3px_10px_rgba(8,24,64,0.06)] group-hover/card:shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),0_6px_16px_rgba(8,102,232,0.12)] transition-all duration-300">
+                    <img
+                      src={brand.logo}
+                      alt={`${brand.name} Logo`}
+                      className="max-h-full max-w-full object-contain select-none transition-transform duration-300 group-hover/card:scale-105"
+                      draggable={false}
+                    />
+                  </div>
                 </div>
-              </Link>
 
-              {/* Realistic reflection beneath each card */}
-              <div
-                className="card-reflection absolute -bottom-7 sm:-bottom-8 inset-x-2 h-6 sm:h-7 pointer-events-none select-none overflow-hidden opacity-25 group-hover/card:opacity-40 transition-opacity"
-                aria-hidden="true"
-              >
-                <div className="w-full h-full rounded-xl bg-white/70 flex items-center justify-center p-1">
-                  <img
-                    src={brand.logo}
-                    alt=""
-                    className="max-h-5 sm:max-h-6 w-auto object-contain opacity-40 brightness-110"
-                  />
+                {/* Realistic reflection beneath each card on glossy floor */}
+                <div
+                  className={`card-reflection absolute -bottom-7 sm:-bottom-8 inset-x-2 h-6 sm:h-7 pointer-events-none select-none overflow-hidden transition-opacity duration-300 ${
+                    isSpeed ? 'opacity-50' : 'opacity-25 group-hover/card:opacity-40'
+                  }`}
+                  aria-hidden="true"
+                >
+                  <div className="w-full h-full rounded-xl bg-white/80 flex items-center justify-center p-1">
+                    <img
+                      src={brand.logo}
+                      alt=""
+                      className="max-h-5 sm:max-h-6 w-auto object-contain opacity-40 brightness-105"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Soft electric blue floor glow ellipse */}
-              <div
-                className="absolute -bottom-2 inset-x-4 h-1.5 bg-gradient-to-r from-transparent via-[#2672E8]/40 to-transparent blur-xs rounded-full pointer-events-none"
-                aria-hidden="true"
-              />
-            </motion.div>
-          ))}
+                {/* Floor ambient glow ellipse */}
+                <div
+                  className={`absolute -bottom-2 inset-x-4 h-1.5 rounded-full blur-xs pointer-events-none transition-all duration-300 ${
+                    isSpeed
+                      ? 'bg-gradient-to-r from-transparent via-[#FF9E0B]/60 to-transparent scale-125'
+                      : 'bg-gradient-to-r from-transparent via-[#0866E8]/10 to-transparent opacity-40'
+                  }`}
+                  aria-hidden="true"
+                />
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
       <style jsx>{`
         .brand-glass-card {
-          background: linear-gradient(180deg, rgba(22, 58, 117, 0.45) 0%, rgba(14, 39, 93, 0.6) 100%);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(59, 130, 246, 0.35);
-          box-shadow: 0 8px 30px rgba(2, 10, 32, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.15);
-          animation: gentleGlow 4.5s ease-in-out infinite;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.75) 100%);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1.5px solid rgba(255, 255, 255, 0.9);
+          box-shadow:
+            inset 0 1.5px 2px rgba(255, 255, 255, 1),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+            inset 0 -2px 3px rgba(8, 102, 232, 0.05),
+            0 12px 28px -6px rgba(8, 24, 64, 0.12),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+          transform: perspective(800px) translateZ(0);
+          transform-style: preserve-3d;
         }
 
         .brand-glass-card:hover {
-          border-color: rgba(96, 165, 250, 0.85);
-          box-shadow: 0 12px 35px rgba(2, 10, 35, 0.6), 0 0 20px rgba(38, 114, 232, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.25);
-          transform: translateY(-2px);
+          border-color: rgba(255, 255, 255, 1);
+          box-shadow:
+            inset 0 2px 2px rgba(255, 255, 255, 1),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.95),
+            0 20px 42px -8px rgba(8, 24, 64, 0.2),
+            0 4px 16px rgba(8, 102, 232, 0.08);
+          transform: perspective(800px) translateY(-6px) translateZ(12px) scale(1.03);
         }
 
-        .brand-glass-card.is-golden {
-          border-color: rgba(255, 216, 77, 0.45);
-          box-shadow: 0 8px 30px rgba(2, 10, 32, 0.45), 0 0 15px rgba(255, 216, 77, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        /* ONLY Speed has the vibrant glowing orange line & border */
+        .brand-glass-card.is-speed-card {
+          border-color: #FF9E0B;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 248, 230, 0.92) 100%);
+          box-shadow:
+            inset 0 1.5px 2px rgba(255, 255, 255, 1),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.9),
+            0 0 28px rgba(255, 158, 11, 0.45),
+            0 16px 36px -6px rgba(8, 24, 64, 0.16);
+          transform: perspective(800px) translateY(-3px) translateZ(8px) scale(1.02);
         }
 
-        .brand-glass-card.is-golden:hover {
-          border-color: rgba(255, 216, 77, 0.85);
-          box-shadow: 0 12px 35px rgba(2, 10, 35, 0.6), 0 0 25px rgba(255, 216, 77, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+        .brand-glass-card.is-speed-card:hover {
+          border-color: #F59E0B;
+          box-shadow:
+            inset 0 2px 2px rgba(255, 255, 255, 1),
+            0 0 34px rgba(255, 158, 11, 0.65),
+            0 22px 42px -6px rgba(8, 24, 64, 0.22);
+          transform: perspective(800px) translateY(-7px) translateZ(14px) scale(1.04);
         }
 
         .card-reflection {
@@ -270,23 +280,6 @@ export const TrustedBrandsStackCard: React.FC = () => {
           mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 80%);
           -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 80%);
           filter: blur(1.5px);
-        }
-
-        @keyframes gentleGlow {
-          0%, 100% {
-            border-color: rgba(59, 130, 246, 0.35);
-            box-shadow: 0 8px 30px rgba(2, 10, 32, 0.45), 0 0 12px rgba(38, 114, 232, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.15);
-          }
-          50% {
-            border-color: rgba(96, 165, 250, 0.6);
-            box-shadow: 0 8px 30px rgba(2, 10, 32, 0.45), 0 0 22px rgba(38, 114, 232, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.25);
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .brand-glass-card {
-            animation: none !important;
-          }
         }
       `}</style>
     </motion.div>

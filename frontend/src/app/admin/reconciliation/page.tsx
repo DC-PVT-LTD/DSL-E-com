@@ -28,6 +28,7 @@ import {
   ReconciliationQueryParams,
   PaymentMethod,
 } from '@/types/order';
+import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 
 function ReconciliationContent() {
   const [items, setItems] = useState<ReconciliationItem[]>([]);
@@ -482,15 +483,17 @@ function ReconciliationContent() {
 
 export default function AdminReconciliationPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="p-8 text-center text-slate-400 flex items-center justify-center gap-2">
-          <Loader2 className="w-5 h-5 animate-spin text-[#08275E]" />
-          <span>Loading Financial Reconciliation Module...</span>
-        </div>
-      }
-    >
-      <ReconciliationContent />
-    </Suspense>
+    <AdminPageAccess permission="orders.view" pageTitle="Reconciliation">
+      <Suspense
+        fallback={
+          <div className="p-8 text-center text-slate-400 flex items-center justify-center gap-2">
+            <Loader2 className="w-5 h-5 animate-spin text-[#08275E]" />
+            <span>Loading Financial Reconciliation Module...</span>
+          </div>
+        }
+      >
+        <ReconciliationContent />
+      </Suspense>
+    </AdminPageAccess>
   );
 }

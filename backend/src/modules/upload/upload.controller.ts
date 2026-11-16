@@ -23,8 +23,8 @@ import {
 import { StorageService } from '../storage/storage.service';
 import { FileValidationPipe } from './pipes/file-validation.pipe';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
 import { UserRole } from '../../generated/prisma';
 import { createApiResponse } from '../../common/interfaces/api-response.interface';
 
@@ -37,8 +37,8 @@ export class UploadController {
   constructor(private readonly storageService: StorageService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('uploads.create')
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('file', {

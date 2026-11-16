@@ -8,11 +8,12 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 export const AUTHORITATIVE_PERMISSIONS = [
-  // Products (4)
+  // Products (5)
   { key: 'products.view', displayName: 'View Products', category: 'Products', description: 'View products catalogue and details' },
   { key: 'products.create', displayName: 'Create Products', category: 'Products', description: 'Create new products and variants' },
   { key: 'products.edit', displayName: 'Edit Products', category: 'Products', description: 'Update products, variants, and toggle status' },
   { key: 'products.delete', displayName: 'Delete Products', category: 'Products', description: 'Deactivate products and variants' },
+  { key: 'products.import', displayName: 'Import Products', category: 'Products', description: 'Bulk import products via CSV or Excel' },
 
   // Categories (4)
   { key: 'categories.view', displayName: 'View Categories', category: 'Categories', description: 'View categories' },
@@ -30,10 +31,32 @@ export const AUTHORITATIVE_PERMISSIONS = [
   { key: 'inventory.view', displayName: 'View Inventory', category: 'Inventory', description: 'View inventory movements, stock levels, and low-stock alerts' },
   { key: 'inventory.update', displayName: 'Adjust Inventory', category: 'Inventory', description: 'Perform stock adjustments' },
 
-  // Orders (3)
+  // Orders (6)
   { key: 'orders.view', displayName: 'View Orders', category: 'Orders', description: 'View orders, order details, stats, and audit history' },
   { key: 'orders.update_status', displayName: 'Update Order Status', category: 'Orders', description: 'Update order processing status' },
+  { key: 'orders.fulfill', displayName: 'Fulfill Orders', category: 'Orders', description: 'Advance order fulfillment workflow (processing, packed, shipped, delivered)' },
+  { key: 'orders.cancel', displayName: 'Cancel Orders', category: 'Orders', description: 'Cancel orders and release or restock reserved inventory' },
+  { key: 'orders.refund', displayName: 'Issue & Manage Refunds', category: 'Orders', description: 'Initiate, approve, execute, and record customer monetary refunds' },
   { key: 'orders.add_notes', displayName: 'Add Order Notes', category: 'Orders', description: 'Add operational notes to orders' },
+
+  // Payments (1)
+  { key: 'payments.verify_bank_deposit', displayName: 'Verify Bank Deposit Slips', category: 'Payments', description: 'Approve or reject customer bank deposit slips and verify payment transfers' },
+
+  // Dashboard (1)
+  { key: 'dashboard.view', displayName: 'View Dashboard', category: 'Dashboard', description: 'View executive store dashboard and revenue analytics' },
+
+  // Customers (2)
+  { key: 'customers.view', displayName: 'View Customers', category: 'Customers', description: 'View customer accounts and profiles' },
+  { key: 'customers.manage', displayName: 'Manage Customers', category: 'Customers', description: 'Update customer status, addresses, and notes' },
+
+  // Reports (2)
+  { key: 'reports.view', displayName: 'View Reports', category: 'Reports', description: 'View sales, revenue, refund, and product reports' },
+  { key: 'reports.export', displayName: 'Export Reports', category: 'Reports', description: 'Export report data to CSV and Excel' },
+
+  // Settings (3)
+  { key: 'settings.view', displayName: 'View Settings', category: 'Settings', description: 'View store settings and operational variables' },
+  { key: 'settings.manage', displayName: 'Manage Settings', category: 'Settings', description: 'Update store settings and payment configurations' },
+  { key: 'settings.financial', displayName: 'Manage Financial & Bank Settings', category: 'Settings', description: 'View and update store bank account details, SWIFT codes, and payment gateways' },
 
   // School Packs (2)
   { key: 'school_packs.view', displayName: 'View School Packs', category: 'School Packs', description: 'View school packs and configuration' },
@@ -83,7 +106,7 @@ export const INITIAL_SYSTEM_ROLES = [
     slug: 'super_admin',
     description: 'Root system administrator with unrestricted sovereignty and configuration rights.',
     isSystem: true,
-    permissionKeys: AUTHORITATIVE_PERMISSIONS.map((p) => p.key), // All 38
+    permissionKeys: AUTHORITATIVE_PERMISSIONS.map((p) => p.key), // All 46
   },
   {
     name: 'Project Manager',
@@ -91,11 +114,12 @@ export const INITIAL_SYSTEM_ROLES = [
     description: 'Operations manager overseeing catalogue, inventory, orders, marketing, and school packs.',
     isSystem: true,
     permissionKeys: [
-      'products.view', 'products.create', 'products.edit', 'products.delete',
+      'products.view', 'products.create', 'products.edit', 'products.delete', 'products.import',
       'categories.view', 'categories.create', 'categories.edit', 'categories.delete',
       'brands.view', 'brands.create', 'brands.edit', 'brands.delete',
       'inventory.view', 'inventory.update',
-      'orders.view', 'orders.update_status', 'orders.add_notes',
+      'orders.view', 'orders.update_status', 'orders.fulfill', 'orders.cancel', 'orders.add_notes',
+      'dashboard.view', 'customers.view', 'reports.view',
       'school_packs.view', 'school_packs.manage',
       'uploaded_documents.view', 'uploaded_documents.manage',
       'promotions.view', 'promotions.manage',
@@ -105,7 +129,7 @@ export const INITIAL_SYSTEM_ROLES = [
       'audit_logs.view',
       'uploads.create',
       'admins.view',
-    ], // Exactly 32
+    ],
   },
   {
     name: 'Product Manager',
@@ -113,14 +137,14 @@ export const INITIAL_SYSTEM_ROLES = [
     description: 'Catalogue manager handling products, categories, brands, school packs, and recommendations.',
     isSystem: true,
     permissionKeys: [
-      'products.view', 'products.create', 'products.edit', 'products.delete',
+      'products.view', 'products.create', 'products.edit', 'products.delete', 'products.import',
       'categories.view', 'categories.create', 'categories.edit', 'categories.delete',
       'brands.view', 'brands.create', 'brands.edit', 'brands.delete',
       'inventory.view', 'inventory.update',
       'school_packs.view', 'school_packs.manage',
       'recommendations.view', 'recommendations.manage',
       'uploads.create',
-    ], // Exactly 19
+    ],
   },
   {
     name: 'Order Manager',
@@ -128,10 +152,11 @@ export const INITIAL_SYSTEM_ROLES = [
     description: 'Fulfillment specialist processing orders, verifying stock, and reviewing uploaded stationery lists.',
     isSystem: true,
     permissionKeys: [
-      'orders.view', 'orders.update_status', 'orders.add_notes',
+      'orders.view', 'orders.update_status', 'orders.fulfill', 'orders.cancel', 'orders.add_notes',
       'inventory.view',
+      'dashboard.view', 'customers.view',
       'uploaded_documents.view', 'uploaded_documents.manage',
-    ], // Exactly 6
+    ],
   },
   {
     name: 'Customer Manager',
@@ -142,10 +167,81 @@ export const INITIAL_SYSTEM_ROLES = [
       'promotions.view', 'promotions.manage',
       'newsletter.view', 'newsletter.export',
       'orders.view',
+      'customers.view', 'customers.manage',
       'uploaded_documents.view',
-    ], // Exactly 6
+    ],
   },
 ];
+
+export async function syncAuthoritativePermissions() {
+  console.log(`Synchronizing ${AUTHORITATIVE_PERMISSIONS.length} authoritative permissions...`);
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('dsl_super_admin_mutex'))`;
+
+    for (const perm of AUTHORITATIVE_PERMISSIONS) {
+      await tx.permission.upsert({
+        where: { key: perm.key },
+        update: {
+          displayName: perm.displayName,
+          description: perm.description,
+          category: perm.category,
+        },
+        create: {
+          key: perm.key,
+          displayName: perm.displayName,
+          description: perm.description,
+          category: perm.category,
+        },
+      });
+    }
+
+    for (const roleDef of INITIAL_SYSTEM_ROLES) {
+      const role = await tx.role.upsert({
+        where: { slug: roleDef.slug },
+        update: {
+          name: roleDef.name,
+          description: roleDef.description,
+          isSystem: true,
+          isActive: true,
+        },
+        create: {
+          name: roleDef.name,
+          slug: roleDef.slug,
+          description: roleDef.description,
+          isSystem: true,
+          isActive: true,
+        },
+      });
+
+      for (const permKey of roleDef.permissionKeys) {
+        const perm = await tx.permission.findUnique({ where: { key: permKey } });
+        if (perm) {
+          await tx.rolePermission.upsert({
+            where: {
+              roleId_permissionId: {
+                roleId: role.id,
+                permissionId: perm.id,
+              },
+            },
+            update: {},
+            create: {
+              roleId: role.id,
+              permissionId: perm.id,
+            },
+          });
+        }
+      }
+    }
+
+    const totalPermissions = await tx.permission.count();
+    const superAdminRole = await tx.role.findUnique({ where: { slug: 'super_admin' } });
+    const superAdminPermCount = superAdminRole
+      ? await tx.rolePermission.count({ where: { roleId: superAdminRole.id } })
+      : 0;
+
+    return { totalPermissions, superAdminPermCount };
+  });
+}
 
 export async function runBackfill(primarySuperAdminEmail = process.env.PRIMARY_SUPER_ADMIN_EMAIL || 'admin@dslstationery.lk') {
   console.log(`Starting Phase 3 Backfill with primary Super Admin: ${primarySuperAdminEmail}`);

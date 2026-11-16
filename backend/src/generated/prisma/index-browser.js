@@ -820,6 +820,43 @@ exports.Prisma.ProductImportRowResultScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.VerificationChallengeScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  action: 'action',
+  codeHash: 'codeHash',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  metadata: 'metadata',
+  attempts: 'attempts',
+  maxAttempts: 'maxAttempts',
+  status: 'status',
+  expiresAt: 'expiresAt',
+  verifiedAt: 'verifiedAt',
+  consumedAt: 'consumedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AdminActivityLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  userEmail: 'userEmail',
+  userName: 'userName',
+  userRole: 'userRole',
+  action: 'action',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  description: 'description',
+  status: 'status',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  beforeState: 'beforeState',
+  afterState: 'afterState',
+  challengeId: 'challengeId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1009,6 +1046,14 @@ exports.ImportRowStatus = exports.$Enums.ImportRowStatus = {
   SKIPPED: 'SKIPPED'
 };
 
+exports.VerificationChallengeStatus = exports.$Enums.VerificationChallengeStatus = {
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  CONSUMED: 'CONSUMED',
+  EXPIRED: 'EXPIRED',
+  FAILED: 'FAILED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Address: 'Address',
@@ -1060,7 +1105,9 @@ exports.Prisma.ModelName = {
   ProductImportPreview: 'ProductImportPreview',
   ImportExecutionLease: 'ImportExecutionLease',
   ProductImportBatch: 'ProductImportBatch',
-  ProductImportRowResult: 'ProductImportRowResult'
+  ProductImportRowResult: 'ProductImportRowResult',
+  VerificationChallenge: 'VerificationChallenge',
+  AdminActivityLog: 'AdminActivityLog'
 };
 
 /**

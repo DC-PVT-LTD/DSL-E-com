@@ -36,6 +36,8 @@ import {
   KpiCardData,
   CatalogExportModal,
 } from '@/components/admin/catalog';
+import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
+import { useUserStore } from '@/services/userStore';
 
 interface ProductAnalyticsData {
   totalProducts: number;
@@ -64,6 +66,7 @@ const DEFAULT_COLUMNS: ColumnDefinition[] = [
 ];
 
 export default function AdminProductsPage() {
+  const hasPermission = useUserStore((state) => state.hasPermission);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -361,7 +364,8 @@ export default function AdminProductsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <AdminPageAccess permission="products.view" pageTitle="Products Management">
+      <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -398,22 +402,26 @@ export default function AdminProductsPage() {
             <span>Export ({selectedIds.size > 0 ? `${selectedIds.size} Selected` : 'All'})</span>
           </button>
 
-          <Link
-            href="/admin/products/import"
-            className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
-            title="Import products from Excel (.xlsx) or CSV (.csv)"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-200" />
-            <span>Import</span>
-          </Link>
+          {hasPermission('products.import') && (
+            <Link
+              href="/admin/products/import"
+              className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+              title="Import products from Excel (.xlsx) or CSV (.csv)"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-200" />
+              <span>Import</span>
+            </Link>
+          )}
 
-          <Link
-            href="/admin/products/new"
-            className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5 text-[#FFD21C]" />
-            <span>Add Product</span>
-          </Link>
+          {hasPermission('products.create') && (
+            <Link
+              href="/admin/products/new"
+              className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5 text-[#FFD21C]" />
+              <span>Add Product</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -722,23 +730,27 @@ export default function AdminProductsPage() {
                       {isColVisible('actions') && (
                         <td className="py-3 px-4 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1.5">
-                            <Link
-                              href={`/admin/products/${p.id}/edit`}
-                              className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
-                              title="Edit product"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </Link>
+                            {hasPermission('products.edit') && (
+                              <Link
+                                href={`/admin/products/${p.id}/edit`}
+                                className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
+                                title="Edit product"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </Link>
+                            )}
 
-                            <button
-                              type="button"
-                              onClick={() => setDeleteConfirmId(p.id)}
-                              disabled={isMutating}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                              title="Delete product"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            {hasPermission('products.delete') && (
+                              <button
+                                type="button"
+                                onClick={() => setDeleteConfirmId(p.id)}
+                                disabled={isMutating}
+                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                title="Delete product"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       )}
@@ -800,5 +812,6 @@ export default function AdminProductsPage() {
         </div>
       )}
     </div>
+    </AdminPageAccess>
   );
 }

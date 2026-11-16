@@ -39,8 +39,11 @@ import { ReturnManagementCard } from '@/components/admin/orders/ReturnManagement
 import { RefundManagementCard } from '@/components/admin/orders/RefundManagementCard';
 import { AuditHistoryCard } from '@/components/admin/orders/AuditHistoryCard';
 import { AdminNotesCard } from '@/components/admin/orders/AdminNotesCard';
+import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
+import { useUserStore } from '@/services/userStore';
 
 function AdminOrderDetailContent() {
+  const hasPermission = useUserStore((state) => state.hasPermission);
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -205,7 +208,7 @@ function AdminOrderDetailContent() {
 
         {/* Global Action CTAs */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {canTransition && (
+          {canTransition && hasPermission('orders.fulfill') && (
             <button
               onClick={() => setIsStatusModalOpen(true)}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs shadow-xs transition-all hover:scale-[1.02] cursor-pointer"
@@ -215,7 +218,7 @@ function AdminOrderDetailContent() {
             </button>
           )}
 
-          {canCancel && (
+          {canCancel && hasPermission('orders.cancel') && (
             <button
               onClick={() => setIsCancelModalOpen(true)}
               className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-xs transition-all cursor-pointer"
@@ -671,14 +674,16 @@ function AdminOrderDetailContent() {
 
 export default function AdminOrderDetailPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="max-w-5xl mx-auto py-12 text-center text-xs text-slate-500">
-          Loading order details...
-        </div>
-      }
-    >
-      <AdminOrderDetailContent />
-    </Suspense>
+    <AdminPageAccess permission="orders.view" pageTitle="Order Details">
+      <Suspense
+        fallback={
+          <div className="max-w-5xl mx-auto py-12 text-center text-xs text-slate-500">
+            Loading order details...
+          </div>
+        }
+      >
+        <AdminOrderDetailContent />
+      </Suspense>
+    </AdminPageAccess>
   );
 }

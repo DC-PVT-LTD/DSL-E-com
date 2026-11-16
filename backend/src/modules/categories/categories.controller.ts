@@ -12,6 +12,8 @@ import {
   HttpStatus,
   Inject,
   Res,
+  Req,
+  NotFoundException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -24,6 +26,7 @@ import {
   ApiCookieAuth,
 } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
+import { ConfirmationService } from '../security/confirmation.service';
 import { categoryQuerySchema, CategoryQueryDto } from './dto/category-query.dto';
 import {
   createCategorySchema,
@@ -35,7 +38,9 @@ import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { AdminAuthGuard } from '../../common/guards/admin-auth.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
 import { CurrentUser, AuthenticatedUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../../generated/prisma';
 import {
@@ -48,7 +53,9 @@ import { createApiResponse } from '../../common/interfaces/api-response.interfac
 export class CategoriesController {
   constructor(
     @Inject(CategoriesService)
-    private readonly categoriesService: CategoriesService
+    private readonly categoriesService: CategoriesService,
+    @Inject(ConfirmationService)
+    private readonly confirmationService: ConfirmationService,
   ) {}
 
   @ApiTags('Categories')
@@ -90,8 +97,8 @@ export class CategoriesController {
 
   @ApiTags('Admin API', 'Categories')
   @Get('admin/analytics')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('categories.view')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -105,8 +112,8 @@ export class CategoriesController {
 
   @ApiTags('Admin API', 'Categories', 'Export')
   @Get('export')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('categories.view')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -202,11 +209,11 @@ export class CategoriesController {
     return this.categoriesService.findCategoryProducts(id, query);
   }
 
-  // Management endpoints strictly protected by JwtAuthGuard + RolesGuard
+  // Management endpoints strictly protected by JwtAuthGuard + PermissionsGuard
   @ApiTags('Admin API')
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('categories.create')
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
@@ -246,8 +253,8 @@ export class CategoriesController {
 
   @ApiTags('Admin API')
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('categories.edit')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -296,8 +303,8 @@ export class CategoriesController {
 
   @ApiTags('Admin API')
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('categories.delete')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -332,8 +339,28 @@ export class CategoriesController {
   })
   async deleteCategory(
     @Param('id') id: string,
+    @Req() req: any,
     @CurrentUser() actor?: AuthenticatedUser
   ) {
+    const category = await this.categoriesService.findById(id);
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    await this.confirmationService.validateConfirmation({
+      action: 'DELETE_CATEGORY',
+      req,
+      targetEntity: 'Category',
+      targetId: id,
+      expectedValue: category.name,
+      actor: {
+        id: actor?.id || 'admin',
+        email: actor?.email,
+        name: actor?.name,
+        role: actor?.role,
+      },
+    });
+
     await this.categoriesService.delete(id, actor?.id);
     return createApiResponse({ id }, 'Category deleted successfully');
   }

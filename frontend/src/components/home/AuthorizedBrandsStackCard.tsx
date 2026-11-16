@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useReducedMotion } from 'framer-motion';
 import SplitText from '@/components/common/SplitText';
+import LightCardWavesBackground from '@/components/common/LightCardWavesBackground';
 
 // ============================================================================
 // DISTRIBUTOR BRAND CARDS SPEC (FRAME 1 LIVE CODED BACKGROUND)
@@ -20,28 +21,28 @@ const DISTRIBUTOR_BRANDS: DistributorBrand[] = [
   {
     id: 'linc-pentonic',
     name: 'LINC & Pentonic',
-    logo: '/images/brands/card2_linc-pentonic_clean.png',
+    logo: '/images/brands/linc.png',
     slug: 'linc',
     isGolden: false,
   },
   {
     id: 'doms',
     name: 'DOMS',
-    logo: '/images/brands/card2_doms_clean.png',
+    logo: '/images/brands/doms.png',
     slug: 'doms',
     isGolden: false,
   },
   {
     id: 'flexoffice',
     name: 'FlexOffice',
-    logo: '/images/brands/card2_flexoffice_clean.png',
+    logo: '/images/brands/flexoffice.png',
     slug: 'flexoffice',
     isGolden: true,
   },
   {
     id: 'amico',
     name: 'Amico',
-    logo: '/images/brands/card2_amico_clean.png',
+    logo: '/images/brands/amico.png',
     slug: 'amico',
     isGolden: true,
   },
@@ -348,12 +349,15 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
   return (
     <div
       ref={rootRef}
-      className="relative w-full flex-1 min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] flex items-center justify-center overflow-hidden bg-[#071836] select-none"
+      className="relative w-full flex-1 min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] flex items-center justify-center overflow-hidden bg-transparent rounded-[28px] select-none"
     >
+      {/* Light Silk Waves Background matching uploaded reference */}
+      <LightCardWavesBackground />
+
       {/* Aspect-Ratio Preserving Inner Stage */}
       <div
         ref={stageRef}
-        className="relative w-full h-full min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] flex items-center justify-center overflow-hidden self-stretch"
+        className="relative z-10 w-full h-full min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] flex items-center justify-center overflow-hidden self-stretch"
       >
         {/* ========================================================= */}
         {/* 1. CODED DISTRIBUTOR BACKGROUND BANNER (FRAME 1)           */}
@@ -369,24 +373,24 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
         >
           {/* Header Block matching reference */}
           <div className="text-center w-full max-w-3xl mx-auto">
-            {/* Top Label: — OUR BRANDS — */}
+            {/* Top Label: — OUR BRANDS — with golden lines */}
             <div className="inline-flex items-center justify-center gap-3 sm:gap-4 mb-2 sm:mb-2.5">
-              <span className="h-[1px] w-8 sm:w-16 bg-gradient-to-r from-transparent via-blue-400/50 to-blue-400" />
+              <span className="h-[2px] w-8 sm:w-14 bg-[#FFC72C] rounded-full inline-block shadow-[0_0_8px_rgba(255,199,44,0.35)]" />
               <SplitText
                 text="OUR BRANDS"
                 tag="span"
-                className="text-[10px] sm:text-xs font-black tracking-[0.28em] text-[#60A5FA] uppercase select-none inline-block"
+                className="text-xs sm:text-sm font-extrabold tracking-[0.24em] text-[#0866E8] uppercase select-none inline-block drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]"
                 effect="fade"
                 splitType="chars"
                 delay={30}
                 duration={0.8}
                 trigger="view"
               />
-              <span className="h-[1px] w-8 sm:w-16 bg-gradient-to-l from-transparent via-blue-400/50 to-blue-400" />
+              <span className="h-[2px] w-8 sm:w-14 bg-[#FFC72C] rounded-full inline-block shadow-[0_0_8px_rgba(255,199,44,0.35)]" />
             </div>
 
             {/* Main Heading: and Authorized Distributor for Sri Lanka: */}
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[34px] font-black tracking-tight text-white leading-tight flex items-center justify-center flex-wrap gap-x-2">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[34px] font-black tracking-tight leading-tight flex items-center justify-center flex-wrap gap-x-2">
               <SplitText
                 text="and Authorized Distributor for"
                 tag="span"
@@ -395,9 +399,9 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
                 delay={35}
                 duration={1.0}
                 trigger="view"
-                className="text-white inline-block"
+                className="text-[#0F2752] inline-block font-black"
               />
-              <span className="relative inline-block text-[#FFD84D] italic font-black">
+              <span className="relative inline-block text-[#0866E8] italic font-black pr-2 sm:pr-3">
                 <SplitText
                   text="Sri Lanka:"
                   tag="span"
@@ -406,7 +410,7 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
                   delay={45}
                   duration={1.0}
                   trigger="view"
-                  className="text-[#FFD84D] inline-block"
+                  className="text-[#0866E8] inline-block font-black pr-1.5 sm:pr-2"
                 />
                 {/* Curved yellow underline matching reference */}
                 <svg
@@ -417,8 +421,8 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
                 >
                   <path
                     d="M 2 4 Q 50 14 98 4"
-                    stroke="#FFD84D"
-                    strokeWidth="3.2"
+                    stroke="#FFC72C"
+                    strokeWidth="3.4"
                     strokeLinecap="round"
                   />
                 </svg>
@@ -430,7 +434,7 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
           <div className="w-full max-w-4xl mx-auto my-auto pt-3 sm:pt-5 pb-2">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-5 w-full items-stretch">
               {DISTRIBUTOR_BRANDS.map((brand) => (
-                <div key={brand.id} className="relative flex flex-col items-center">
+                <div key={brand.id} className="relative flex flex-col items-center [perspective:900px]">
                   <Link
                     href={`/brands/${brand.slug}`}
                     className={`card2-brand-glass group/card relative w-full h-24 sm:h-28 md:h-32 rounded-2xl flex items-center justify-center p-2.5 sm:p-3 transition-all duration-300 cursor-pointer overflow-hidden ${brand.isGolden ? 'is-golden' : ''
@@ -439,40 +443,61 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
                   >
                     {/* Golden edge highlight accent on selected cards */}
                     {brand.isGolden && (
-                      <div className="golden-edge-highlight absolute top-0 inset-x-3 h-[2px] bg-gradient-to-r from-transparent via-[#FFD84D] to-transparent rounded-full pointer-events-none z-10" />
+                      <div className="golden-edge-highlight absolute top-0 inset-x-3 h-[2.5px] bg-gradient-to-r from-transparent via-[#FF9E0B] to-transparent rounded-full pointer-events-none z-20 shadow-[0_0_10px_rgba(255,158,11,0.9)]" />
                     )}
 
-                    {/* Subtle top specular sheen */}
-                    <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none rounded-t-2xl" />
+                    {/* 3D Diagonal Specular Glass Surface Glare */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/10 to-transparent pointer-events-none rounded-2xl opacity-80 z-10" />
 
-                    {/* Inner Logo Capsule / Bed */}
-                    <div className="relative z-10 w-full h-full flex items-center justify-center rounded-xl overflow-hidden shadow-sm group-hover/card:shadow-md transition-all duration-300">
-                      <img
-                        src={brand.logo}
-                        alt={`${brand.name} Logo`}
-                        className="w-full h-full object-contain select-none transition-transform duration-300 group-hover/card:scale-105 rounded-xl"
-                        draggable={false}
-                      />
+                    {/* Inner Logo Capsule / Bed ensuring 100% solid clarity and contrast */}
+                    <div className="relative z-10 w-full h-full flex items-center justify-center rounded-xl bg-white/94 backdrop-blur-md p-2.5 sm:p-3 shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),0_3px_10px_rgba(8,24,64,0.06)] group-hover/card:shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),0_6px_16px_rgba(8,102,232,0.12)] transition-all duration-300">
+                      {brand.id === 'linc-pentonic' ? (
+                        <div className="flex flex-col items-center justify-center gap-1.5 w-full h-full">
+                          <img
+                            src="/images/brands/linc.png"
+                            alt="LINC"
+                            className="max-h-[44%] max-w-[85%] object-contain select-none transition-transform duration-300 group-hover/card:scale-105"
+                            draggable={false}
+                          />
+                          <img
+                            src="/images/brands/pentonic.png"
+                            alt="Pentonic"
+                            className="max-h-[44%] max-w-[85%] object-contain select-none transition-transform duration-300 group-hover/card:scale-105"
+                            draggable={false}
+                          />
+                        </div>
+                      ) : (
+                        <img
+                          src={brand.logo}
+                          alt={`${brand.name} Logo`}
+                          className="max-h-full max-w-full object-contain select-none transition-transform duration-300 group-hover/card:scale-105"
+                          draggable={false}
+                        />
+                      )}
                     </div>
                   </Link>
 
                   {/* Realistic reflection beneath each card */}
                   <div
-                    className="card2-reflection absolute -bottom-7 sm:-bottom-8 inset-x-2 h-6 sm:h-7 pointer-events-none select-none overflow-hidden opacity-30 group-hover/card:opacity-45 transition-opacity"
+                    className={`card2-reflection absolute -bottom-7 sm:-bottom-8 inset-x-2 h-6 sm:h-7 pointer-events-none select-none overflow-hidden transition-opacity duration-300 ${brand.isGolden ? 'opacity-50' : 'opacity-25 group-hover/card:opacity-40'
+                      }`}
                     aria-hidden="true"
                   >
-                    <div className="w-full h-full rounded-xl flex items-center justify-center p-0.5">
+                    <div className="w-full h-full rounded-xl bg-white/80 flex items-center justify-center p-1">
                       <img
-                        src={brand.logo}
+                        src={brand.id === 'linc-pentonic' ? '/images/brands/linc.png' : brand.logo}
                         alt=""
-                        className="max-h-full w-auto object-contain opacity-50 brightness-110 rounded-lg"
+                        className="max-h-5 sm:max-h-6 w-auto object-contain opacity-40 brightness-105"
                       />
                     </div>
                   </div>
 
-                  {/* Soft electric blue floor glow ellipse */}
+                  {/* Soft electric blue / golden floor glow ellipse */}
                   <div
-                    className="absolute -bottom-2 inset-x-4 h-1.5 bg-gradient-to-r from-transparent via-[#2672E8]/40 to-transparent blur-xs rounded-full pointer-events-none"
+                    className={`absolute -bottom-2 inset-x-4 h-1.5 rounded-full blur-xs pointer-events-none transition-all duration-300 ${brand.isGolden
+                        ? 'bg-gradient-to-r from-transparent via-[#FF9E0B]/50 to-transparent scale-125'
+                        : 'bg-gradient-to-r from-transparent via-[#2672E8]/40 to-transparent'
+                      }`}
                     aria-hidden="true"
                   />
                 </div>
@@ -485,7 +510,7 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
         {/* 2. CINEMATIC BACKGROUND OVERLAY (FRAME 2 & 3)             */}
         {/* ========================================================= */}
         <div
-          className="absolute inset-0 w-full h-full bg-gradient-to-t from-[#011640]/60 via-[#011640]/20 to-[#011640]/60 pointer-events-none"
+          className="absolute inset-0 w-full h-full bg-gradient-to-t from-white/70 via-white/20 to-white/70 pointer-events-none"
           style={{
             opacity: overlayOpacity,
             transition: 'opacity 0.15s ease-out',
@@ -495,7 +520,7 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
 
         {/* Subtle Ambient Radial Glow */}
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#00B4FF]/15 rounded-full blur-3xl pointer-events-none"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#00B4FF]/10 rounded-full blur-3xl pointer-events-none"
           aria-hidden="true"
         />
 
@@ -526,7 +551,7 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
                   <Link
                     href={`/brands/${card.slug}`}
                     aria-label={card.name}
-                    className="block group/card cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#00B4FF] rounded-2xl"
+                    className="block group/card cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0866E8] rounded-2xl"
                   >
                     <div className="relative transform-gpu transition-all duration-300 group-hover/card:scale-105 group-hover/card:-translate-y-2">
                       {/* Main Card Image */}
@@ -534,8 +559,8 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
                         src={card.image}
                         alt={card.name}
                         className={`w-full h-auto object-contain select-none transition-all duration-300 ${card.isFrontCard
-                          ? 'drop-shadow-[0_20px_45px_rgba(0,180,255,0.5)]'
-                          : 'drop-shadow-[0_12px_26px_rgba(0,0,0,0.55)] group-hover/card:drop-shadow-[0_18px_36px_rgba(0,180,255,0.4)]'
+                          ? 'drop-shadow-[0_20px_45px_rgba(8,102,232,0.35)]'
+                          : 'drop-shadow-[0_12px_26px_rgba(0,0,0,0.18)] group-hover/card:drop-shadow-[0_18px_36px_rgba(8,102,232,0.28)]'
                           }`}
                         draggable={false}
                       />
@@ -553,28 +578,47 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
 
       <style jsx>{`
         .card2-brand-glass {
-          background: linear-gradient(180deg, rgba(22, 58, 117, 0.45) 0%, rgba(14, 39, 93, 0.6) 100%);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(59, 130, 246, 0.35);
-          box-shadow: 0 8px 30px rgba(2, 10, 32, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.15);
-          animation: card2GentleGlow 4.5s ease-in-out infinite;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.78) 100%);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1.5px solid rgba(255, 255, 255, 0.9);
+          box-shadow:
+            inset 0 1.5px 2px rgba(255, 255, 255, 1),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.75),
+            inset 0 -2px 3px rgba(8, 102, 232, 0.08),
+            0 12px 28px -6px rgba(8, 24, 64, 0.14),
+            0 4px 10px rgba(0, 0, 0, 0.04);
+          transform: perspective(800px) translateZ(0);
+          transform-style: preserve-3d;
         }
 
         .card2-brand-glass:hover {
-          border-color: rgba(96, 165, 250, 0.85);
-          box-shadow: 0 12px 35px rgba(2, 10, 35, 0.6), 0 0 20px rgba(38, 114, 232, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.25);
-          transform: translateY(-2px);
+          border-color: rgba(56, 189, 248, 0.9);
+          box-shadow:
+            inset 0 2px 2px rgba(255, 255, 255, 1),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.9),
+            0 20px 42px -8px rgba(8, 24, 64, 0.22),
+            0 0 22px rgba(56, 189, 248, 0.35);
+          transform: perspective(800px) translateY(-6px) translateZ(12px) scale(1.03);
         }
 
         .card2-brand-glass.is-golden {
-          border-color: rgba(255, 216, 77, 0.45);
-          box-shadow: 0 8px 30px rgba(2, 10, 32, 0.45), 0 0 15px rgba(255, 216, 77, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+          border-color: #FF9E0B;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 248, 230, 0.92) 100%);
+          box-shadow:
+            inset 0 1.5px 2px rgba(255, 255, 255, 1),
+            0 0 28px rgba(255, 158, 11, 0.5),
+            0 14px 30px -6px rgba(8, 24, 64, 0.16);
+          transform: perspective(800px) translateY(-2px) translateZ(6px);
         }
 
         .card2-brand-glass.is-golden:hover {
-          border-color: rgba(255, 216, 77, 0.85);
-          box-shadow: 0 12px 35px rgba(2, 10, 35, 0.6), 0 0 25px rgba(255, 216, 77, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+          border-color: #F59E0B;
+          box-shadow:
+            inset 0 2px 2px rgba(255, 255, 255, 1),
+            0 0 34px rgba(255, 158, 11, 0.65),
+            0 20px 38px -6px rgba(8, 24, 64, 0.22);
+          transform: perspective(800px) translateY(-6px) translateZ(12px) scale(1.03);
         }
 
         .card2-reflection {
@@ -582,23 +626,6 @@ export const AuthorizedBrandsStackCard: React.FC = () => {
           mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 80%);
           -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 80%);
           filter: blur(1.5px);
-        }
-
-        @keyframes card2GentleGlow {
-          0%, 100% {
-            border-color: rgba(59, 130, 246, 0.35);
-            box-shadow: 0 8px 30px rgba(2, 10, 32, 0.45), 0 0 12px rgba(38, 114, 232, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.15);
-          }
-          50% {
-            border-color: rgba(96, 165, 250, 0.6);
-            box-shadow: 0 8px 30px rgba(2, 10, 32, 0.45), 0 0 22px rgba(38, 114, 232, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.25);
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .card2-brand-glass {
-            animation: none !important;
-          }
         }
       `}</style>
     </div>

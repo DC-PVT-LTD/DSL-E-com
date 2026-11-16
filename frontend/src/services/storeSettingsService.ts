@@ -65,31 +65,34 @@ export const storeSettingsService = {
    * Fetch customer-facing active store settings and payment methods.
    */
   async getPublicSettings(): Promise<PublicStoreSettingsResponse> {
-    const response = await apiClient.get<BackendApiResponse<PublicStoreSettingsResponse>>(
-      '/store-settings/public',
-    );
-    return response.data;
+    const response = await apiClient.get<any>('/store-settings/public');
+    return (response?.data ?? response) as PublicStoreSettingsResponse;
   },
 
   /**
    * Fetch administrative store settings with bank configuration.
    */
   async getAdminSettings(): Promise<AdminStoreSettingsResponse> {
-    const response = await apiClient.get<BackendApiResponse<AdminStoreSettingsResponse>>(
-      '/store-settings/admin',
-    );
-    return response.data;
+    const response = await apiClient.get<any>('/store-settings/admin');
+    return (response?.data ?? response) as AdminStoreSettingsResponse;
   },
 
   /**
    * Update Bank Transfer configuration and payment instructions.
    */
-  async updateBankTransfer(payload: UpdateBankTransferPayload): Promise<AdminStoreSettingsResponse> {
-    const response = await apiClient.put<BackendApiResponse<AdminStoreSettingsResponse>>(
+  async updateBankTransfer(
+    payload: UpdateBankTransferPayload,
+    confirmationPhrase?: string
+  ): Promise<AdminStoreSettingsResponse> {
+    const options = confirmationPhrase
+      ? { headers: { 'x-action-confirmation': confirmationPhrase } }
+      : undefined;
+    const response = await apiClient.put<any>(
       '/store-settings/admin/bank-transfer',
       payload,
+      options
     );
-    return response.data;
+    return (response?.data ?? response) as AdminStoreSettingsResponse;
   },
 };
 

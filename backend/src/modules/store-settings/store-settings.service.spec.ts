@@ -193,7 +193,10 @@ describe('StoreSettingsService', () => {
       const adminRes = await service.getAdminSettings();
       expect(adminRes.bankTransfer.isConfigComplete).toBe(true);
       expect(adminRes.bankTransfer.maskedAccountNumber).toBe('••••••••5678');
-      expect(adminRes.bankTransfer.accountNumber).toBe('100012345678');
+      expect(adminRes.bankTransfer.accountNumber).toBe('••••••••5678');
+
+      const unmaskedRes = await service.getAdminSettings(true);
+      expect(unmaskedRes.bankTransfer.accountNumber).toBe('100012345678');
     });
 
     it('rejects enabling Bank Transfer with missing required fields (400 Bad Request)', async () => {

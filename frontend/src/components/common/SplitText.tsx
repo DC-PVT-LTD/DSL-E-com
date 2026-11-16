@@ -440,8 +440,7 @@ export const SplitText: React.FC<SplitTextProps> = ({
   );
 
   const Tag = (tag || 'p') as any;
-  const clip =
-    hoverEffect === 'none' && (from !== undefined || to !== undefined || effect === 'rise' || effect === 'fade');
+  const clip = Boolean(mask);
 
   return (
     <Tag

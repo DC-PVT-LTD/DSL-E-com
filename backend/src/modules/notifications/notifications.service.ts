@@ -634,6 +634,79 @@ Technical Operations: support@dslstationery.lk
       deliveryStatus: res.deliveryStatus,
     };
   }
+
+  /**
+   * Super Admin Step-Up Security Double Verification OTP Email
+   */
+  async sendSecurityVerificationOtp(params: {
+    email: string;
+    name?: string;
+    action: string;
+    code: string;
+    expiresMinutes?: number;
+  }): Promise<{ success: boolean; messageId: string; deliveryStatus: 'DELIVERED' | 'SIMULATED' }> {
+    const minutes = params.expiresMinutes ?? 5;
+    const subject = `DSL Stationery Security Verification Code: ${params.code}`;
+
+    const text = `
+=====================================================
+            DSL STATIONERY ADMIN SECURITY
+=====================================================
+
+Super Admin Security Verification Code
+
+Hello ${params.name || 'Administrator'},
+
+A high-risk security operation was requested on DSL Stationery Admin Portal:
+Action: ${params.action}
+
+Your one-time double verification code is:
+${params.code}
+
+Important:
+- This code is single-use and will expire in ${minutes} minutes.
+- If you did not initiate this administrative operation, reject the prompt and review active admin sessions immediately.
+
+DSL Enterprises (Pvt) Ltd - Security Operations
+=====================================================
+`;
+
+    const html = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #E2E8F0; border-radius: 16px; background-color: #F8FAFC; color: #1E293B;">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <h1 style="color: #0F172A; font-size: 22px; font-weight: 800; margin: 0;">DSL Stationery Control Center</h1>
+    <p style="color: #64748B; font-size: 13px; margin: 4px 0 0 0;">Step-Up Security Double Verification</p>
+  </div>
+  <div style="background-color: #ffffff; padding: 28px; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <h2 style="font-size: 16px; color: #0F172A; margin-top: 0;">Authorization Required</h2>
+    <p style="font-size: 14px; line-height: 1.6; color: #475569;">Hello <strong>${params.name || 'Administrator'}</strong>,</p>
+    <p style="font-size: 14px; line-height: 1.6; color: #475569;">A sensitive administrative operation requires secondary double verification:</p>
+    <div style="background-color: #F1F5F9; border-left: 4px solid #0284C7; padding: 12px 16px; margin: 16px 0; border-radius: 4px;">
+      <p style="margin: 0; font-size: 13px; color: #334155; font-weight: 600;">Operation: ${params.action}</p>
+    </div>
+    <div style="text-align: center; margin: 28px 0;">
+      <span style="display: inline-block; background-color: #0F172A; color: #38BDF8; font-size: 32px; font-weight: 800; letter-spacing: 6px; padding: 14px 32px; border-radius: 8px; font-family: monospace;">${params.code}</span>
+    </div>
+    <p style="font-size: 12px; color: #64748B; line-height: 1.5; text-align: center;">This single-use code expires in <strong>${minutes} minutes</strong>.</p>
+    <hr style="border: none; border-top: 1px solid #E2E8F0; margin: 24px 0;" />
+    <p style="font-size: 11px; color: #94A3B8; margin: 0; text-align: center;">If you did not request this verification code, please immediately contact the primary Super Admin and check the platform audit log.</p>
+  </div>
+</div>
+`;
+
+    const res = await this.dispatchEmail({
+      to: params.email,
+      subject,
+      text,
+      html,
+    });
+
+    return {
+      success: true,
+      messageId: res.messageId,
+      deliveryStatus: res.deliveryStatus,
+    };
+  }
 }
 
 

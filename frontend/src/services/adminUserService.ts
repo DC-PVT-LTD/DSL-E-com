@@ -145,15 +145,107 @@ export const adminUserService = {
   /**
    * Activate or deactivate an administrator.
    */
-  async updateAdminStatus(id: string, isActive: boolean): Promise<{ success: boolean; message: string; data: AdminUser }> {
-    return apiClient.patch<{ success: boolean; message: string; data: AdminUser }>(`/admin/users/${id}/status`, { isActive });
+  async updateAdminStatus(
+    id: string,
+    isActive: boolean,
+    confirmationPhrase?: string
+  ): Promise<{ success: boolean; message: string; data: AdminUser }> {
+    const options = confirmationPhrase
+      ? { headers: { 'x-action-confirmation': confirmationPhrase } }
+      : undefined;
+    return apiClient.patch<{ success: boolean; message: string; data: AdminUser }>(
+      `/admin/users/${id}/status`,
+      { isActive },
+      options
+    );
   },
 
   /**
    * Change administrator role and dynamic roleId.
    */
-  async updateAdminRole(id: string, role: AdminRole, roleId?: string): Promise<{ success: boolean; message: string; data: AdminUser }> {
-    return apiClient.patch<{ success: boolean; message: string; data: AdminUser }>(`/admin/users/${id}/role`, { role, roleId });
+  async updateAdminRole(
+    id: string,
+    role: AdminRole,
+    roleId?: string | null,
+    confirmationPhrase?: string
+  ): Promise<{ success: boolean; message: string; data: AdminUser }> {
+    const options = confirmationPhrase
+      ? { headers: { 'x-action-confirmation': confirmationPhrase } }
+      : undefined;
+    return apiClient.patch<{ success: boolean; message: string; data: AdminUser }>(
+      `/admin/users/${id}/role`,
+      { role, roleId },
+      options
+    );
+  },
+
+  /**
+   * Remove administrator's dynamic role access (quarantined state).
+   */
+  async removeAdminRole(
+    id: string,
+    confirmationPhrase?: string
+  ): Promise<{ success: boolean; message: string; data: AdminUser }> {
+    const options = confirmationPhrase
+      ? { headers: { 'x-action-confirmation': confirmationPhrase } }
+      : undefined;
+    return apiClient.patch<{ success: boolean; message: string; data: AdminUser }>(
+      `/admin/users/${id}/role`,
+      { role: 'STAFF', roleId: null },
+      options
+    );
+  },
+
+  /**
+   * Update administrator profile details (name, phone).
+   */
+  async updateAdminProfile(id: string, payload: { name?: string; phone?: string | null }): Promise<{ success: boolean; message: string; data: AdminUser }> {
+    return apiClient.patch<{ success: boolean; message: string; data: AdminUser }>(`/admin/users/${id}`, payload);
+  },
+
+  /**
+   * Trigger administrator password reset email.
+   */
+  async triggerPasswordReset(id: string): Promise<{ success: boolean; message: string }> {
+    return apiClient.post<{ success: boolean; message: string }>(`/admin/users/${id}/reset-password`, {});
+  },
+
+  /**
+   * Get administrator activity and audit history.
+   */
+  async getAuditHistory(id: string): Promise<{ success: boolean; data: any[] }> {
+    return apiClient.get<{ success: boolean; data: any[] }>(`/admin/users/${id}/audit-history`);
+  },
+
+  /**
+   * Get administrator dashboard overview statistics.
+   */
+  async getStats(): Promise<{
+    success: boolean;
+    data: {
+      totalAdmins: number;
+      activeAdmins: number;
+      inactiveAdmins: number;
+      pendingInvitations: number;
+      totalRoles: number;
+      customRoles: number;
+    };
+  }> {
+    return apiClient.get('/admin/users/stats');
+  },
+
+  /**
+   * Download exported administrators file.
+   */
+  getExportUrl(query?: { search?: string; role?: string; isActive?: boolean; format?: 'csv' | 'xlsx' }): string {
+    const params = new URLSearchParams();
+    if (query?.search) params.set('search', query.search);
+    if (query?.role) params.set('role', query.role);
+    if (query?.isActive !== undefined) params.set('isActive', String(query.isActive));
+    if (query?.format) params.set('format', query.format);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    return `${baseUrl}/admin/users/export${qs}`;
   },
 
   /**

@@ -6,7 +6,7 @@ import { ArrowRight } from 'lucide-react';
 
 export const SchoolPackHeroSlide: React.FC = () => {
   return (
-    <div className="relative w-full h-full lg:h-[calc(100vh-102px)] lg:max-h-[640px] xl:max-h-[680px] flex flex-col justify-start lg:flex-row lg:items-center bg-gradient-to-r from-[#F6FAFF] via-[#FFFFFF] to-[#F4F8FE] overflow-hidden select-none">
+    <div className="relative w-full h-full flex flex-col justify-start lg:flex-row lg:items-center bg-gradient-to-r from-[#F6FAFF] via-[#FFFFFF] to-[#F4F8FE] overflow-hidden select-none">
       {/* ========================================================= */}
       {/* DESKTOP FULL-BLEED BACKGROUND GRAPHIC ASSET (lg and up)   */}
       {/* Covers edge-to-edge: Girl on left, Arc/Dots/Waves framing */}
@@ -30,7 +30,7 @@ export const SchoolPackHeroSlide: React.FC = () => {
       {/* ========================================================= */}
       {/* DESKTOP & LAPTOP PROMOTIONAL CONTENT LAYER (lg and up)     */}
       {/* ========================================================= */}
-      <div className="hidden lg:flex relative z-10 w-full h-full max-w-[1780px] mx-auto px-6 sm:px-10 lg:px-12 xl:px-16 2xl:px-20 items-center justify-end pointer-events-none">
+      <div className="hidden lg:flex relative z-10 w-full h-full px-6 sm:px-10 lg:px-12 xl:px-16 2xl:px-20 items-center justify-end pointer-events-none">
 
         {/* Right Content Column: Naturally positioned in the open right half, shifted down comfortably */}
         <div className="w-full lg:w-[55%] xl:w-[52%] 2xl:w-[48%] flex flex-col items-start justify-center pl-4 lg:pl-8 xl:pl-12 pointer-events-auto translate-y-6 lg:translate-y-9 xl:translate-y-12 pt-2 lg:pt-4">

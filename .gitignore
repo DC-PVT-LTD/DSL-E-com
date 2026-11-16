@@ -2,7 +2,6 @@ config.bat
 node_modules
 .next
 dist
-.env
 *.log
 .DS_Store
 Thumbs.db
@@ -10,4 +9,8 @@ __pycache__/
 *.pyc
 .vite
 .vitest-cache
+backend/storage/private/receipts/*
+frontend/public/uploads/test-products/*
+scratch/
+
 

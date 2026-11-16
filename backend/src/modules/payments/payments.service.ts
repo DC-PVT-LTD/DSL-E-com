@@ -543,9 +543,16 @@ export class PaymentsService {
       pendingOrders,
       failedOrders,
       codPendingOrders,
+      codDeliveredPaidOrders,
+      codVolumeResult,
       bankTransferPending,
       bankTransferVerified,
       bankTransferRejected,
+      bankTransferVolumeResult,
+      payhereSucceeded,
+      payherePending,
+      payhereFailed,
+      payhereVolumeResult,
       totalVolumeCentsResult,
     ] = await Promise.all([
       this.prisma.order.count({ where: whereOrder }),
@@ -560,9 +567,61 @@ export class PaymentsService {
           orderStatus: { not: OrderStatus.CANCELLED },
         },
       }),
+      this.prisma.order.count({
+        where: {
+          ...whereOrder,
+          paymentMethod: PaymentMethod.CASH_ON_DELIVERY,
+          paymentStatus: PaymentStatus.PAID,
+        },
+      }),
+      this.prisma.order.aggregate({
+        where: {
+          ...whereOrder,
+          paymentMethod: PaymentMethod.CASH_ON_DELIVERY,
+          paymentStatus: PaymentStatus.PAID,
+        },
+        _sum: { totalCents: true },
+      }),
       this.prisma.bankDepositSubmission.count({ where: { status: BankDepositStatus.PENDING } }),
       this.prisma.bankDepositSubmission.count({ where: { status: BankDepositStatus.VERIFIED } }),
       this.prisma.bankDepositSubmission.count({ where: { status: BankDepositStatus.REJECTED } }),
+      this.prisma.order.aggregate({
+        where: {
+          ...whereOrder,
+          paymentMethod: PaymentMethod.BANK_TRANSFER,
+          paymentStatus: PaymentStatus.PAID,
+        },
+        _sum: { totalCents: true },
+      }),
+      this.prisma.order.count({
+        where: {
+          ...whereOrder,
+          paymentMethod: PaymentMethod.CARD_PAYHERE,
+          paymentStatus: PaymentStatus.PAID,
+        },
+      }),
+      this.prisma.order.count({
+        where: {
+          ...whereOrder,
+          paymentMethod: PaymentMethod.CARD_PAYHERE,
+          paymentStatus: PaymentStatus.PENDING,
+        },
+      }),
+      this.prisma.order.count({
+        where: {
+          ...whereOrder,
+          paymentMethod: PaymentMethod.CARD_PAYHERE,
+          paymentStatus: PaymentStatus.FAILED,
+        },
+      }),
+      this.prisma.order.aggregate({
+        where: {
+          ...whereOrder,
+          paymentMethod: PaymentMethod.CARD_PAYHERE,
+          paymentStatus: PaymentStatus.PAID,
+        },
+        _sum: { totalCents: true },
+      }),
       this.prisma.order.aggregate({
         where: { ...whereOrder, paymentStatus: PaymentStatus.PAID },
         _sum: { totalCents: true },
@@ -579,6 +638,18 @@ export class PaymentsService {
         pending: bankTransferPending,
         verified: bankTransferVerified,
         rejected: bankTransferRejected,
+        totalVolumeCents: bankTransferVolumeResult._sum.totalCents || 0,
+      },
+      payhereCards: {
+        succeeded: payhereSucceeded,
+        pending: payherePending,
+        failed: payhereFailed,
+        totalVolumeCents: payhereVolumeResult._sum.totalCents || 0,
+      },
+      cashOnDelivery: {
+        pendingCollection: codPendingOrders,
+        deliveredPaid: codDeliveredPaidOrders,
+        totalVolumeCents: codVolumeResult._sum.totalCents || 0,
       },
       codPendingCollection: codPendingOrders,
     };

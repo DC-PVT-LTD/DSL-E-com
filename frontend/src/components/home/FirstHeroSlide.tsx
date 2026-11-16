@@ -1,518 +1,357 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import TextType from '@/components/common/TextType';
+import FadeContent from '@/components/common/FadeContent';
 
 export const FirstHeroSlide: React.FC = () => {
-  const [animActive, setAnimActive] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const [slideActive, setSlideActive] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Monitor slide activation (mount & carousel slide transitions)
   useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const parent = el.parentElement;
+    if (!parent) return;
 
-    const checkVisibility = () => {
-      const parent = root.parentElement;
-      if (!parent) return;
+    const check = () => {
       const isVisible =
         !parent.classList.contains('opacity-0') &&
         parent.getAttribute('aria-hidden') !== 'true';
-      setAnimActive(isVisible);
+      setSlideActive(isVisible);
     };
 
-    // Initial check
-    checkVisibility();
+    check();
 
-    // Observe parent container for carousel slide changes
-    const parent = root.parentElement;
-    if (!parent) return;
-
-    const observer = new MutationObserver(() => {
-      checkVisibility();
-    });
-
-    observer.observe(parent, {
-      attributes: true,
-      attributeFilter: ['class', 'aria-hidden'],
-    });
-
+    const observer = new MutationObserver(check);
+    observer.observe(parent, { attributes: true, attributeFilter: ['class', 'aria-hidden'] });
     return () => observer.disconnect();
   }, []);
 
+  // Subtle professional entrance animations as specified in requirements:
+  // - Background: static
+  // - Back ribbon: gentle slide-in
+  // - Children: smooth fade-in with a slight upward movement
+  // - Products: gentle upward entrance
+  // - Product shadow: fade in beneath products
+  // - Front ribbon: smooth slide-in from the bottom
+  // - Heading and buttons: staggered fade-in
+  const easeCurve = [0.16, 1, 0.3, 1] as const;
+
+  const backRibbonVariants: Variants = {
+    hidden: prefersReducedMotion ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: 40, y: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      y: 0,
+      transition: { duration: 1.05, ease: easeCurve, delay: 0.15 },
+    },
+  };
+
+  const childrenVariants: Variants = {
+    hidden: prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 35 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.95, ease: easeCurve, delay: 0.3 },
+    },
+  };
+
+  const shadowVariants: Variants = {
+    hidden: prefersReducedMotion ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.94 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { duration: 0.9, ease: 'easeOut', delay: 0.35 },
+    },
+  };
+
+  const productsVariants: Variants = {
+    hidden: prefersReducedMotion ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 40, scale: 0.96 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { duration: 0.95, ease: easeCurve, delay: 0.4 },
+    },
+  };
+
+  const frontRibbonVariants: Variants = {
+    hidden: prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 45 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 1.05, ease: easeCurve, delay: 0.5 },
+    },
+  };
+
+  const contentVariants: Variants = {
+    hidden: prefersReducedMotion ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.9, ease: easeCurve, delay: 0.25 },
+    },
+  };
+
+  const handleOurBrandsClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const brandsSection = document.getElementById('our-brands');
+    if (brandsSection) {
+      e.preventDefault();
+      brandsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div
-      ref={rootRef}
-      className={`relative w-full h-[535px] sm:h-[580px] md:h-[632px] lg:h-[calc(100vh-102px)] lg:max-h-[640px] xl:max-h-[680px] overflow-hidden select-none bg-[#092556] flex items-center justify-center cursor-default ${animActive ? 'speed-stage-active' : 'speed-stage-idle'
-        }`}
+      ref={containerRef}
+      className="relative w-full h-full overflow-hidden select-none flex items-center justify-center"
     >
       {/* ========================================================= */}
-      {/* LAYER 1: ATMOSPHERIC FULL-BLEED BACKGROUND IMAGE         */}
-      {/* Static, razor-sharp background                            */}
+      {/* LAYER 1: MAIN BACKGROUND (TRUE FULL-BLEED EDGE-TO-EDGE)   */}
       {/* ========================================================= */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none">
-        <div className="w-full h-full">
-          <img
-            src="/images/hero/speed-hero/hero-background.png"
-            alt="Speed Write Beyond Limits Background"
-            className="w-full h-full object-cover object-center select-none"
-            draggable={false}
-          />
-        </div>
+      <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
+        <img
+          src="/images/hero 2/hero-background.png"
+          alt="DSL Stationery Distribution Background"
+          className="w-full h-full object-cover object-center pointer-events-none select-none"
+          draggable={false}
+        />
       </div>
 
       {/* ========================================================= */}
-      {/* RESPONSIVE STAGE CONTAINER (Maintains exact 1670:941 ratio) */}
+      {/* RESPONSIVE LAYER STAGE                                    */}
+      {/* Enlarged layers to fill screen without large empty spaces */}
       {/* ========================================================= */}
-      <div className="relative w-full h-full max-w-[1780px] mx-auto flex items-center justify-center pointer-events-none px-2 sm:px-4 lg:px-8">
+      <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
         <div
-          className="relative w-full h-full flex items-center justify-center"
+          className="relative h-full flex items-center justify-center"
           style={{
-            aspectRatio: '1670 / 941',
-            maxWidth: '100%',
+            aspectRatio: '2560 / 1440',
             maxHeight: '100%',
           }}
         >
-          {/* ========================================================= */}
-          {/* LAYER 2: FEATURE BULLET ICONS (Shifted Left & Scaled Up)  */}
-          {/* 3 Icons Revealed Sequentially with Slow, Smooth Glide     */}
-          {/* ========================================================= */}
-          <div className="absolute inset-0 w-full h-full pointer-events-none z-[35] speed-left-shift">
-            <div
-              className="w-full h-full origin-left"
-              style={{
-                transform: 'scale(1.18)',
-              }}
+          {/* ======================================================= */}
+          {/* RIGHT GROUP: RIBBONS & CHILDREN                         */}
+          {/* Shifted right by an additional ~1.5cm                    */}
+          {/* ======================================================= */}
+          <div
+            className="absolute inset-0 w-full h-full pointer-events-none origin-bottom-right transition-transform duration-300"
+            style={{
+              transform: 'scale(1.15) translate(clamp(80px, 9vw, 180px), 0px)',
+            }}
+          >
+            {/* LAYER 2: BACK RIBBON (GENTLE SLIDE-IN) */}
+            <motion.div
+              className="absolute inset-0 w-full h-full z-10 pointer-events-none"
+              initial="hidden"
+              animate="visible"
+              variants={backRibbonVariants}
             >
-              {/* Feature Icon 1: Smooth Flow */}
-              <div
-                className="absolute inset-0 w-full h-full speed-entrance-icon-1"
-                style={{ clipPath: 'inset(0% 0% 68.22% 0%)' }}
+              <img
+                src="/images/hero 2/back-ribbon.png"
+                alt=""
+                className="w-full h-full object-contain pointer-events-none"
+                draggable={false}
+                aria-hidden="true"
+              />
+            </motion.div>
+
+            {/* LAYER 3: CHILDREN (SMOOTH FADE-IN + UPWARD) */}
+            <motion.div
+              className="absolute inset-0 w-full h-full z-20 pointer-events-none"
+              initial="hidden"
+              animate="visible"
+              variants={childrenVariants}
+            >
+              <FadeContent
+                key={slideActive ? 'children-active' : 'children-idle'}
+                trigger="mount"
+                effect="focus"
+                duration={1.2}
+                delay={0.2}
+                blur={12}
+                ease="power2.out"
+                className="w-full h-full"
+                style={{ width: '100%', height: '100%' }}
               >
                 <img
-                  src="/images/hero/speed-hero/feature-icons.png"
-                  alt="Feature Badge: Smooth Flow"
-                  className="w-full h-full object-contain select-none"
+                  src="/images/hero 2/children.png"
+                  alt="Smiling school students with backpacks and books"
+                  className="w-full h-full object-contain pointer-events-none"
                   draggable={false}
+                />
+              </FadeContent>
+            </motion.div>
+
+            {/* LAYER 6: FRONT RIBBON (SMOOTH SLIDE-IN FROM BOTTOM) */}
+            <motion.div
+              className="absolute inset-0 w-full h-full z-40 pointer-events-none"
+              initial="hidden"
+              animate="visible"
+              variants={frontRibbonVariants}
+            >
+              <img
+                src="/images/hero 2/front-ribbon.png"
+                alt=""
+                className="w-full h-full object-contain pointer-events-none"
+                draggable={false}
+                aria-hidden="true"
+              />
+            </motion.div>
+          </div>
+
+          {/* ======================================================= */}
+          {/* LEFT GROUP: PRODUCTS & STUDIO LIGHTING                  */}
+          {/* Enlarged prominently for bold, clear retail visibility  */}
+          {/* ======================================================= */}
+          <div
+            className="absolute inset-0 w-full h-full pointer-events-none origin-bottom-left transition-transform duration-300"
+            style={{
+              transform: 'scale(1.50) translate(-35px, 35px)',
+            }}
+          >
+            {/* PRODUCT HIGHLIGHT BACK-GLOW (Studio Pedestal Lighting - Shifted Left) */}
+            <div
+              className="absolute pointer-events-none z-22 rounded-full blur-2xl opacity-75 -translate-x-10 sm:-translate-x-16 md:-translate-x-20 lg:-translate-x-24 xl:-translate-x-28"
+              style={{
+                left: '2%',
+                bottom: '10%',
+                width: '46%',
+                height: '30%',
+                background:
+                  'radial-gradient(ellipse at center, rgba(56, 189, 248, 0.45) 0%, rgba(8, 102, 232, 0.18) 45%, transparent 75%)',
+              }}
+              aria-hidden="true"
+            />
+
+            {/* LAYER 4: PRODUCT SHADOW (UNDERNEATH PRODUCT COLLECTION - SHIFTED LEFT) */}
+            <motion.div
+              className="absolute inset-0 w-full h-full z-25 pointer-events-none origin-bottom-center -translate-x-10 sm:-translate-x-16 md:-translate-x-20 lg:-translate-x-24 xl:-translate-x-28"
+              initial="hidden"
+              animate="visible"
+              variants={shadowVariants}
+            >
+              <img
+                src="/images/hero 2/product-shadow.png"
+                alt=""
+                className="w-full h-full object-contain pointer-events-none opacity-95 filter drop-shadow-[0_14px_28px_rgba(8,24,64,0.22)]"
+                draggable={false}
+                aria-hidden="true"
+              />
+            </motion.div>
+
+            {/* LAYER 5: PRODUCT COLLECTION (HIGHLIGHTED HERO PIECE - SHIFTED LEFT) */}
+            <motion.div
+              className="absolute inset-0 w-full h-full z-30 pointer-events-none origin-bottom-center -translate-x-10 sm:-translate-x-16 md:-translate-x-20 lg:-translate-x-24 xl:-translate-x-28"
+              initial="hidden"
+              animate="visible"
+              variants={productsVariants}
+            >
+              <FadeContent
+                key={slideActive ? 'products-active' : 'products-idle'}
+                trigger="mount"
+                effect="focus"
+                duration={1.2}
+                delay={0.35}
+                blur={12}
+                ease="power2.out"
+                className="w-full h-full"
+                style={{ width: '100%', height: '100%' }}
+              >
+                <img
+                  src="/images/hero 2/product-set.png"
+                  alt="DSL Stationery Product Collection"
+                  className="w-full h-full object-contain pointer-events-none transition-transform duration-300 filter drop-shadow-[0_18px_32px_rgba(8,102,232,0.18)]"
+                  draggable={false}
+                />
+              </FadeContent>
+            </motion.div>
+          </div>
+
+          {/* ======================================================= */}
+          {/* HEADING GROUP: HERO CONTENT & CTA BUTTONS               */}
+          {/* Enhanced with React Bits <TextType /> typing animation  */}
+          {/* ======================================================= */}
+          <motion.div
+            className="absolute z-50 pointer-events-none left-[3.5%] top-[1.8%] w-[36%]"
+            initial="hidden"
+            animate="visible"
+            variants={contentVariants}
+            style={{
+              aspectRatio: '1774 / 887',
+            }}
+          >
+            <div className="relative w-full h-full">
+              {/* LAYER 7: HERO CONTENT FRAME (Preserved Badge & Buttons Artwork) */}
+              <img
+                src="/images/hero 2/hero-content-frame.png"
+                alt="Stationery Distribution"
+                className="w-full h-full object-contain pointer-events-none select-none drop-shadow-[0_8px_20px_rgba(8,102,232,0.08)]"
+                draggable={false}
+              />
+
+              {/* REACT BITS <TextType /> TYPING ANIMATION FOR THE WORDING */}
+              <div className="absolute top-[22%] left-[3%] w-[94%] h-[50%] flex items-center justify-center text-center pointer-events-auto">
+                <TextType
+                  as="h1"
+                  text={[
+                    'Supplies Without Limits.',
+                    'School Essentials.',
+                    'Office Stationery.',
+                    'Direct Distribution.',
+                  ]}
+                  typingSpeed={75}
+                  pauseDuration={1800}
+                  deletingSpeed={45}
+                  deleteMode="backspace"
+                  typeEffect="fade"
+                  mistakes={0.15}
+                  cursorStyle="bar"
+                  cursorGlide
+                  showCursor
+                  cursorColor="#087BFF"
+                  className="font-fredoka font-bold text-[#081B43] tracking-tight leading-[1.05] text-[clamp(20px,3.1vw,46px)]"
                 />
               </div>
 
-              {/* Feature Icon 2: Comfort Grip */}
-              <div
-                className="absolute inset-0 w-full h-full speed-entrance-icon-2"
-                style={{ clipPath: 'inset(31.78% 0% 56.43% 0%)' }}
-              >
-                <img
-                  src="/images/hero/speed-hero/feature-icons.png"
-                  alt="Feature Badge: Comfort Grip"
-                  className="w-full h-full object-contain select-none"
-                  draggable={false}
+              {/* LAYER 8: INTERACTIVE ACCESSIBLE CTA BUTTON OVERLAYS */}
+              {/* Pixel-perfect transparent clickable areas over the visual buttons */}
+              <div className="absolute inset-0 w-full h-full pointer-events-auto">
+                {/* Button 1: Shop Catalogue */}
+                <Link
+                  href="/shop"
+                  aria-label="Shop Catalogue"
+                  className="absolute rounded-full transition-all duration-200 hover:scale-[1.03] active:scale-[0.98] cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400/50"
+                  style={{
+                    left: '12.57%',
+                    top: '77.57%',
+                    width: '40.19%',
+                    height: '15.90%',
+                  }}
                 />
-              </div>
 
-              {/* Feature Icon 3: Reliable & Durable */}
-              <div
-                className="absolute inset-0 w-full h-full speed-entrance-icon-3"
-                style={{ clipPath: 'inset(43.57% 0% 0% 0%)' }}
-              >
-                <img
-                  src="/images/hero/speed-hero/feature-icons.png"
-                  alt="Feature Badge: Reliable and Durable"
-                  className="w-full h-full object-contain select-none"
-                  draggable={false}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ========================================================= */}
-          {/* LAYER 3: RED SPEED LOGO (Top Right - Shifted More Right)  */}
-          {/* Static clean placement                                    */}
-          {/* ========================================================= */}
-          <div className="absolute inset-0 w-full h-full pointer-events-none z-10 speed-right-shift">
-            <div className="w-full h-full">
-              <img
-                src="/images/hero/speed-hero/speed-logo.png"
-                alt="SPEED Brand Logo"
-                className="w-full h-full object-contain select-none drop-shadow-md"
-                draggable={false}
-              />
-            </div>
-          </div>
-
-          {/* ========================================================= */}
-          {/* LAYER 4: SUPPORTING SPEED PENS (Shifted More Right)       */}
-          {/* Static: No movement, no float, no entrance anim           */}
-          {/* ========================================================= */}
-          <div className="absolute inset-0 w-full h-full pointer-events-none z-10 speed-right-shift">
-            <div className="w-full h-full">
-              {/* Supporting Pen 1: Black Pen */}
-              <div
-                className="absolute inset-0 w-full h-full"
-                style={{
-                  clipPath:
-                    'polygon(0% 0%, 91.14% 0%, 91.14% 68.01%, 87.43% 96.71%, 87.43% 100%, 0% 100%)',
-                }}
-              >
-                <img
-                  src="/images/hero/speed-hero/main-pen.png"
-                  alt="SPEED Black Pen"
-                  className="w-full h-full object-contain select-none drop-shadow-lg"
-                  draggable={false}
-                />
-              </div>
-
-              {/* Supporting Pen 2: Red Pen */}
-              <div
-                className="absolute inset-0 w-full h-full"
-                style={{
-                  clipPath:
-                    'polygon(91.14% 0%, 94.37% 0%, 94.37% 68.01%, 90.42% 96.71%, 90.42% 100%, 87.43% 100%, 87.43% 96.71%, 91.14% 68.01%)',
-                }}
-              >
-                <img
-                  src="/images/hero/speed-hero/main-pen.png"
-                  alt="SPEED Red Pen"
-                  className="w-full h-full object-contain select-none drop-shadow-lg"
-                  draggable={false}
-                />
-              </div>
-
-              {/* Supporting Pen 3: Blue Pen */}
-              <div
-                className="absolute inset-0 w-full h-full"
-                style={{
-                  clipPath:
-                    'polygon(94.37% 0%, 100% 0%, 100% 100%, 90.42% 100%, 90.42% 96.71%, 94.37% 68.01%)',
-                }}
-              >
-                <img
-                  src="/images/hero/speed-hero/main-pen.png"
-                  alt="SPEED Blue Pen"
-                  className="w-full h-full object-contain select-none drop-shadow-lg"
-                  draggable={false}
+                {/* Button 2: Our Brands */}
+                <Link
+                  href="/#our-brands"
+                  onClick={handleOurBrandsClick}
+                  aria-label="Explore Our Brands"
+                  className="absolute rounded-full transition-all duration-200 hover:scale-[1.03] active:scale-[0.98] cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400/50"
+                  style={{
+                    left: '54.40%',
+                    top: '77.90%',
+                    width: '33.03%',
+                    height: '15.78%',
+                  }}
                 />
               </div>
             </div>
-          </div>
-
-          {/* ========================================================= */}
-          {/* LAYER 5: 3D BLUE RIBBON BACK LOOP (Behind 'WRITE' & Child) */}
-          {/* Static layer matching reference (no ribbon animation)     */}
-          {/* ========================================================= */}
-          <div className="absolute inset-0 w-full h-full pointer-events-none z-15">
-            <div className="w-full h-full">
-              <img
-                src="/images/hero/speed-hero/ribbon-back.png"
-                alt="Ribbon Back Loop"
-                className="w-full h-full object-contain select-none"
-                draggable={false}
-              />
-            </div>
-          </div>
-
-          {/* ========================================================= */}
-          {/* LAYER 6: 3D TYPOGRAPHY — 'WRITE'                          */}
-          {/* Slow, elegant entrance from above (1.8s)                  */}
-          {/* ========================================================= */}
-          <div className="absolute inset-0 w-full h-full pointer-events-none z-[18]">
-            <div className="w-full h-full speed-entrance-write">
-              <img
-                src="/images/hero/speed-hero/write.png"
-                alt="WRITE"
-                className="w-full h-full object-contain select-none drop-shadow-[0_12px_24px_rgba(0,0,0,0.3)] animate-float-text-top"
-                draggable={false}
-              />
-            </div>
-          </div>
-
-          {/* ========================================================= */}
-          {/* LAYER 7: CHILD CHARACTER (In Front of 'WRITE')            */}
-          {/* Static: No movement, no float, no entrance anim           */}
-          {/* ========================================================= */}
-          <div className="absolute inset-0 w-full h-full pointer-events-none z-[22]">
-            <div className="w-full h-full">
-              <img
-                src="/images/hero/speed-hero/child.png"
-                alt="Speed Hero Boy with Pen"
-                className="w-full h-full object-contain select-none drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)]"
-                draggable={false}
-              />
-            </div>
-          </div>
-
-          {/* ========================================================= */}
-          {/* LAYER 8: 3D BLUE RIBBON FRONT LOOP (Wraps across chest)   */}
-          {/* Static foreground layer (no ribbon animation)             */}
-          {/* ========================================================= */}
-          <div className="absolute inset-0 w-full h-full pointer-events-none z-[26]">
-            <div className="w-full h-full">
-              <img
-                src="/images/hero/speed-hero/ribbon-front.png"
-                alt="Ribbon Front Loop"
-                className="w-full h-full object-contain select-none drop-shadow-md"
-                draggable={false}
-              />
-            </div>
-          </div>
-
-          {/* ========================================================= */}
-          {/* LAYER 9: 3D TYPOGRAPHY — 'BEYOND'                         */}
-          {/* Slow, elegant entrance from below (1.8s)                  */}
-          {/* ========================================================= */}
-          <div className="absolute inset-0 w-full h-full pointer-events-none z-[30]">
-            <div className="w-full h-full speed-entrance-beyond">
-              <img
-                src="/images/hero/speed-hero/beyond.png"
-                alt="BEYOND"
-                className="w-full h-full object-contain select-none drop-shadow-[0_12px_24px_rgba(0,0,0,0.3)] animate-float-text-mid"
-                draggable={false}
-              />
-            </div>
-          </div>
-
-          {/* ========================================================= */}
-          {/* LAYER 10: 3D TYPOGRAPHY — 'LIMITS'                        */}
-          {/* Slow, elegant entrance from below (1.8s)                  */}
-          {/* ========================================================= */}
-          <div className="absolute inset-0 w-full h-full pointer-events-none z-[32]">
-            <div className="w-full h-full speed-entrance-limits">
-              <img
-                src="/images/hero/speed-hero/limits.png"
-                alt="LIMITS"
-                className="w-full h-full object-contain select-none drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)] animate-float-text-bot"
-                draggable={false}
-              />
-            </div>
-          </div>
+          </motion.div>
         </div>
       </div>
-
-      {/* ========================================================= */}
-      {/* KEYFRAME ANIMATIONS, TIMELINES & RESPONSIVE ALIGNMENT     */}
-      {/* ========================================================= */}
-      <style jsx>{`
-        /* Shift feature icons left and up */
-        .speed-left-shift {
-          transform: translate(-10px, -20px);
-        }
-        @media (min-width: 640px) {
-          .speed-left-shift {
-            transform: translate(-35px, -30px);
-          }
-        }
-        @media (min-width: 768px) {
-          .speed-left-shift {
-            transform: translate(-60px, -40px);
-          }
-        }
-        @media (min-width: 1024px) {
-          .speed-left-shift {
-            transform: translate(clamp(-160px, -8.5vw, -80px), -48px);
-          }
-        }
-        @media (min-width: 1280px) {
-          .speed-left-shift {
-            transform: translate(clamp(-210px, -10vw, -110px), -55px);
-          }
-        }
-        @media (min-width: 1536px) {
-          .speed-left-shift {
-            transform: translate(clamp(-260px, -12vw, -140px), -65px);
-          }
-        }
-
-        /* Shift SPEED logo and 3 pens right on larger screens */
-        .speed-right-shift {
-          transform: translateX(0px);
-        }
-        @media (min-width: 640px) {
-          .speed-right-shift {
-            transform: translateX(35px);
-          }
-        }
-        @media (min-width: 768px) {
-          .speed-right-shift {
-            transform: translateX(55px);
-          }
-        }
-        @media (min-width: 1024px) {
-          .speed-right-shift {
-            transform: translateX(clamp(80px, 8vw, 160px));
-          }
-        }
-        @media (min-width: 1280px) {
-          .speed-right-shift {
-            transform: translateX(clamp(110px, 9.5vw, 210px));
-          }
-        }
-        @media (min-width: 1536px) {
-          .speed-right-shift {
-            transform: translateX(clamp(140px, 11vw, 260px));
-          }
-        }
-
-        /* Initial States when Idle (Only wording and 3 features are animated) */
-        .speed-stage-idle .speed-entrance-write,
-        .speed-stage-idle .speed-entrance-beyond,
-        .speed-stage-idle .speed-entrance-limits,
-        .speed-stage-idle .speed-entrance-icon-1,
-        .speed-stage-idle .speed-entrance-icon-2,
-        .speed-stage-idle .speed-entrance-icon-3 {
-          opacity: 0;
-        }
-
-        /* Default Opacity When Active */
-        .speed-stage-active .speed-entrance-write,
-        .speed-stage-active .speed-entrance-beyond,
-        .speed-stage-active .speed-entrance-limits,
-        .speed-stage-active .speed-entrance-icon-1,
-        .speed-stage-active .speed-entrance-icon-2,
-        .speed-stage-active .speed-entrance-icon-3 {
-          opacity: 1;
-        }
-
-        /* --------------------------------------------------------- */
-        /* ENTRANCE TIMELINE SEQUENCE (Slow, Smooth & Elegant)       */
-        /* --------------------------------------------------------- */
-
-        /* 0.25s – WRITE Typography Entrance (Smooth, Fluid Glide Down, 1.0s) */
-        @keyframes speedEntranceWrite {
-          0% {
-            opacity: 0;
-            transform: translate3d(0, -28px, 0);
-          }
-          100% {
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-          }
-        }
-        .speed-stage-active .speed-entrance-write {
-          animation: speedEntranceWrite 1.0s cubic-bezier(0.16, 1, 0.3, 1) 0.25s backwards;
-          animation-fill-mode: forwards;
-          will-change: transform, opacity;
-        }
-
-        /* 0.55s – BEYOND Typography Entrance (Smooth, Fluid Glide Up, 1.0s) */
-        @keyframes speedEntranceBeyond {
-          0% {
-            opacity: 0;
-            transform: translate3d(0, 22px, 0);
-          }
-          100% {
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-          }
-        }
-        .speed-stage-active .speed-entrance-beyond {
-          animation: speedEntranceBeyond 1.0s cubic-bezier(0.16, 1, 0.3, 1) 0.55s backwards;
-          animation-fill-mode: forwards;
-          will-change: transform, opacity;
-        }
-
-        /* 0.85s – LIMITS Typography Entrance (Smooth, Fluid Glide Up, 1.0s) */
-        @keyframes speedEntranceLimits {
-          0% {
-            opacity: 0;
-            transform: translate3d(0, 26px, 0);
-          }
-          100% {
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-          }
-        }
-        .speed-stage-active .speed-entrance-limits {
-          animation: speedEntranceLimits 1.0s cubic-bezier(0.16, 1, 0.3, 1) 0.85s backwards;
-          animation-fill-mode: forwards;
-          will-change: transform, opacity;
-        }
-
-        /* 1.15s – Feature Icons Sequential Reveal (Smooth Fluid Slide From Left, 0.9s) */
-        @keyframes speedEntranceIcon {
-          0% {
-            opacity: 0;
-            transform: translate3d(-20px, 0, 0);
-          }
-          100% {
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-          }
-        }
-        .speed-stage-active .speed-entrance-icon-1 {
-          animation: speedEntranceIcon 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.15s backwards;
-          animation-fill-mode: forwards;
-          will-change: transform, opacity;
-        }
-        .speed-stage-active .speed-entrance-icon-2 {
-          animation: speedEntranceIcon 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.40s backwards;
-          animation-fill-mode: forwards;
-          will-change: transform, opacity;
-        }
-        .speed-stage-active .speed-entrance-icon-3 {
-          animation: speedEntranceIcon 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.65s backwards;
-          animation-fill-mode: forwards;
-          will-change: transform, opacity;
-        }
-
-        /* --------------------------------------------------------- */
-        /* SUBTLE FLOATING MICRO-ANIMATIONS (Slow & Peaceful)        */
-        /* --------------------------------------------------------- */
-        @keyframes floatTextTop {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-3px);
-          }
-        }
-        @keyframes floatTextMid {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-3px);
-          }
-        }
-        @keyframes floatTextBot {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-3px);
-          }
-        }
-
-        .animate-float-text-top {
-          animation: floatTextTop 8s ease-in-out infinite 2.2s;
-          will-change: transform;
-        }
-        .animate-float-text-mid {
-          animation: floatTextMid 8.5s ease-in-out infinite 2.7s;
-          will-change: transform;
-        }
-        .animate-float-text-bot {
-          animation: floatTextBot 9s ease-in-out infinite 3.2s;
-          will-change: transform;
-        }
-
-        /* --------------------------------------------------------- */
-        /* ACCESSIBILITY: PREFERS-REDUCED-MOTION                     */
-        /* --------------------------------------------------------- */
-        @media (prefers-reduced-motion: reduce) {
-          .speed-stage-active .speed-entrance-write,
-          .speed-stage-active .speed-entrance-beyond,
-          .speed-stage-active .speed-entrance-limits,
-          .speed-stage-active .speed-entrance-icon-1,
-          .speed-stage-active .speed-entrance-icon-2,
-          .speed-stage-active .speed-entrance-icon-3,
-          .animate-float-text-top,
-          .animate-float-text-mid,
-          .animate-float-text-bot {
-            animation: none !important;
-            opacity: 1 !important;
-            transform: none !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };

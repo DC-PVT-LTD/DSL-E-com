@@ -7,6 +7,7 @@ import {
   Req,
   HttpCode,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,6 +17,7 @@ import {
   ApiCookieAuth,
 } from '@nestjs/swagger';
 import { StoreSettingsService } from './store-settings.service';
+import { ConfirmationService } from '../security/confirmation.service';
 import {
   UpdateBankTransferSettingsDto,
   PublicStoreSettingsResponse,
@@ -23,13 +25,18 @@ import {
 } from './dto/store-settings.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
 import { UserRole } from '../../generated/prisma';
 
 @ApiTags('Store Settings')
 @Controller('store-settings')
 export class StoreSettingsController {
-  constructor(private readonly storeSettingsService: StoreSettingsService) {}
+  constructor(
+    @Inject(StoreSettingsService) private readonly storeSettingsService: StoreSettingsService,
+    @Inject(ConfirmationService) private readonly confirmationService: ConfirmationService,
+  ) { }
 
   @Get('public')
   @ApiOperation({
@@ -44,8 +51,9 @@ export class StoreSettingsController {
   }
 
   @Get('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Roles(UserRole.ADMIN)
+  @RequirePermissions('settings.view')
   @ApiCookieAuth('dsl_access_token')
   @ApiBearerAuth('bearerAuth')
   @ApiOperation({
@@ -55,13 +63,14 @@ export class StoreSettingsController {
     status: HttpStatus.OK,
     description: 'Complete store settings with configuration status',
   })
-  async getAdminSettings(): Promise<AdminStoreSettingsResponse> {
-    return this.storeSettingsService.getAdminSettings();
+  async getAdminSettings(@Req() req: any): Promise<AdminStoreSettingsResponse> {
+    return this.storeSettingsService.getAdminSettings(req.user);
   }
 
   @Put('admin/bank-transfer')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Roles(UserRole.ADMIN)
+  @RequirePermissions('settings.financial')
   @HttpCode(HttpStatus.OK)
   @ApiCookieAuth('dsl_access_token')
   @ApiBearerAuth('bearerAuth')
@@ -81,6 +90,21 @@ export class StoreSettingsController {
     @Req() req: any,
   ): Promise<AdminStoreSettingsResponse> {
     const adminUserId = req.user?.id || req.user?.sub || 'system-admin';
+
+    await this.confirmationService.validateConfirmation({
+      action: 'CONFIRM_FINANCIAL_SETTINGS',
+      req,
+      targetEntity: 'StoreSettings',
+      targetId: 'default',
+      expectedValue: 'CONFIRM FINANCIAL SETTINGS',
+      actor: {
+        id: adminUserId,
+        email: req.user?.email,
+        name: req.user?.name,
+        roleSlug: req.user?.assignedRole?.slug || req.user?.roleSlug,
+      },
+    });
+
     return this.storeSettingsService.updateBankTransferSettings(dto, adminUserId);
   }
 }

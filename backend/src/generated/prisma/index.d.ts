@@ -268,6 +268,16 @@ export type ProductImportBatch = $Result.DefaultSelection<Prisma.$ProductImportB
  * 
  */
 export type ProductImportRowResult = $Result.DefaultSelection<Prisma.$ProductImportRowResultPayload>
+/**
+ * Model VerificationChallenge
+ * 
+ */
+export type VerificationChallenge = $Result.DefaultSelection<Prisma.$VerificationChallengePayload>
+/**
+ * Model AdminActivityLog
+ * 
+ */
+export type AdminActivityLog = $Result.DefaultSelection<Prisma.$AdminActivityLogPayload>
 
 /**
  * Enums
@@ -498,6 +508,17 @@ export const ImportRowStatus: {
 
 export type ImportRowStatus = (typeof ImportRowStatus)[keyof typeof ImportRowStatus]
 
+
+export const VerificationChallengeStatus: {
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  CONSUMED: 'CONSUMED',
+  EXPIRED: 'EXPIRED',
+  FAILED: 'FAILED'
+};
+
+export type VerificationChallengeStatus = (typeof VerificationChallengeStatus)[keyof typeof VerificationChallengeStatus]
+
 }
 
 export type UserRole = $Enums.UserRole
@@ -587,6 +608,10 @@ export const ImportBatchStatus: typeof $Enums.ImportBatchStatus
 export type ImportRowStatus = $Enums.ImportRowStatus
 
 export const ImportRowStatus: typeof $Enums.ImportRowStatus
+
+export type VerificationChallengeStatus = $Enums.VerificationChallengeStatus
+
+export const VerificationChallengeStatus: typeof $Enums.VerificationChallengeStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -1218,6 +1243,26 @@ export class PrismaClient<
     * ```
     */
   get productImportRowResult(): Prisma.ProductImportRowResultDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.verificationChallenge`: Exposes CRUD operations for the **VerificationChallenge** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more VerificationChallenges
+    * const verificationChallenges = await prisma.verificationChallenge.findMany()
+    * ```
+    */
+  get verificationChallenge(): Prisma.VerificationChallengeDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.adminActivityLog`: Exposes CRUD operations for the **AdminActivityLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AdminActivityLogs
+    * const adminActivityLogs = await prisma.adminActivityLog.findMany()
+    * ```
+    */
+  get adminActivityLog(): Prisma.AdminActivityLogDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1715,7 +1760,9 @@ export namespace Prisma {
     ProductImportPreview: 'ProductImportPreview',
     ImportExecutionLease: 'ImportExecutionLease',
     ProductImportBatch: 'ProductImportBatch',
-    ProductImportRowResult: 'ProductImportRowResult'
+    ProductImportRowResult: 'ProductImportRowResult',
+    VerificationChallenge: 'VerificationChallenge',
+    AdminActivityLog: 'AdminActivityLog'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1731,7 +1778,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "address" | "refreshToken" | "category" | "brand" | "product" | "productVariant" | "inventoryMovement" | "schoolPack" | "schoolPackItem" | "order" | "orderAddressSnapshot" | "orderItem" | "orderAuditLog" | "orderNote" | "orderReturnRequest" | "orderReturnItem" | "refundRecord" | "stockReservation" | "stockReservationItem" | "paymentAttempt" | "bankDepositSubmission" | "promotion" | "promotionCode" | "promotionProduct" | "promotionCategory" | "promotionRedemption" | "wishlistItem" | "savedStationeryList" | "savedList" | "savedListItem" | "storeBanner" | "homepageBanner" | "auditLog" | "storeSettings" | "cart" | "cartItem" | "backInStockAlert" | "newsletterSubscriber" | "newsletterVerificationToken" | "newsletterConsentEvent" | "adminInvitation" | "role" | "permission" | "rolePermission" | "globalSku" | "skuSequence" | "productImportPreview" | "importExecutionLease" | "productImportBatch" | "productImportRowResult"
+      modelProps: "user" | "address" | "refreshToken" | "category" | "brand" | "product" | "productVariant" | "inventoryMovement" | "schoolPack" | "schoolPackItem" | "order" | "orderAddressSnapshot" | "orderItem" | "orderAuditLog" | "orderNote" | "orderReturnRequest" | "orderReturnItem" | "refundRecord" | "stockReservation" | "stockReservationItem" | "paymentAttempt" | "bankDepositSubmission" | "promotion" | "promotionCode" | "promotionProduct" | "promotionCategory" | "promotionRedemption" | "wishlistItem" | "savedStationeryList" | "savedList" | "savedListItem" | "storeBanner" | "homepageBanner" | "auditLog" | "storeSettings" | "cart" | "cartItem" | "backInStockAlert" | "newsletterSubscriber" | "newsletterVerificationToken" | "newsletterConsentEvent" | "adminInvitation" | "role" | "permission" | "rolePermission" | "globalSku" | "skuSequence" | "productImportPreview" | "importExecutionLease" | "productImportBatch" | "productImportRowResult" | "verificationChallenge" | "adminActivityLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -5509,6 +5556,154 @@ export namespace Prisma {
           }
         }
       }
+      VerificationChallenge: {
+        payload: Prisma.$VerificationChallengePayload<ExtArgs>
+        fields: Prisma.VerificationChallengeFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.VerificationChallengeFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationChallengePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.VerificationChallengeFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationChallengePayload>
+          }
+          findFirst: {
+            args: Prisma.VerificationChallengeFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationChallengePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.VerificationChallengeFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationChallengePayload>
+          }
+          findMany: {
+            args: Prisma.VerificationChallengeFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationChallengePayload>[]
+          }
+          create: {
+            args: Prisma.VerificationChallengeCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationChallengePayload>
+          }
+          createMany: {
+            args: Prisma.VerificationChallengeCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.VerificationChallengeCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationChallengePayload>[]
+          }
+          delete: {
+            args: Prisma.VerificationChallengeDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationChallengePayload>
+          }
+          update: {
+            args: Prisma.VerificationChallengeUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationChallengePayload>
+          }
+          deleteMany: {
+            args: Prisma.VerificationChallengeDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.VerificationChallengeUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.VerificationChallengeUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationChallengePayload>[]
+          }
+          upsert: {
+            args: Prisma.VerificationChallengeUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationChallengePayload>
+          }
+          aggregate: {
+            args: Prisma.VerificationChallengeAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateVerificationChallenge>
+          }
+          groupBy: {
+            args: Prisma.VerificationChallengeGroupByArgs<ExtArgs>
+            result: $Utils.Optional<VerificationChallengeGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.VerificationChallengeCountArgs<ExtArgs>
+            result: $Utils.Optional<VerificationChallengeCountAggregateOutputType> | number
+          }
+        }
+      }
+      AdminActivityLog: {
+        payload: Prisma.$AdminActivityLogPayload<ExtArgs>
+        fields: Prisma.AdminActivityLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AdminActivityLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminActivityLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AdminActivityLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminActivityLogPayload>
+          }
+          findFirst: {
+            args: Prisma.AdminActivityLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminActivityLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AdminActivityLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminActivityLogPayload>
+          }
+          findMany: {
+            args: Prisma.AdminActivityLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminActivityLogPayload>[]
+          }
+          create: {
+            args: Prisma.AdminActivityLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminActivityLogPayload>
+          }
+          createMany: {
+            args: Prisma.AdminActivityLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AdminActivityLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminActivityLogPayload>[]
+          }
+          delete: {
+            args: Prisma.AdminActivityLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminActivityLogPayload>
+          }
+          update: {
+            args: Prisma.AdminActivityLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminActivityLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.AdminActivityLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AdminActivityLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AdminActivityLogUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminActivityLogPayload>[]
+          }
+          upsert: {
+            args: Prisma.AdminActivityLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AdminActivityLogPayload>
+          }
+          aggregate: {
+            args: Prisma.AdminActivityLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAdminActivityLog>
+          }
+          groupBy: {
+            args: Prisma.AdminActivityLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AdminActivityLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AdminActivityLogCountArgs<ExtArgs>
+            result: $Utils.Optional<AdminActivityLogCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -5683,6 +5878,8 @@ export namespace Prisma {
     importExecutionLease?: ImportExecutionLeaseOmit
     productImportBatch?: ProductImportBatchOmit
     productImportRowResult?: ProductImportRowResultOmit
+    verificationChallenge?: VerificationChallengeOmit
+    adminActivityLog?: AdminActivityLogOmit
   }
 
   /* Types for Logging */
@@ -5779,6 +5976,8 @@ export namespace Prisma {
     importPreviews: number
     importBatches: number
     reviewedBankDeposits: number
+    verificationChallenges: number
+    adminActivities: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5798,6 +5997,8 @@ export namespace Prisma {
     importPreviews?: boolean | UserCountOutputTypeCountImportPreviewsArgs
     importBatches?: boolean | UserCountOutputTypeCountImportBatchesArgs
     reviewedBankDeposits?: boolean | UserCountOutputTypeCountReviewedBankDepositsArgs
+    verificationChallenges?: boolean | UserCountOutputTypeCountVerificationChallengesArgs
+    adminActivities?: boolean | UserCountOutputTypeCountAdminActivitiesArgs
   }
 
   // Custom InputTypes
@@ -5921,6 +6122,20 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountReviewedBankDepositsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: BankDepositSubmissionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountVerificationChallengesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VerificationChallengeWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAdminActivitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AdminActivityLogWhereInput
   }
 
 
@@ -7128,6 +7343,8 @@ export namespace Prisma {
     importPreviews?: boolean | User$importPreviewsArgs<ExtArgs>
     importBatches?: boolean | User$importBatchesArgs<ExtArgs>
     reviewedBankDeposits?: boolean | User$reviewedBankDepositsArgs<ExtArgs>
+    verificationChallenges?: boolean | User$verificationChallengesArgs<ExtArgs>
+    adminActivities?: boolean | User$adminActivitiesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -7219,6 +7436,8 @@ export namespace Prisma {
     importPreviews?: boolean | User$importPreviewsArgs<ExtArgs>
     importBatches?: boolean | User$importBatchesArgs<ExtArgs>
     reviewedBankDeposits?: boolean | User$reviewedBankDepositsArgs<ExtArgs>
+    verificationChallenges?: boolean | User$verificationChallengesArgs<ExtArgs>
+    adminActivities?: boolean | User$adminActivitiesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7249,6 +7468,8 @@ export namespace Prisma {
       importPreviews: Prisma.$ProductImportPreviewPayload<ExtArgs>[]
       importBatches: Prisma.$ProductImportBatchPayload<ExtArgs>[]
       reviewedBankDeposits: Prisma.$BankDepositSubmissionPayload<ExtArgs>[]
+      verificationChallenges: Prisma.$VerificationChallengePayload<ExtArgs>[]
+      adminActivities: Prisma.$AdminActivityLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7682,6 +7903,8 @@ export namespace Prisma {
     importPreviews<T extends User$importPreviewsArgs<ExtArgs> = {}>(args?: Subset<T, User$importPreviewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductImportPreviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     importBatches<T extends User$importBatchesArgs<ExtArgs> = {}>(args?: Subset<T, User$importBatchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductImportBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     reviewedBankDeposits<T extends User$reviewedBankDepositsArgs<ExtArgs> = {}>(args?: Subset<T, User$reviewedBankDepositsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankDepositSubmissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    verificationChallenges<T extends User$verificationChallengesArgs<ExtArgs> = {}>(args?: Subset<T, User$verificationChallengesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    adminActivities<T extends User$adminActivitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$adminActivitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8550,6 +8773,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: BankDepositSubmissionScalarFieldEnum | BankDepositSubmissionScalarFieldEnum[]
+  }
+
+  /**
+   * User.verificationChallenges
+   */
+  export type User$verificationChallengesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeInclude<ExtArgs> | null
+    where?: VerificationChallengeWhereInput
+    orderBy?: VerificationChallengeOrderByWithRelationInput | VerificationChallengeOrderByWithRelationInput[]
+    cursor?: VerificationChallengeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VerificationChallengeScalarFieldEnum | VerificationChallengeScalarFieldEnum[]
+  }
+
+  /**
+   * User.adminActivities
+   */
+  export type User$adminActivitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogInclude<ExtArgs> | null
+    where?: AdminActivityLogWhereInput
+    orderBy?: AdminActivityLogOrderByWithRelationInput | AdminActivityLogOrderByWithRelationInput[]
+    cursor?: AdminActivityLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AdminActivityLogScalarFieldEnum | AdminActivityLogScalarFieldEnum[]
   }
 
   /**
@@ -68254,6 +68525,2450 @@ export namespace Prisma {
 
 
   /**
+   * Model VerificationChallenge
+   */
+
+  export type AggregateVerificationChallenge = {
+    _count: VerificationChallengeCountAggregateOutputType | null
+    _avg: VerificationChallengeAvgAggregateOutputType | null
+    _sum: VerificationChallengeSumAggregateOutputType | null
+    _min: VerificationChallengeMinAggregateOutputType | null
+    _max: VerificationChallengeMaxAggregateOutputType | null
+  }
+
+  export type VerificationChallengeAvgAggregateOutputType = {
+    attempts: number | null
+    maxAttempts: number | null
+  }
+
+  export type VerificationChallengeSumAggregateOutputType = {
+    attempts: number | null
+    maxAttempts: number | null
+  }
+
+  export type VerificationChallengeMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    action: string | null
+    codeHash: string | null
+    resourceType: string | null
+    resourceId: string | null
+    attempts: number | null
+    maxAttempts: number | null
+    status: $Enums.VerificationChallengeStatus | null
+    expiresAt: Date | null
+    verifiedAt: Date | null
+    consumedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type VerificationChallengeMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    action: string | null
+    codeHash: string | null
+    resourceType: string | null
+    resourceId: string | null
+    attempts: number | null
+    maxAttempts: number | null
+    status: $Enums.VerificationChallengeStatus | null
+    expiresAt: Date | null
+    verifiedAt: Date | null
+    consumedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type VerificationChallengeCountAggregateOutputType = {
+    id: number
+    userId: number
+    action: number
+    codeHash: number
+    resourceType: number
+    resourceId: number
+    metadata: number
+    attempts: number
+    maxAttempts: number
+    status: number
+    expiresAt: number
+    verifiedAt: number
+    consumedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type VerificationChallengeAvgAggregateInputType = {
+    attempts?: true
+    maxAttempts?: true
+  }
+
+  export type VerificationChallengeSumAggregateInputType = {
+    attempts?: true
+    maxAttempts?: true
+  }
+
+  export type VerificationChallengeMinAggregateInputType = {
+    id?: true
+    userId?: true
+    action?: true
+    codeHash?: true
+    resourceType?: true
+    resourceId?: true
+    attempts?: true
+    maxAttempts?: true
+    status?: true
+    expiresAt?: true
+    verifiedAt?: true
+    consumedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type VerificationChallengeMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    action?: true
+    codeHash?: true
+    resourceType?: true
+    resourceId?: true
+    attempts?: true
+    maxAttempts?: true
+    status?: true
+    expiresAt?: true
+    verifiedAt?: true
+    consumedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type VerificationChallengeCountAggregateInputType = {
+    id?: true
+    userId?: true
+    action?: true
+    codeHash?: true
+    resourceType?: true
+    resourceId?: true
+    metadata?: true
+    attempts?: true
+    maxAttempts?: true
+    status?: true
+    expiresAt?: true
+    verifiedAt?: true
+    consumedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type VerificationChallengeAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VerificationChallenge to aggregate.
+     */
+    where?: VerificationChallengeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VerificationChallenges to fetch.
+     */
+    orderBy?: VerificationChallengeOrderByWithRelationInput | VerificationChallengeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: VerificationChallengeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VerificationChallenges from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VerificationChallenges.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned VerificationChallenges
+    **/
+    _count?: true | VerificationChallengeCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: VerificationChallengeAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: VerificationChallengeSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: VerificationChallengeMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: VerificationChallengeMaxAggregateInputType
+  }
+
+  export type GetVerificationChallengeAggregateType<T extends VerificationChallengeAggregateArgs> = {
+        [P in keyof T & keyof AggregateVerificationChallenge]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateVerificationChallenge[P]>
+      : GetScalarType<T[P], AggregateVerificationChallenge[P]>
+  }
+
+
+
+
+  export type VerificationChallengeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VerificationChallengeWhereInput
+    orderBy?: VerificationChallengeOrderByWithAggregationInput | VerificationChallengeOrderByWithAggregationInput[]
+    by: VerificationChallengeScalarFieldEnum[] | VerificationChallengeScalarFieldEnum
+    having?: VerificationChallengeScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: VerificationChallengeCountAggregateInputType | true
+    _avg?: VerificationChallengeAvgAggregateInputType
+    _sum?: VerificationChallengeSumAggregateInputType
+    _min?: VerificationChallengeMinAggregateInputType
+    _max?: VerificationChallengeMaxAggregateInputType
+  }
+
+  export type VerificationChallengeGroupByOutputType = {
+    id: string
+    userId: string
+    action: string
+    codeHash: string
+    resourceType: string | null
+    resourceId: string | null
+    metadata: JsonValue | null
+    attempts: number
+    maxAttempts: number
+    status: $Enums.VerificationChallengeStatus
+    expiresAt: Date
+    verifiedAt: Date | null
+    consumedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: VerificationChallengeCountAggregateOutputType | null
+    _avg: VerificationChallengeAvgAggregateOutputType | null
+    _sum: VerificationChallengeSumAggregateOutputType | null
+    _min: VerificationChallengeMinAggregateOutputType | null
+    _max: VerificationChallengeMaxAggregateOutputType | null
+  }
+
+  type GetVerificationChallengeGroupByPayload<T extends VerificationChallengeGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<VerificationChallengeGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof VerificationChallengeGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], VerificationChallengeGroupByOutputType[P]>
+            : GetScalarType<T[P], VerificationChallengeGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type VerificationChallengeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    action?: boolean
+    codeHash?: boolean
+    resourceType?: boolean
+    resourceId?: boolean
+    metadata?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    status?: boolean
+    expiresAt?: boolean
+    verifiedAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["verificationChallenge"]>
+
+  export type VerificationChallengeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    action?: boolean
+    codeHash?: boolean
+    resourceType?: boolean
+    resourceId?: boolean
+    metadata?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    status?: boolean
+    expiresAt?: boolean
+    verifiedAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["verificationChallenge"]>
+
+  export type VerificationChallengeSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    action?: boolean
+    codeHash?: boolean
+    resourceType?: boolean
+    resourceId?: boolean
+    metadata?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    status?: boolean
+    expiresAt?: boolean
+    verifiedAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["verificationChallenge"]>
+
+  export type VerificationChallengeSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    action?: boolean
+    codeHash?: boolean
+    resourceType?: boolean
+    resourceId?: boolean
+    metadata?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    status?: boolean
+    expiresAt?: boolean
+    verifiedAt?: boolean
+    consumedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type VerificationChallengeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "action" | "codeHash" | "resourceType" | "resourceId" | "metadata" | "attempts" | "maxAttempts" | "status" | "expiresAt" | "verifiedAt" | "consumedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["verificationChallenge"]>
+  export type VerificationChallengeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type VerificationChallengeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type VerificationChallengeIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $VerificationChallengePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "VerificationChallenge"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      action: string
+      codeHash: string
+      resourceType: string | null
+      resourceId: string | null
+      metadata: Prisma.JsonValue | null
+      attempts: number
+      maxAttempts: number
+      status: $Enums.VerificationChallengeStatus
+      expiresAt: Date
+      verifiedAt: Date | null
+      consumedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["verificationChallenge"]>
+    composites: {}
+  }
+
+  type VerificationChallengeGetPayload<S extends boolean | null | undefined | VerificationChallengeDefaultArgs> = $Result.GetResult<Prisma.$VerificationChallengePayload, S>
+
+  type VerificationChallengeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<VerificationChallengeFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: VerificationChallengeCountAggregateInputType | true
+    }
+
+  export interface VerificationChallengeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['VerificationChallenge'], meta: { name: 'VerificationChallenge' } }
+    /**
+     * Find zero or one VerificationChallenge that matches the filter.
+     * @param {VerificationChallengeFindUniqueArgs} args - Arguments to find a VerificationChallenge
+     * @example
+     * // Get one VerificationChallenge
+     * const verificationChallenge = await prisma.verificationChallenge.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends VerificationChallengeFindUniqueArgs>(args: SelectSubset<T, VerificationChallengeFindUniqueArgs<ExtArgs>>): Prisma__VerificationChallengeClient<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one VerificationChallenge that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {VerificationChallengeFindUniqueOrThrowArgs} args - Arguments to find a VerificationChallenge
+     * @example
+     * // Get one VerificationChallenge
+     * const verificationChallenge = await prisma.verificationChallenge.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends VerificationChallengeFindUniqueOrThrowArgs>(args: SelectSubset<T, VerificationChallengeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__VerificationChallengeClient<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VerificationChallenge that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationChallengeFindFirstArgs} args - Arguments to find a VerificationChallenge
+     * @example
+     * // Get one VerificationChallenge
+     * const verificationChallenge = await prisma.verificationChallenge.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends VerificationChallengeFindFirstArgs>(args?: SelectSubset<T, VerificationChallengeFindFirstArgs<ExtArgs>>): Prisma__VerificationChallengeClient<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VerificationChallenge that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationChallengeFindFirstOrThrowArgs} args - Arguments to find a VerificationChallenge
+     * @example
+     * // Get one VerificationChallenge
+     * const verificationChallenge = await prisma.verificationChallenge.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends VerificationChallengeFindFirstOrThrowArgs>(args?: SelectSubset<T, VerificationChallengeFindFirstOrThrowArgs<ExtArgs>>): Prisma__VerificationChallengeClient<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more VerificationChallenges that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationChallengeFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all VerificationChallenges
+     * const verificationChallenges = await prisma.verificationChallenge.findMany()
+     * 
+     * // Get first 10 VerificationChallenges
+     * const verificationChallenges = await prisma.verificationChallenge.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const verificationChallengeWithIdOnly = await prisma.verificationChallenge.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends VerificationChallengeFindManyArgs>(args?: SelectSubset<T, VerificationChallengeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a VerificationChallenge.
+     * @param {VerificationChallengeCreateArgs} args - Arguments to create a VerificationChallenge.
+     * @example
+     * // Create one VerificationChallenge
+     * const VerificationChallenge = await prisma.verificationChallenge.create({
+     *   data: {
+     *     // ... data to create a VerificationChallenge
+     *   }
+     * })
+     * 
+     */
+    create<T extends VerificationChallengeCreateArgs>(args: SelectSubset<T, VerificationChallengeCreateArgs<ExtArgs>>): Prisma__VerificationChallengeClient<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many VerificationChallenges.
+     * @param {VerificationChallengeCreateManyArgs} args - Arguments to create many VerificationChallenges.
+     * @example
+     * // Create many VerificationChallenges
+     * const verificationChallenge = await prisma.verificationChallenge.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends VerificationChallengeCreateManyArgs>(args?: SelectSubset<T, VerificationChallengeCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many VerificationChallenges and returns the data saved in the database.
+     * @param {VerificationChallengeCreateManyAndReturnArgs} args - Arguments to create many VerificationChallenges.
+     * @example
+     * // Create many VerificationChallenges
+     * const verificationChallenge = await prisma.verificationChallenge.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many VerificationChallenges and only return the `id`
+     * const verificationChallengeWithIdOnly = await prisma.verificationChallenge.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends VerificationChallengeCreateManyAndReturnArgs>(args?: SelectSubset<T, VerificationChallengeCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a VerificationChallenge.
+     * @param {VerificationChallengeDeleteArgs} args - Arguments to delete one VerificationChallenge.
+     * @example
+     * // Delete one VerificationChallenge
+     * const VerificationChallenge = await prisma.verificationChallenge.delete({
+     *   where: {
+     *     // ... filter to delete one VerificationChallenge
+     *   }
+     * })
+     * 
+     */
+    delete<T extends VerificationChallengeDeleteArgs>(args: SelectSubset<T, VerificationChallengeDeleteArgs<ExtArgs>>): Prisma__VerificationChallengeClient<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one VerificationChallenge.
+     * @param {VerificationChallengeUpdateArgs} args - Arguments to update one VerificationChallenge.
+     * @example
+     * // Update one VerificationChallenge
+     * const verificationChallenge = await prisma.verificationChallenge.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends VerificationChallengeUpdateArgs>(args: SelectSubset<T, VerificationChallengeUpdateArgs<ExtArgs>>): Prisma__VerificationChallengeClient<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more VerificationChallenges.
+     * @param {VerificationChallengeDeleteManyArgs} args - Arguments to filter VerificationChallenges to delete.
+     * @example
+     * // Delete a few VerificationChallenges
+     * const { count } = await prisma.verificationChallenge.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends VerificationChallengeDeleteManyArgs>(args?: SelectSubset<T, VerificationChallengeDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VerificationChallenges.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationChallengeUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many VerificationChallenges
+     * const verificationChallenge = await prisma.verificationChallenge.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends VerificationChallengeUpdateManyArgs>(args: SelectSubset<T, VerificationChallengeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VerificationChallenges and returns the data updated in the database.
+     * @param {VerificationChallengeUpdateManyAndReturnArgs} args - Arguments to update many VerificationChallenges.
+     * @example
+     * // Update many VerificationChallenges
+     * const verificationChallenge = await prisma.verificationChallenge.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more VerificationChallenges and only return the `id`
+     * const verificationChallengeWithIdOnly = await prisma.verificationChallenge.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends VerificationChallengeUpdateManyAndReturnArgs>(args: SelectSubset<T, VerificationChallengeUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one VerificationChallenge.
+     * @param {VerificationChallengeUpsertArgs} args - Arguments to update or create a VerificationChallenge.
+     * @example
+     * // Update or create a VerificationChallenge
+     * const verificationChallenge = await prisma.verificationChallenge.upsert({
+     *   create: {
+     *     // ... data to create a VerificationChallenge
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the VerificationChallenge we want to update
+     *   }
+     * })
+     */
+    upsert<T extends VerificationChallengeUpsertArgs>(args: SelectSubset<T, VerificationChallengeUpsertArgs<ExtArgs>>): Prisma__VerificationChallengeClient<$Result.GetResult<Prisma.$VerificationChallengePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of VerificationChallenges.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationChallengeCountArgs} args - Arguments to filter VerificationChallenges to count.
+     * @example
+     * // Count the number of VerificationChallenges
+     * const count = await prisma.verificationChallenge.count({
+     *   where: {
+     *     // ... the filter for the VerificationChallenges we want to count
+     *   }
+     * })
+    **/
+    count<T extends VerificationChallengeCountArgs>(
+      args?: Subset<T, VerificationChallengeCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], VerificationChallengeCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a VerificationChallenge.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationChallengeAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends VerificationChallengeAggregateArgs>(args: Subset<T, VerificationChallengeAggregateArgs>): Prisma.PrismaPromise<GetVerificationChallengeAggregateType<T>>
+
+    /**
+     * Group by VerificationChallenge.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationChallengeGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends VerificationChallengeGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: VerificationChallengeGroupByArgs['orderBy'] }
+        : { orderBy?: VerificationChallengeGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, VerificationChallengeGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetVerificationChallengeGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the VerificationChallenge model
+   */
+  readonly fields: VerificationChallengeFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for VerificationChallenge.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__VerificationChallengeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the VerificationChallenge model
+   */
+  interface VerificationChallengeFieldRefs {
+    readonly id: FieldRef<"VerificationChallenge", 'String'>
+    readonly userId: FieldRef<"VerificationChallenge", 'String'>
+    readonly action: FieldRef<"VerificationChallenge", 'String'>
+    readonly codeHash: FieldRef<"VerificationChallenge", 'String'>
+    readonly resourceType: FieldRef<"VerificationChallenge", 'String'>
+    readonly resourceId: FieldRef<"VerificationChallenge", 'String'>
+    readonly metadata: FieldRef<"VerificationChallenge", 'Json'>
+    readonly attempts: FieldRef<"VerificationChallenge", 'Int'>
+    readonly maxAttempts: FieldRef<"VerificationChallenge", 'Int'>
+    readonly status: FieldRef<"VerificationChallenge", 'VerificationChallengeStatus'>
+    readonly expiresAt: FieldRef<"VerificationChallenge", 'DateTime'>
+    readonly verifiedAt: FieldRef<"VerificationChallenge", 'DateTime'>
+    readonly consumedAt: FieldRef<"VerificationChallenge", 'DateTime'>
+    readonly createdAt: FieldRef<"VerificationChallenge", 'DateTime'>
+    readonly updatedAt: FieldRef<"VerificationChallenge", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * VerificationChallenge findUnique
+   */
+  export type VerificationChallengeFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeInclude<ExtArgs> | null
+    /**
+     * Filter, which VerificationChallenge to fetch.
+     */
+    where: VerificationChallengeWhereUniqueInput
+  }
+
+  /**
+   * VerificationChallenge findUniqueOrThrow
+   */
+  export type VerificationChallengeFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeInclude<ExtArgs> | null
+    /**
+     * Filter, which VerificationChallenge to fetch.
+     */
+    where: VerificationChallengeWhereUniqueInput
+  }
+
+  /**
+   * VerificationChallenge findFirst
+   */
+  export type VerificationChallengeFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeInclude<ExtArgs> | null
+    /**
+     * Filter, which VerificationChallenge to fetch.
+     */
+    where?: VerificationChallengeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VerificationChallenges to fetch.
+     */
+    orderBy?: VerificationChallengeOrderByWithRelationInput | VerificationChallengeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VerificationChallenges.
+     */
+    cursor?: VerificationChallengeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VerificationChallenges from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VerificationChallenges.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VerificationChallenges.
+     */
+    distinct?: VerificationChallengeScalarFieldEnum | VerificationChallengeScalarFieldEnum[]
+  }
+
+  /**
+   * VerificationChallenge findFirstOrThrow
+   */
+  export type VerificationChallengeFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeInclude<ExtArgs> | null
+    /**
+     * Filter, which VerificationChallenge to fetch.
+     */
+    where?: VerificationChallengeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VerificationChallenges to fetch.
+     */
+    orderBy?: VerificationChallengeOrderByWithRelationInput | VerificationChallengeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VerificationChallenges.
+     */
+    cursor?: VerificationChallengeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VerificationChallenges from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VerificationChallenges.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VerificationChallenges.
+     */
+    distinct?: VerificationChallengeScalarFieldEnum | VerificationChallengeScalarFieldEnum[]
+  }
+
+  /**
+   * VerificationChallenge findMany
+   */
+  export type VerificationChallengeFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeInclude<ExtArgs> | null
+    /**
+     * Filter, which VerificationChallenges to fetch.
+     */
+    where?: VerificationChallengeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VerificationChallenges to fetch.
+     */
+    orderBy?: VerificationChallengeOrderByWithRelationInput | VerificationChallengeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing VerificationChallenges.
+     */
+    cursor?: VerificationChallengeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VerificationChallenges from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VerificationChallenges.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VerificationChallenges.
+     */
+    distinct?: VerificationChallengeScalarFieldEnum | VerificationChallengeScalarFieldEnum[]
+  }
+
+  /**
+   * VerificationChallenge create
+   */
+  export type VerificationChallengeCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeInclude<ExtArgs> | null
+    /**
+     * The data needed to create a VerificationChallenge.
+     */
+    data: XOR<VerificationChallengeCreateInput, VerificationChallengeUncheckedCreateInput>
+  }
+
+  /**
+   * VerificationChallenge createMany
+   */
+  export type VerificationChallengeCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many VerificationChallenges.
+     */
+    data: VerificationChallengeCreateManyInput | VerificationChallengeCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * VerificationChallenge createManyAndReturn
+   */
+  export type VerificationChallengeCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * The data used to create many VerificationChallenges.
+     */
+    data: VerificationChallengeCreateManyInput | VerificationChallengeCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * VerificationChallenge update
+   */
+  export type VerificationChallengeUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeInclude<ExtArgs> | null
+    /**
+     * The data needed to update a VerificationChallenge.
+     */
+    data: XOR<VerificationChallengeUpdateInput, VerificationChallengeUncheckedUpdateInput>
+    /**
+     * Choose, which VerificationChallenge to update.
+     */
+    where: VerificationChallengeWhereUniqueInput
+  }
+
+  /**
+   * VerificationChallenge updateMany
+   */
+  export type VerificationChallengeUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update VerificationChallenges.
+     */
+    data: XOR<VerificationChallengeUpdateManyMutationInput, VerificationChallengeUncheckedUpdateManyInput>
+    /**
+     * Filter which VerificationChallenges to update
+     */
+    where?: VerificationChallengeWhereInput
+    /**
+     * Limit how many VerificationChallenges to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * VerificationChallenge updateManyAndReturn
+   */
+  export type VerificationChallengeUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * The data used to update VerificationChallenges.
+     */
+    data: XOR<VerificationChallengeUpdateManyMutationInput, VerificationChallengeUncheckedUpdateManyInput>
+    /**
+     * Filter which VerificationChallenges to update
+     */
+    where?: VerificationChallengeWhereInput
+    /**
+     * Limit how many VerificationChallenges to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * VerificationChallenge upsert
+   */
+  export type VerificationChallengeUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeInclude<ExtArgs> | null
+    /**
+     * The filter to search for the VerificationChallenge to update in case it exists.
+     */
+    where: VerificationChallengeWhereUniqueInput
+    /**
+     * In case the VerificationChallenge found by the `where` argument doesn't exist, create a new VerificationChallenge with this data.
+     */
+    create: XOR<VerificationChallengeCreateInput, VerificationChallengeUncheckedCreateInput>
+    /**
+     * In case the VerificationChallenge was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<VerificationChallengeUpdateInput, VerificationChallengeUncheckedUpdateInput>
+  }
+
+  /**
+   * VerificationChallenge delete
+   */
+  export type VerificationChallengeDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeInclude<ExtArgs> | null
+    /**
+     * Filter which VerificationChallenge to delete.
+     */
+    where: VerificationChallengeWhereUniqueInput
+  }
+
+  /**
+   * VerificationChallenge deleteMany
+   */
+  export type VerificationChallengeDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VerificationChallenges to delete
+     */
+    where?: VerificationChallengeWhereInput
+    /**
+     * Limit how many VerificationChallenges to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * VerificationChallenge without action
+   */
+  export type VerificationChallengeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationChallenge
+     */
+    select?: VerificationChallengeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationChallenge
+     */
+    omit?: VerificationChallengeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerificationChallengeInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AdminActivityLog
+   */
+
+  export type AggregateAdminActivityLog = {
+    _count: AdminActivityLogCountAggregateOutputType | null
+    _min: AdminActivityLogMinAggregateOutputType | null
+    _max: AdminActivityLogMaxAggregateOutputType | null
+  }
+
+  export type AdminActivityLogMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    userEmail: string | null
+    userName: string | null
+    userRole: string | null
+    action: string | null
+    entityType: string | null
+    entityId: string | null
+    description: string | null
+    status: string | null
+    ipAddress: string | null
+    userAgent: string | null
+    challengeId: string | null
+    createdAt: Date | null
+  }
+
+  export type AdminActivityLogMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    userEmail: string | null
+    userName: string | null
+    userRole: string | null
+    action: string | null
+    entityType: string | null
+    entityId: string | null
+    description: string | null
+    status: string | null
+    ipAddress: string | null
+    userAgent: string | null
+    challengeId: string | null
+    createdAt: Date | null
+  }
+
+  export type AdminActivityLogCountAggregateOutputType = {
+    id: number
+    userId: number
+    userEmail: number
+    userName: number
+    userRole: number
+    action: number
+    entityType: number
+    entityId: number
+    description: number
+    status: number
+    ipAddress: number
+    userAgent: number
+    beforeState: number
+    afterState: number
+    challengeId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AdminActivityLogMinAggregateInputType = {
+    id?: true
+    userId?: true
+    userEmail?: true
+    userName?: true
+    userRole?: true
+    action?: true
+    entityType?: true
+    entityId?: true
+    description?: true
+    status?: true
+    ipAddress?: true
+    userAgent?: true
+    challengeId?: true
+    createdAt?: true
+  }
+
+  export type AdminActivityLogMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    userEmail?: true
+    userName?: true
+    userRole?: true
+    action?: true
+    entityType?: true
+    entityId?: true
+    description?: true
+    status?: true
+    ipAddress?: true
+    userAgent?: true
+    challengeId?: true
+    createdAt?: true
+  }
+
+  export type AdminActivityLogCountAggregateInputType = {
+    id?: true
+    userId?: true
+    userEmail?: true
+    userName?: true
+    userRole?: true
+    action?: true
+    entityType?: true
+    entityId?: true
+    description?: true
+    status?: true
+    ipAddress?: true
+    userAgent?: true
+    beforeState?: true
+    afterState?: true
+    challengeId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AdminActivityLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AdminActivityLog to aggregate.
+     */
+    where?: AdminActivityLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminActivityLogs to fetch.
+     */
+    orderBy?: AdminActivityLogOrderByWithRelationInput | AdminActivityLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AdminActivityLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminActivityLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminActivityLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AdminActivityLogs
+    **/
+    _count?: true | AdminActivityLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AdminActivityLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AdminActivityLogMaxAggregateInputType
+  }
+
+  export type GetAdminActivityLogAggregateType<T extends AdminActivityLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateAdminActivityLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAdminActivityLog[P]>
+      : GetScalarType<T[P], AggregateAdminActivityLog[P]>
+  }
+
+
+
+
+  export type AdminActivityLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AdminActivityLogWhereInput
+    orderBy?: AdminActivityLogOrderByWithAggregationInput | AdminActivityLogOrderByWithAggregationInput[]
+    by: AdminActivityLogScalarFieldEnum[] | AdminActivityLogScalarFieldEnum
+    having?: AdminActivityLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AdminActivityLogCountAggregateInputType | true
+    _min?: AdminActivityLogMinAggregateInputType
+    _max?: AdminActivityLogMaxAggregateInputType
+  }
+
+  export type AdminActivityLogGroupByOutputType = {
+    id: string
+    userId: string | null
+    userEmail: string | null
+    userName: string | null
+    userRole: string | null
+    action: string
+    entityType: string
+    entityId: string | null
+    description: string
+    status: string
+    ipAddress: string | null
+    userAgent: string | null
+    beforeState: JsonValue | null
+    afterState: JsonValue | null
+    challengeId: string | null
+    createdAt: Date
+    _count: AdminActivityLogCountAggregateOutputType | null
+    _min: AdminActivityLogMinAggregateOutputType | null
+    _max: AdminActivityLogMaxAggregateOutputType | null
+  }
+
+  type GetAdminActivityLogGroupByPayload<T extends AdminActivityLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AdminActivityLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AdminActivityLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AdminActivityLogGroupByOutputType[P]>
+            : GetScalarType<T[P], AdminActivityLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AdminActivityLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    userEmail?: boolean
+    userName?: boolean
+    userRole?: boolean
+    action?: boolean
+    entityType?: boolean
+    entityId?: boolean
+    description?: boolean
+    status?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    beforeState?: boolean
+    afterState?: boolean
+    challengeId?: boolean
+    createdAt?: boolean
+    user?: boolean | AdminActivityLog$userArgs<ExtArgs>
+  }, ExtArgs["result"]["adminActivityLog"]>
+
+  export type AdminActivityLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    userEmail?: boolean
+    userName?: boolean
+    userRole?: boolean
+    action?: boolean
+    entityType?: boolean
+    entityId?: boolean
+    description?: boolean
+    status?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    beforeState?: boolean
+    afterState?: boolean
+    challengeId?: boolean
+    createdAt?: boolean
+    user?: boolean | AdminActivityLog$userArgs<ExtArgs>
+  }, ExtArgs["result"]["adminActivityLog"]>
+
+  export type AdminActivityLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    userEmail?: boolean
+    userName?: boolean
+    userRole?: boolean
+    action?: boolean
+    entityType?: boolean
+    entityId?: boolean
+    description?: boolean
+    status?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    beforeState?: boolean
+    afterState?: boolean
+    challengeId?: boolean
+    createdAt?: boolean
+    user?: boolean | AdminActivityLog$userArgs<ExtArgs>
+  }, ExtArgs["result"]["adminActivityLog"]>
+
+  export type AdminActivityLogSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    userEmail?: boolean
+    userName?: boolean
+    userRole?: boolean
+    action?: boolean
+    entityType?: boolean
+    entityId?: boolean
+    description?: boolean
+    status?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    beforeState?: boolean
+    afterState?: boolean
+    challengeId?: boolean
+    createdAt?: boolean
+  }
+
+  export type AdminActivityLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "userEmail" | "userName" | "userRole" | "action" | "entityType" | "entityId" | "description" | "status" | "ipAddress" | "userAgent" | "beforeState" | "afterState" | "challengeId" | "createdAt", ExtArgs["result"]["adminActivityLog"]>
+  export type AdminActivityLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | AdminActivityLog$userArgs<ExtArgs>
+  }
+  export type AdminActivityLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | AdminActivityLog$userArgs<ExtArgs>
+  }
+  export type AdminActivityLogIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | AdminActivityLog$userArgs<ExtArgs>
+  }
+
+  export type $AdminActivityLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AdminActivityLog"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string | null
+      userEmail: string | null
+      userName: string | null
+      userRole: string | null
+      action: string
+      entityType: string
+      entityId: string | null
+      description: string
+      status: string
+      ipAddress: string | null
+      userAgent: string | null
+      beforeState: Prisma.JsonValue | null
+      afterState: Prisma.JsonValue | null
+      challengeId: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["adminActivityLog"]>
+    composites: {}
+  }
+
+  type AdminActivityLogGetPayload<S extends boolean | null | undefined | AdminActivityLogDefaultArgs> = $Result.GetResult<Prisma.$AdminActivityLogPayload, S>
+
+  type AdminActivityLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AdminActivityLogFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AdminActivityLogCountAggregateInputType | true
+    }
+
+  export interface AdminActivityLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AdminActivityLog'], meta: { name: 'AdminActivityLog' } }
+    /**
+     * Find zero or one AdminActivityLog that matches the filter.
+     * @param {AdminActivityLogFindUniqueArgs} args - Arguments to find a AdminActivityLog
+     * @example
+     * // Get one AdminActivityLog
+     * const adminActivityLog = await prisma.adminActivityLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AdminActivityLogFindUniqueArgs>(args: SelectSubset<T, AdminActivityLogFindUniqueArgs<ExtArgs>>): Prisma__AdminActivityLogClient<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AdminActivityLog that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AdminActivityLogFindUniqueOrThrowArgs} args - Arguments to find a AdminActivityLog
+     * @example
+     * // Get one AdminActivityLog
+     * const adminActivityLog = await prisma.adminActivityLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AdminActivityLogFindUniqueOrThrowArgs>(args: SelectSubset<T, AdminActivityLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AdminActivityLogClient<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AdminActivityLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminActivityLogFindFirstArgs} args - Arguments to find a AdminActivityLog
+     * @example
+     * // Get one AdminActivityLog
+     * const adminActivityLog = await prisma.adminActivityLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AdminActivityLogFindFirstArgs>(args?: SelectSubset<T, AdminActivityLogFindFirstArgs<ExtArgs>>): Prisma__AdminActivityLogClient<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AdminActivityLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminActivityLogFindFirstOrThrowArgs} args - Arguments to find a AdminActivityLog
+     * @example
+     * // Get one AdminActivityLog
+     * const adminActivityLog = await prisma.adminActivityLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AdminActivityLogFindFirstOrThrowArgs>(args?: SelectSubset<T, AdminActivityLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__AdminActivityLogClient<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AdminActivityLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminActivityLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AdminActivityLogs
+     * const adminActivityLogs = await prisma.adminActivityLog.findMany()
+     * 
+     * // Get first 10 AdminActivityLogs
+     * const adminActivityLogs = await prisma.adminActivityLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const adminActivityLogWithIdOnly = await prisma.adminActivityLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AdminActivityLogFindManyArgs>(args?: SelectSubset<T, AdminActivityLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AdminActivityLog.
+     * @param {AdminActivityLogCreateArgs} args - Arguments to create a AdminActivityLog.
+     * @example
+     * // Create one AdminActivityLog
+     * const AdminActivityLog = await prisma.adminActivityLog.create({
+     *   data: {
+     *     // ... data to create a AdminActivityLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends AdminActivityLogCreateArgs>(args: SelectSubset<T, AdminActivityLogCreateArgs<ExtArgs>>): Prisma__AdminActivityLogClient<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AdminActivityLogs.
+     * @param {AdminActivityLogCreateManyArgs} args - Arguments to create many AdminActivityLogs.
+     * @example
+     * // Create many AdminActivityLogs
+     * const adminActivityLog = await prisma.adminActivityLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AdminActivityLogCreateManyArgs>(args?: SelectSubset<T, AdminActivityLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AdminActivityLogs and returns the data saved in the database.
+     * @param {AdminActivityLogCreateManyAndReturnArgs} args - Arguments to create many AdminActivityLogs.
+     * @example
+     * // Create many AdminActivityLogs
+     * const adminActivityLog = await prisma.adminActivityLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AdminActivityLogs and only return the `id`
+     * const adminActivityLogWithIdOnly = await prisma.adminActivityLog.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AdminActivityLogCreateManyAndReturnArgs>(args?: SelectSubset<T, AdminActivityLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AdminActivityLog.
+     * @param {AdminActivityLogDeleteArgs} args - Arguments to delete one AdminActivityLog.
+     * @example
+     * // Delete one AdminActivityLog
+     * const AdminActivityLog = await prisma.adminActivityLog.delete({
+     *   where: {
+     *     // ... filter to delete one AdminActivityLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AdminActivityLogDeleteArgs>(args: SelectSubset<T, AdminActivityLogDeleteArgs<ExtArgs>>): Prisma__AdminActivityLogClient<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AdminActivityLog.
+     * @param {AdminActivityLogUpdateArgs} args - Arguments to update one AdminActivityLog.
+     * @example
+     * // Update one AdminActivityLog
+     * const adminActivityLog = await prisma.adminActivityLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AdminActivityLogUpdateArgs>(args: SelectSubset<T, AdminActivityLogUpdateArgs<ExtArgs>>): Prisma__AdminActivityLogClient<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AdminActivityLogs.
+     * @param {AdminActivityLogDeleteManyArgs} args - Arguments to filter AdminActivityLogs to delete.
+     * @example
+     * // Delete a few AdminActivityLogs
+     * const { count } = await prisma.adminActivityLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AdminActivityLogDeleteManyArgs>(args?: SelectSubset<T, AdminActivityLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AdminActivityLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminActivityLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AdminActivityLogs
+     * const adminActivityLog = await prisma.adminActivityLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AdminActivityLogUpdateManyArgs>(args: SelectSubset<T, AdminActivityLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AdminActivityLogs and returns the data updated in the database.
+     * @param {AdminActivityLogUpdateManyAndReturnArgs} args - Arguments to update many AdminActivityLogs.
+     * @example
+     * // Update many AdminActivityLogs
+     * const adminActivityLog = await prisma.adminActivityLog.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AdminActivityLogs and only return the `id`
+     * const adminActivityLogWithIdOnly = await prisma.adminActivityLog.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AdminActivityLogUpdateManyAndReturnArgs>(args: SelectSubset<T, AdminActivityLogUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AdminActivityLog.
+     * @param {AdminActivityLogUpsertArgs} args - Arguments to update or create a AdminActivityLog.
+     * @example
+     * // Update or create a AdminActivityLog
+     * const adminActivityLog = await prisma.adminActivityLog.upsert({
+     *   create: {
+     *     // ... data to create a AdminActivityLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AdminActivityLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AdminActivityLogUpsertArgs>(args: SelectSubset<T, AdminActivityLogUpsertArgs<ExtArgs>>): Prisma__AdminActivityLogClient<$Result.GetResult<Prisma.$AdminActivityLogPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AdminActivityLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminActivityLogCountArgs} args - Arguments to filter AdminActivityLogs to count.
+     * @example
+     * // Count the number of AdminActivityLogs
+     * const count = await prisma.adminActivityLog.count({
+     *   where: {
+     *     // ... the filter for the AdminActivityLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends AdminActivityLogCountArgs>(
+      args?: Subset<T, AdminActivityLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AdminActivityLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AdminActivityLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminActivityLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AdminActivityLogAggregateArgs>(args: Subset<T, AdminActivityLogAggregateArgs>): Prisma.PrismaPromise<GetAdminActivityLogAggregateType<T>>
+
+    /**
+     * Group by AdminActivityLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AdminActivityLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AdminActivityLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AdminActivityLogGroupByArgs['orderBy'] }
+        : { orderBy?: AdminActivityLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AdminActivityLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAdminActivityLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AdminActivityLog model
+   */
+  readonly fields: AdminActivityLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AdminActivityLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AdminActivityLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends AdminActivityLog$userArgs<ExtArgs> = {}>(args?: Subset<T, AdminActivityLog$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AdminActivityLog model
+   */
+  interface AdminActivityLogFieldRefs {
+    readonly id: FieldRef<"AdminActivityLog", 'String'>
+    readonly userId: FieldRef<"AdminActivityLog", 'String'>
+    readonly userEmail: FieldRef<"AdminActivityLog", 'String'>
+    readonly userName: FieldRef<"AdminActivityLog", 'String'>
+    readonly userRole: FieldRef<"AdminActivityLog", 'String'>
+    readonly action: FieldRef<"AdminActivityLog", 'String'>
+    readonly entityType: FieldRef<"AdminActivityLog", 'String'>
+    readonly entityId: FieldRef<"AdminActivityLog", 'String'>
+    readonly description: FieldRef<"AdminActivityLog", 'String'>
+    readonly status: FieldRef<"AdminActivityLog", 'String'>
+    readonly ipAddress: FieldRef<"AdminActivityLog", 'String'>
+    readonly userAgent: FieldRef<"AdminActivityLog", 'String'>
+    readonly beforeState: FieldRef<"AdminActivityLog", 'Json'>
+    readonly afterState: FieldRef<"AdminActivityLog", 'Json'>
+    readonly challengeId: FieldRef<"AdminActivityLog", 'String'>
+    readonly createdAt: FieldRef<"AdminActivityLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AdminActivityLog findUnique
+   */
+  export type AdminActivityLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogInclude<ExtArgs> | null
+    /**
+     * Filter, which AdminActivityLog to fetch.
+     */
+    where: AdminActivityLogWhereUniqueInput
+  }
+
+  /**
+   * AdminActivityLog findUniqueOrThrow
+   */
+  export type AdminActivityLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogInclude<ExtArgs> | null
+    /**
+     * Filter, which AdminActivityLog to fetch.
+     */
+    where: AdminActivityLogWhereUniqueInput
+  }
+
+  /**
+   * AdminActivityLog findFirst
+   */
+  export type AdminActivityLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogInclude<ExtArgs> | null
+    /**
+     * Filter, which AdminActivityLog to fetch.
+     */
+    where?: AdminActivityLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminActivityLogs to fetch.
+     */
+    orderBy?: AdminActivityLogOrderByWithRelationInput | AdminActivityLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AdminActivityLogs.
+     */
+    cursor?: AdminActivityLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminActivityLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminActivityLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AdminActivityLogs.
+     */
+    distinct?: AdminActivityLogScalarFieldEnum | AdminActivityLogScalarFieldEnum[]
+  }
+
+  /**
+   * AdminActivityLog findFirstOrThrow
+   */
+  export type AdminActivityLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogInclude<ExtArgs> | null
+    /**
+     * Filter, which AdminActivityLog to fetch.
+     */
+    where?: AdminActivityLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminActivityLogs to fetch.
+     */
+    orderBy?: AdminActivityLogOrderByWithRelationInput | AdminActivityLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AdminActivityLogs.
+     */
+    cursor?: AdminActivityLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminActivityLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminActivityLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AdminActivityLogs.
+     */
+    distinct?: AdminActivityLogScalarFieldEnum | AdminActivityLogScalarFieldEnum[]
+  }
+
+  /**
+   * AdminActivityLog findMany
+   */
+  export type AdminActivityLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogInclude<ExtArgs> | null
+    /**
+     * Filter, which AdminActivityLogs to fetch.
+     */
+    where?: AdminActivityLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AdminActivityLogs to fetch.
+     */
+    orderBy?: AdminActivityLogOrderByWithRelationInput | AdminActivityLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AdminActivityLogs.
+     */
+    cursor?: AdminActivityLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AdminActivityLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AdminActivityLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AdminActivityLogs.
+     */
+    distinct?: AdminActivityLogScalarFieldEnum | AdminActivityLogScalarFieldEnum[]
+  }
+
+  /**
+   * AdminActivityLog create
+   */
+  export type AdminActivityLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AdminActivityLog.
+     */
+    data: XOR<AdminActivityLogCreateInput, AdminActivityLogUncheckedCreateInput>
+  }
+
+  /**
+   * AdminActivityLog createMany
+   */
+  export type AdminActivityLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AdminActivityLogs.
+     */
+    data: AdminActivityLogCreateManyInput | AdminActivityLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AdminActivityLog createManyAndReturn
+   */
+  export type AdminActivityLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * The data used to create many AdminActivityLogs.
+     */
+    data: AdminActivityLogCreateManyInput | AdminActivityLogCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AdminActivityLog update
+   */
+  export type AdminActivityLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AdminActivityLog.
+     */
+    data: XOR<AdminActivityLogUpdateInput, AdminActivityLogUncheckedUpdateInput>
+    /**
+     * Choose, which AdminActivityLog to update.
+     */
+    where: AdminActivityLogWhereUniqueInput
+  }
+
+  /**
+   * AdminActivityLog updateMany
+   */
+  export type AdminActivityLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AdminActivityLogs.
+     */
+    data: XOR<AdminActivityLogUpdateManyMutationInput, AdminActivityLogUncheckedUpdateManyInput>
+    /**
+     * Filter which AdminActivityLogs to update
+     */
+    where?: AdminActivityLogWhereInput
+    /**
+     * Limit how many AdminActivityLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AdminActivityLog updateManyAndReturn
+   */
+  export type AdminActivityLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * The data used to update AdminActivityLogs.
+     */
+    data: XOR<AdminActivityLogUpdateManyMutationInput, AdminActivityLogUncheckedUpdateManyInput>
+    /**
+     * Filter which AdminActivityLogs to update
+     */
+    where?: AdminActivityLogWhereInput
+    /**
+     * Limit how many AdminActivityLogs to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AdminActivityLog upsert
+   */
+  export type AdminActivityLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AdminActivityLog to update in case it exists.
+     */
+    where: AdminActivityLogWhereUniqueInput
+    /**
+     * In case the AdminActivityLog found by the `where` argument doesn't exist, create a new AdminActivityLog with this data.
+     */
+    create: XOR<AdminActivityLogCreateInput, AdminActivityLogUncheckedCreateInput>
+    /**
+     * In case the AdminActivityLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AdminActivityLogUpdateInput, AdminActivityLogUncheckedUpdateInput>
+  }
+
+  /**
+   * AdminActivityLog delete
+   */
+  export type AdminActivityLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogInclude<ExtArgs> | null
+    /**
+     * Filter which AdminActivityLog to delete.
+     */
+    where: AdminActivityLogWhereUniqueInput
+  }
+
+  /**
+   * AdminActivityLog deleteMany
+   */
+  export type AdminActivityLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AdminActivityLogs to delete
+     */
+    where?: AdminActivityLogWhereInput
+    /**
+     * Limit how many AdminActivityLogs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AdminActivityLog.user
+   */
+  export type AdminActivityLog$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * AdminActivityLog without action
+   */
+  export type AdminActivityLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminActivityLog
+     */
+    select?: AdminActivityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AdminActivityLog
+     */
+    omit?: AdminActivityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminActivityLogInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -69120,6 +71835,49 @@ export namespace Prisma {
   export type ProductImportRowResultScalarFieldEnum = (typeof ProductImportRowResultScalarFieldEnum)[keyof typeof ProductImportRowResultScalarFieldEnum]
 
 
+  export const VerificationChallengeScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    action: 'action',
+    codeHash: 'codeHash',
+    resourceType: 'resourceType',
+    resourceId: 'resourceId',
+    metadata: 'metadata',
+    attempts: 'attempts',
+    maxAttempts: 'maxAttempts',
+    status: 'status',
+    expiresAt: 'expiresAt',
+    verifiedAt: 'verifiedAt',
+    consumedAt: 'consumedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type VerificationChallengeScalarFieldEnum = (typeof VerificationChallengeScalarFieldEnum)[keyof typeof VerificationChallengeScalarFieldEnum]
+
+
+  export const AdminActivityLogScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    userEmail: 'userEmail',
+    userName: 'userName',
+    userRole: 'userRole',
+    action: 'action',
+    entityType: 'entityType',
+    entityId: 'entityId',
+    description: 'description',
+    status: 'status',
+    ipAddress: 'ipAddress',
+    userAgent: 'userAgent',
+    beforeState: 'beforeState',
+    afterState: 'afterState',
+    challengeId: 'challengeId',
+    createdAt: 'createdAt'
+  };
+
+  export type AdminActivityLogScalarFieldEnum = (typeof AdminActivityLogScalarFieldEnum)[keyof typeof AdminActivityLogScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -69556,6 +72314,20 @@ export namespace Prisma {
    */
   export type ListEnumImportRowStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ImportRowStatus[]'>
     
+
+
+  /**
+   * Reference to a field of type 'VerificationChallengeStatus'
+   */
+  export type EnumVerificationChallengeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VerificationChallengeStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'VerificationChallengeStatus[]'
+   */
+  export type ListEnumVerificationChallengeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VerificationChallengeStatus[]'>
+    
   /**
    * Deep Input Types
    */
@@ -69602,6 +72374,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewListRelationFilter
     importBatches?: ProductImportBatchListRelationFilter
     reviewedBankDeposits?: BankDepositSubmissionListRelationFilter
+    verificationChallenges?: VerificationChallengeListRelationFilter
+    adminActivities?: AdminActivityLogListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -69642,6 +72416,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewOrderByRelationAggregateInput
     importBatches?: ProductImportBatchOrderByRelationAggregateInput
     reviewedBankDeposits?: BankDepositSubmissionOrderByRelationAggregateInput
+    verificationChallenges?: VerificationChallengeOrderByRelationAggregateInput
+    adminActivities?: AdminActivityLogOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -69685,6 +72461,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewListRelationFilter
     importBatches?: ProductImportBatchListRelationFilter
     reviewedBankDeposits?: BankDepositSubmissionListRelationFilter
+    verificationChallenges?: VerificationChallengeListRelationFilter
+    adminActivities?: AdminActivityLogListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -74164,6 +76942,223 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"ProductImportRowResult"> | Date | string
   }
 
+  export type VerificationChallengeWhereInput = {
+    AND?: VerificationChallengeWhereInput | VerificationChallengeWhereInput[]
+    OR?: VerificationChallengeWhereInput[]
+    NOT?: VerificationChallengeWhereInput | VerificationChallengeWhereInput[]
+    id?: StringFilter<"VerificationChallenge"> | string
+    userId?: StringFilter<"VerificationChallenge"> | string
+    action?: StringFilter<"VerificationChallenge"> | string
+    codeHash?: StringFilter<"VerificationChallenge"> | string
+    resourceType?: StringNullableFilter<"VerificationChallenge"> | string | null
+    resourceId?: StringNullableFilter<"VerificationChallenge"> | string | null
+    metadata?: JsonNullableFilter<"VerificationChallenge">
+    attempts?: IntFilter<"VerificationChallenge"> | number
+    maxAttempts?: IntFilter<"VerificationChallenge"> | number
+    status?: EnumVerificationChallengeStatusFilter<"VerificationChallenge"> | $Enums.VerificationChallengeStatus
+    expiresAt?: DateTimeFilter<"VerificationChallenge"> | Date | string
+    verifiedAt?: DateTimeNullableFilter<"VerificationChallenge"> | Date | string | null
+    consumedAt?: DateTimeNullableFilter<"VerificationChallenge"> | Date | string | null
+    createdAt?: DateTimeFilter<"VerificationChallenge"> | Date | string
+    updatedAt?: DateTimeFilter<"VerificationChallenge"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type VerificationChallengeOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    action?: SortOrder
+    codeHash?: SortOrder
+    resourceType?: SortOrderInput | SortOrder
+    resourceId?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    status?: SortOrder
+    expiresAt?: SortOrder
+    verifiedAt?: SortOrderInput | SortOrder
+    consumedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type VerificationChallengeWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: VerificationChallengeWhereInput | VerificationChallengeWhereInput[]
+    OR?: VerificationChallengeWhereInput[]
+    NOT?: VerificationChallengeWhereInput | VerificationChallengeWhereInput[]
+    userId?: StringFilter<"VerificationChallenge"> | string
+    action?: StringFilter<"VerificationChallenge"> | string
+    codeHash?: StringFilter<"VerificationChallenge"> | string
+    resourceType?: StringNullableFilter<"VerificationChallenge"> | string | null
+    resourceId?: StringNullableFilter<"VerificationChallenge"> | string | null
+    metadata?: JsonNullableFilter<"VerificationChallenge">
+    attempts?: IntFilter<"VerificationChallenge"> | number
+    maxAttempts?: IntFilter<"VerificationChallenge"> | number
+    status?: EnumVerificationChallengeStatusFilter<"VerificationChallenge"> | $Enums.VerificationChallengeStatus
+    expiresAt?: DateTimeFilter<"VerificationChallenge"> | Date | string
+    verifiedAt?: DateTimeNullableFilter<"VerificationChallenge"> | Date | string | null
+    consumedAt?: DateTimeNullableFilter<"VerificationChallenge"> | Date | string | null
+    createdAt?: DateTimeFilter<"VerificationChallenge"> | Date | string
+    updatedAt?: DateTimeFilter<"VerificationChallenge"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type VerificationChallengeOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    action?: SortOrder
+    codeHash?: SortOrder
+    resourceType?: SortOrderInput | SortOrder
+    resourceId?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    status?: SortOrder
+    expiresAt?: SortOrder
+    verifiedAt?: SortOrderInput | SortOrder
+    consumedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: VerificationChallengeCountOrderByAggregateInput
+    _avg?: VerificationChallengeAvgOrderByAggregateInput
+    _max?: VerificationChallengeMaxOrderByAggregateInput
+    _min?: VerificationChallengeMinOrderByAggregateInput
+    _sum?: VerificationChallengeSumOrderByAggregateInput
+  }
+
+  export type VerificationChallengeScalarWhereWithAggregatesInput = {
+    AND?: VerificationChallengeScalarWhereWithAggregatesInput | VerificationChallengeScalarWhereWithAggregatesInput[]
+    OR?: VerificationChallengeScalarWhereWithAggregatesInput[]
+    NOT?: VerificationChallengeScalarWhereWithAggregatesInput | VerificationChallengeScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"VerificationChallenge"> | string
+    userId?: StringWithAggregatesFilter<"VerificationChallenge"> | string
+    action?: StringWithAggregatesFilter<"VerificationChallenge"> | string
+    codeHash?: StringWithAggregatesFilter<"VerificationChallenge"> | string
+    resourceType?: StringNullableWithAggregatesFilter<"VerificationChallenge"> | string | null
+    resourceId?: StringNullableWithAggregatesFilter<"VerificationChallenge"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"VerificationChallenge">
+    attempts?: IntWithAggregatesFilter<"VerificationChallenge"> | number
+    maxAttempts?: IntWithAggregatesFilter<"VerificationChallenge"> | number
+    status?: EnumVerificationChallengeStatusWithAggregatesFilter<"VerificationChallenge"> | $Enums.VerificationChallengeStatus
+    expiresAt?: DateTimeWithAggregatesFilter<"VerificationChallenge"> | Date | string
+    verifiedAt?: DateTimeNullableWithAggregatesFilter<"VerificationChallenge"> | Date | string | null
+    consumedAt?: DateTimeNullableWithAggregatesFilter<"VerificationChallenge"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"VerificationChallenge"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"VerificationChallenge"> | Date | string
+  }
+
+  export type AdminActivityLogWhereInput = {
+    AND?: AdminActivityLogWhereInput | AdminActivityLogWhereInput[]
+    OR?: AdminActivityLogWhereInput[]
+    NOT?: AdminActivityLogWhereInput | AdminActivityLogWhereInput[]
+    id?: StringFilter<"AdminActivityLog"> | string
+    userId?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userEmail?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userName?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userRole?: StringNullableFilter<"AdminActivityLog"> | string | null
+    action?: StringFilter<"AdminActivityLog"> | string
+    entityType?: StringFilter<"AdminActivityLog"> | string
+    entityId?: StringNullableFilter<"AdminActivityLog"> | string | null
+    description?: StringFilter<"AdminActivityLog"> | string
+    status?: StringFilter<"AdminActivityLog"> | string
+    ipAddress?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userAgent?: StringNullableFilter<"AdminActivityLog"> | string | null
+    beforeState?: JsonNullableFilter<"AdminActivityLog">
+    afterState?: JsonNullableFilter<"AdminActivityLog">
+    challengeId?: StringNullableFilter<"AdminActivityLog"> | string | null
+    createdAt?: DateTimeFilter<"AdminActivityLog"> | Date | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type AdminActivityLogOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    userEmail?: SortOrderInput | SortOrder
+    userName?: SortOrderInput | SortOrder
+    userRole?: SortOrderInput | SortOrder
+    action?: SortOrder
+    entityType?: SortOrder
+    entityId?: SortOrderInput | SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    beforeState?: SortOrderInput | SortOrder
+    afterState?: SortOrderInput | SortOrder
+    challengeId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type AdminActivityLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AdminActivityLogWhereInput | AdminActivityLogWhereInput[]
+    OR?: AdminActivityLogWhereInput[]
+    NOT?: AdminActivityLogWhereInput | AdminActivityLogWhereInput[]
+    userId?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userEmail?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userName?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userRole?: StringNullableFilter<"AdminActivityLog"> | string | null
+    action?: StringFilter<"AdminActivityLog"> | string
+    entityType?: StringFilter<"AdminActivityLog"> | string
+    entityId?: StringNullableFilter<"AdminActivityLog"> | string | null
+    description?: StringFilter<"AdminActivityLog"> | string
+    status?: StringFilter<"AdminActivityLog"> | string
+    ipAddress?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userAgent?: StringNullableFilter<"AdminActivityLog"> | string | null
+    beforeState?: JsonNullableFilter<"AdminActivityLog">
+    afterState?: JsonNullableFilter<"AdminActivityLog">
+    challengeId?: StringNullableFilter<"AdminActivityLog"> | string | null
+    createdAt?: DateTimeFilter<"AdminActivityLog"> | Date | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type AdminActivityLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    userEmail?: SortOrderInput | SortOrder
+    userName?: SortOrderInput | SortOrder
+    userRole?: SortOrderInput | SortOrder
+    action?: SortOrder
+    entityType?: SortOrder
+    entityId?: SortOrderInput | SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    beforeState?: SortOrderInput | SortOrder
+    afterState?: SortOrderInput | SortOrder
+    challengeId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: AdminActivityLogCountOrderByAggregateInput
+    _max?: AdminActivityLogMaxOrderByAggregateInput
+    _min?: AdminActivityLogMinOrderByAggregateInput
+  }
+
+  export type AdminActivityLogScalarWhereWithAggregatesInput = {
+    AND?: AdminActivityLogScalarWhereWithAggregatesInput | AdminActivityLogScalarWhereWithAggregatesInput[]
+    OR?: AdminActivityLogScalarWhereWithAggregatesInput[]
+    NOT?: AdminActivityLogScalarWhereWithAggregatesInput | AdminActivityLogScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AdminActivityLog"> | string
+    userId?: StringNullableWithAggregatesFilter<"AdminActivityLog"> | string | null
+    userEmail?: StringNullableWithAggregatesFilter<"AdminActivityLog"> | string | null
+    userName?: StringNullableWithAggregatesFilter<"AdminActivityLog"> | string | null
+    userRole?: StringNullableWithAggregatesFilter<"AdminActivityLog"> | string | null
+    action?: StringWithAggregatesFilter<"AdminActivityLog"> | string
+    entityType?: StringWithAggregatesFilter<"AdminActivityLog"> | string
+    entityId?: StringNullableWithAggregatesFilter<"AdminActivityLog"> | string | null
+    description?: StringWithAggregatesFilter<"AdminActivityLog"> | string
+    status?: StringWithAggregatesFilter<"AdminActivityLog"> | string
+    ipAddress?: StringNullableWithAggregatesFilter<"AdminActivityLog"> | string | null
+    userAgent?: StringNullableWithAggregatesFilter<"AdminActivityLog"> | string | null
+    beforeState?: JsonNullableWithAggregatesFilter<"AdminActivityLog">
+    afterState?: JsonNullableWithAggregatesFilter<"AdminActivityLog">
+    challengeId?: StringNullableWithAggregatesFilter<"AdminActivityLog"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AdminActivityLog"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -74201,6 +77196,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -74240,6 +77237,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -74279,6 +77278,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -74318,6 +77319,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -79277,6 +82280,263 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type VerificationChallengeCreateInput = {
+    id?: string
+    action: string
+    codeHash: string
+    resourceType?: string | null
+    resourceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: number
+    maxAttempts?: number
+    status?: $Enums.VerificationChallengeStatus
+    expiresAt: Date | string
+    verifiedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutVerificationChallengesInput
+  }
+
+  export type VerificationChallengeUncheckedCreateInput = {
+    id?: string
+    userId: string
+    action: string
+    codeHash: string
+    resourceType?: string | null
+    resourceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: number
+    maxAttempts?: number
+    status?: $Enums.VerificationChallengeStatus
+    expiresAt: Date | string
+    verifiedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VerificationChallengeUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    codeHash?: StringFieldUpdateOperationsInput | string
+    resourceType?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    status?: EnumVerificationChallengeStatusFieldUpdateOperationsInput | $Enums.VerificationChallengeStatus
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutVerificationChallengesNestedInput
+  }
+
+  export type VerificationChallengeUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    codeHash?: StringFieldUpdateOperationsInput | string
+    resourceType?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    status?: EnumVerificationChallengeStatusFieldUpdateOperationsInput | $Enums.VerificationChallengeStatus
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VerificationChallengeCreateManyInput = {
+    id?: string
+    userId: string
+    action: string
+    codeHash: string
+    resourceType?: string | null
+    resourceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: number
+    maxAttempts?: number
+    status?: $Enums.VerificationChallengeStatus
+    expiresAt: Date | string
+    verifiedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VerificationChallengeUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    codeHash?: StringFieldUpdateOperationsInput | string
+    resourceType?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    status?: EnumVerificationChallengeStatusFieldUpdateOperationsInput | $Enums.VerificationChallengeStatus
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VerificationChallengeUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    codeHash?: StringFieldUpdateOperationsInput | string
+    resourceType?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    status?: EnumVerificationChallengeStatusFieldUpdateOperationsInput | $Enums.VerificationChallengeStatus
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminActivityLogCreateInput = {
+    id?: string
+    userEmail?: string | null
+    userName?: string | null
+    userRole?: string | null
+    action: string
+    entityType: string
+    entityId?: string | null
+    description: string
+    status?: string
+    ipAddress?: string | null
+    userAgent?: string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: string | null
+    createdAt?: Date | string
+    user?: UserCreateNestedOneWithoutAdminActivitiesInput
+  }
+
+  export type AdminActivityLogUncheckedCreateInput = {
+    id?: string
+    userId?: string | null
+    userEmail?: string | null
+    userName?: string | null
+    userRole?: string | null
+    action: string
+    entityType: string
+    entityId?: string | null
+    description: string
+    status?: string
+    ipAddress?: string | null
+    userAgent?: string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AdminActivityLogUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    userRole?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutAdminActivitiesNestedInput
+  }
+
+  export type AdminActivityLogUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    userRole?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminActivityLogCreateManyInput = {
+    id?: string
+    userId?: string | null
+    userEmail?: string | null
+    userName?: string | null
+    userRole?: string | null
+    action: string
+    entityType: string
+    entityId?: string | null
+    description: string
+    status?: string
+    ipAddress?: string | null
+    userAgent?: string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AdminActivityLogUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    userRole?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminActivityLogUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    userRole?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -79452,6 +82712,18 @@ export namespace Prisma {
     none?: BankDepositSubmissionWhereInput
   }
 
+  export type VerificationChallengeListRelationFilter = {
+    every?: VerificationChallengeWhereInput
+    some?: VerificationChallengeWhereInput
+    none?: VerificationChallengeWhereInput
+  }
+
+  export type AdminActivityLogListRelationFilter = {
+    every?: AdminActivityLogWhereInput
+    some?: AdminActivityLogWhereInput
+    none?: AdminActivityLogWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -79514,6 +82786,14 @@ export namespace Prisma {
   }
 
   export type BankDepositSubmissionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type VerificationChallengeOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AdminActivityLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -82953,6 +86233,138 @@ export namespace Prisma {
     _max?: NestedEnumImportRowStatusFilter<$PrismaModel>
   }
 
+  export type EnumVerificationChallengeStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.VerificationChallengeStatus | EnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.VerificationChallengeStatus[] | ListEnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VerificationChallengeStatus[] | ListEnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumVerificationChallengeStatusFilter<$PrismaModel> | $Enums.VerificationChallengeStatus
+  }
+
+  export type VerificationChallengeCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    action?: SortOrder
+    codeHash?: SortOrder
+    resourceType?: SortOrder
+    resourceId?: SortOrder
+    metadata?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    status?: SortOrder
+    expiresAt?: SortOrder
+    verifiedAt?: SortOrder
+    consumedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VerificationChallengeAvgOrderByAggregateInput = {
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+  }
+
+  export type VerificationChallengeMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    action?: SortOrder
+    codeHash?: SortOrder
+    resourceType?: SortOrder
+    resourceId?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    status?: SortOrder
+    expiresAt?: SortOrder
+    verifiedAt?: SortOrder
+    consumedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VerificationChallengeMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    action?: SortOrder
+    codeHash?: SortOrder
+    resourceType?: SortOrder
+    resourceId?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    status?: SortOrder
+    expiresAt?: SortOrder
+    verifiedAt?: SortOrder
+    consumedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VerificationChallengeSumOrderByAggregateInput = {
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+  }
+
+  export type EnumVerificationChallengeStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.VerificationChallengeStatus | EnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.VerificationChallengeStatus[] | ListEnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VerificationChallengeStatus[] | ListEnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumVerificationChallengeStatusWithAggregatesFilter<$PrismaModel> | $Enums.VerificationChallengeStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumVerificationChallengeStatusFilter<$PrismaModel>
+    _max?: NestedEnumVerificationChallengeStatusFilter<$PrismaModel>
+  }
+
+  export type AdminActivityLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrder
+    userName?: SortOrder
+    userRole?: SortOrder
+    action?: SortOrder
+    entityType?: SortOrder
+    entityId?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    beforeState?: SortOrder
+    afterState?: SortOrder
+    challengeId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AdminActivityLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrder
+    userName?: SortOrder
+    userRole?: SortOrder
+    action?: SortOrder
+    entityType?: SortOrder
+    entityId?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    challengeId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AdminActivityLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrder
+    userName?: SortOrder
+    userRole?: SortOrder
+    action?: SortOrder
+    entityType?: SortOrder
+    entityId?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    challengeId?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type RoleCreateNestedOneWithoutUsersInput = {
     create?: XOR<RoleCreateWithoutUsersInput, RoleUncheckedCreateWithoutUsersInput>
     connectOrCreate?: RoleCreateOrConnectWithoutUsersInput
@@ -83077,6 +86489,20 @@ export namespace Prisma {
     connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
   }
 
+  export type VerificationChallengeCreateNestedManyWithoutUserInput = {
+    create?: XOR<VerificationChallengeCreateWithoutUserInput, VerificationChallengeUncheckedCreateWithoutUserInput> | VerificationChallengeCreateWithoutUserInput[] | VerificationChallengeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: VerificationChallengeCreateOrConnectWithoutUserInput | VerificationChallengeCreateOrConnectWithoutUserInput[]
+    createMany?: VerificationChallengeCreateManyUserInputEnvelope
+    connect?: VerificationChallengeWhereUniqueInput | VerificationChallengeWhereUniqueInput[]
+  }
+
+  export type AdminActivityLogCreateNestedManyWithoutUserInput = {
+    create?: XOR<AdminActivityLogCreateWithoutUserInput, AdminActivityLogUncheckedCreateWithoutUserInput> | AdminActivityLogCreateWithoutUserInput[] | AdminActivityLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AdminActivityLogCreateOrConnectWithoutUserInput | AdminActivityLogCreateOrConnectWithoutUserInput[]
+    createMany?: AdminActivityLogCreateManyUserInputEnvelope
+    connect?: AdminActivityLogWhereUniqueInput | AdminActivityLogWhereUniqueInput[]
+  }
+
   export type AddressUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AddressCreateWithoutUserInput, AddressUncheckedCreateWithoutUserInput> | AddressCreateWithoutUserInput[] | AddressUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AddressCreateOrConnectWithoutUserInput | AddressCreateOrConnectWithoutUserInput[]
@@ -83193,6 +86619,20 @@ export namespace Prisma {
     connectOrCreate?: BankDepositSubmissionCreateOrConnectWithoutReviewedByInput | BankDepositSubmissionCreateOrConnectWithoutReviewedByInput[]
     createMany?: BankDepositSubmissionCreateManyReviewedByInputEnvelope
     connect?: BankDepositSubmissionWhereUniqueInput | BankDepositSubmissionWhereUniqueInput[]
+  }
+
+  export type VerificationChallengeUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<VerificationChallengeCreateWithoutUserInput, VerificationChallengeUncheckedCreateWithoutUserInput> | VerificationChallengeCreateWithoutUserInput[] | VerificationChallengeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: VerificationChallengeCreateOrConnectWithoutUserInput | VerificationChallengeCreateOrConnectWithoutUserInput[]
+    createMany?: VerificationChallengeCreateManyUserInputEnvelope
+    connect?: VerificationChallengeWhereUniqueInput | VerificationChallengeWhereUniqueInput[]
+  }
+
+  export type AdminActivityLogUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<AdminActivityLogCreateWithoutUserInput, AdminActivityLogUncheckedCreateWithoutUserInput> | AdminActivityLogCreateWithoutUserInput[] | AdminActivityLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AdminActivityLogCreateOrConnectWithoutUserInput | AdminActivityLogCreateOrConnectWithoutUserInput[]
+    createMany?: AdminActivityLogCreateManyUserInputEnvelope
+    connect?: AdminActivityLogWhereUniqueInput | AdminActivityLogWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -83471,6 +86911,34 @@ export namespace Prisma {
     deleteMany?: BankDepositSubmissionScalarWhereInput | BankDepositSubmissionScalarWhereInput[]
   }
 
+  export type VerificationChallengeUpdateManyWithoutUserNestedInput = {
+    create?: XOR<VerificationChallengeCreateWithoutUserInput, VerificationChallengeUncheckedCreateWithoutUserInput> | VerificationChallengeCreateWithoutUserInput[] | VerificationChallengeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: VerificationChallengeCreateOrConnectWithoutUserInput | VerificationChallengeCreateOrConnectWithoutUserInput[]
+    upsert?: VerificationChallengeUpsertWithWhereUniqueWithoutUserInput | VerificationChallengeUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: VerificationChallengeCreateManyUserInputEnvelope
+    set?: VerificationChallengeWhereUniqueInput | VerificationChallengeWhereUniqueInput[]
+    disconnect?: VerificationChallengeWhereUniqueInput | VerificationChallengeWhereUniqueInput[]
+    delete?: VerificationChallengeWhereUniqueInput | VerificationChallengeWhereUniqueInput[]
+    connect?: VerificationChallengeWhereUniqueInput | VerificationChallengeWhereUniqueInput[]
+    update?: VerificationChallengeUpdateWithWhereUniqueWithoutUserInput | VerificationChallengeUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: VerificationChallengeUpdateManyWithWhereWithoutUserInput | VerificationChallengeUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: VerificationChallengeScalarWhereInput | VerificationChallengeScalarWhereInput[]
+  }
+
+  export type AdminActivityLogUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AdminActivityLogCreateWithoutUserInput, AdminActivityLogUncheckedCreateWithoutUserInput> | AdminActivityLogCreateWithoutUserInput[] | AdminActivityLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AdminActivityLogCreateOrConnectWithoutUserInput | AdminActivityLogCreateOrConnectWithoutUserInput[]
+    upsert?: AdminActivityLogUpsertWithWhereUniqueWithoutUserInput | AdminActivityLogUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AdminActivityLogCreateManyUserInputEnvelope
+    set?: AdminActivityLogWhereUniqueInput | AdminActivityLogWhereUniqueInput[]
+    disconnect?: AdminActivityLogWhereUniqueInput | AdminActivityLogWhereUniqueInput[]
+    delete?: AdminActivityLogWhereUniqueInput | AdminActivityLogWhereUniqueInput[]
+    connect?: AdminActivityLogWhereUniqueInput | AdminActivityLogWhereUniqueInput[]
+    update?: AdminActivityLogUpdateWithWhereUniqueWithoutUserInput | AdminActivityLogUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AdminActivityLogUpdateManyWithWhereWithoutUserInput | AdminActivityLogUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AdminActivityLogScalarWhereInput | AdminActivityLogScalarWhereInput[]
+  }
+
   export type AddressUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AddressCreateWithoutUserInput, AddressUncheckedCreateWithoutUserInput> | AddressCreateWithoutUserInput[] | AddressUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AddressCreateOrConnectWithoutUserInput | AddressCreateOrConnectWithoutUserInput[]
@@ -83703,6 +87171,34 @@ export namespace Prisma {
     update?: BankDepositSubmissionUpdateWithWhereUniqueWithoutReviewedByInput | BankDepositSubmissionUpdateWithWhereUniqueWithoutReviewedByInput[]
     updateMany?: BankDepositSubmissionUpdateManyWithWhereWithoutReviewedByInput | BankDepositSubmissionUpdateManyWithWhereWithoutReviewedByInput[]
     deleteMany?: BankDepositSubmissionScalarWhereInput | BankDepositSubmissionScalarWhereInput[]
+  }
+
+  export type VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<VerificationChallengeCreateWithoutUserInput, VerificationChallengeUncheckedCreateWithoutUserInput> | VerificationChallengeCreateWithoutUserInput[] | VerificationChallengeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: VerificationChallengeCreateOrConnectWithoutUserInput | VerificationChallengeCreateOrConnectWithoutUserInput[]
+    upsert?: VerificationChallengeUpsertWithWhereUniqueWithoutUserInput | VerificationChallengeUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: VerificationChallengeCreateManyUserInputEnvelope
+    set?: VerificationChallengeWhereUniqueInput | VerificationChallengeWhereUniqueInput[]
+    disconnect?: VerificationChallengeWhereUniqueInput | VerificationChallengeWhereUniqueInput[]
+    delete?: VerificationChallengeWhereUniqueInput | VerificationChallengeWhereUniqueInput[]
+    connect?: VerificationChallengeWhereUniqueInput | VerificationChallengeWhereUniqueInput[]
+    update?: VerificationChallengeUpdateWithWhereUniqueWithoutUserInput | VerificationChallengeUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: VerificationChallengeUpdateManyWithWhereWithoutUserInput | VerificationChallengeUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: VerificationChallengeScalarWhereInput | VerificationChallengeScalarWhereInput[]
+  }
+
+  export type AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AdminActivityLogCreateWithoutUserInput, AdminActivityLogUncheckedCreateWithoutUserInput> | AdminActivityLogCreateWithoutUserInput[] | AdminActivityLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AdminActivityLogCreateOrConnectWithoutUserInput | AdminActivityLogCreateOrConnectWithoutUserInput[]
+    upsert?: AdminActivityLogUpsertWithWhereUniqueWithoutUserInput | AdminActivityLogUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AdminActivityLogCreateManyUserInputEnvelope
+    set?: AdminActivityLogWhereUniqueInput | AdminActivityLogWhereUniqueInput[]
+    disconnect?: AdminActivityLogWhereUniqueInput | AdminActivityLogWhereUniqueInput[]
+    delete?: AdminActivityLogWhereUniqueInput | AdminActivityLogWhereUniqueInput[]
+    connect?: AdminActivityLogWhereUniqueInput | AdminActivityLogWhereUniqueInput[]
+    update?: AdminActivityLogUpdateWithWhereUniqueWithoutUserInput | AdminActivityLogUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AdminActivityLogUpdateManyWithWhereWithoutUserInput | AdminActivityLogUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AdminActivityLogScalarWhereInput | AdminActivityLogScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAddressesInput = {
@@ -87105,6 +90601,40 @@ export namespace Prisma {
     update?: XOR<XOR<ProductImportBatchUpdateToOneWithWhereWithoutResultsInput, ProductImportBatchUpdateWithoutResultsInput>, ProductImportBatchUncheckedUpdateWithoutResultsInput>
   }
 
+  export type UserCreateNestedOneWithoutVerificationChallengesInput = {
+    create?: XOR<UserCreateWithoutVerificationChallengesInput, UserUncheckedCreateWithoutVerificationChallengesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutVerificationChallengesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumVerificationChallengeStatusFieldUpdateOperationsInput = {
+    set?: $Enums.VerificationChallengeStatus
+  }
+
+  export type UserUpdateOneRequiredWithoutVerificationChallengesNestedInput = {
+    create?: XOR<UserCreateWithoutVerificationChallengesInput, UserUncheckedCreateWithoutVerificationChallengesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutVerificationChallengesInput
+    upsert?: UserUpsertWithoutVerificationChallengesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutVerificationChallengesInput, UserUpdateWithoutVerificationChallengesInput>, UserUncheckedUpdateWithoutVerificationChallengesInput>
+  }
+
+  export type UserCreateNestedOneWithoutAdminActivitiesInput = {
+    create?: XOR<UserCreateWithoutAdminActivitiesInput, UserUncheckedCreateWithoutAdminActivitiesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAdminActivitiesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneWithoutAdminActivitiesNestedInput = {
+    create?: XOR<UserCreateWithoutAdminActivitiesInput, UserUncheckedCreateWithoutAdminActivitiesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAdminActivitiesInput
+    upsert?: UserUpsertWithoutAdminActivitiesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAdminActivitiesInput, UserUpdateWithoutAdminActivitiesInput>, UserUncheckedUpdateWithoutAdminActivitiesInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -87756,6 +91286,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumImportRowStatusFilter<$PrismaModel>
     _max?: NestedEnumImportRowStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumVerificationChallengeStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.VerificationChallengeStatus | EnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.VerificationChallengeStatus[] | ListEnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VerificationChallengeStatus[] | ListEnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumVerificationChallengeStatusFilter<$PrismaModel> | $Enums.VerificationChallengeStatus
+  }
+
+  export type NestedEnumVerificationChallengeStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.VerificationChallengeStatus | EnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.VerificationChallengeStatus[] | ListEnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VerificationChallengeStatus[] | ListEnumVerificationChallengeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumVerificationChallengeStatusWithAggregatesFilter<$PrismaModel> | $Enums.VerificationChallengeStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumVerificationChallengeStatusFilter<$PrismaModel>
+    _max?: NestedEnumVerificationChallengeStatusFilter<$PrismaModel>
   }
 
   export type RoleCreateWithoutUsersInput = {
@@ -88446,6 +91993,96 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type VerificationChallengeCreateWithoutUserInput = {
+    id?: string
+    action: string
+    codeHash: string
+    resourceType?: string | null
+    resourceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: number
+    maxAttempts?: number
+    status?: $Enums.VerificationChallengeStatus
+    expiresAt: Date | string
+    verifiedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VerificationChallengeUncheckedCreateWithoutUserInput = {
+    id?: string
+    action: string
+    codeHash: string
+    resourceType?: string | null
+    resourceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: number
+    maxAttempts?: number
+    status?: $Enums.VerificationChallengeStatus
+    expiresAt: Date | string
+    verifiedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VerificationChallengeCreateOrConnectWithoutUserInput = {
+    where: VerificationChallengeWhereUniqueInput
+    create: XOR<VerificationChallengeCreateWithoutUserInput, VerificationChallengeUncheckedCreateWithoutUserInput>
+  }
+
+  export type VerificationChallengeCreateManyUserInputEnvelope = {
+    data: VerificationChallengeCreateManyUserInput | VerificationChallengeCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AdminActivityLogCreateWithoutUserInput = {
+    id?: string
+    userEmail?: string | null
+    userName?: string | null
+    userRole?: string | null
+    action: string
+    entityType: string
+    entityId?: string | null
+    description: string
+    status?: string
+    ipAddress?: string | null
+    userAgent?: string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AdminActivityLogUncheckedCreateWithoutUserInput = {
+    id?: string
+    userEmail?: string | null
+    userName?: string | null
+    userRole?: string | null
+    action: string
+    entityType: string
+    entityId?: string | null
+    description: string
+    status?: string
+    ipAddress?: string | null
+    userAgent?: string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type AdminActivityLogCreateOrConnectWithoutUserInput = {
+    where: AdminActivityLogWhereUniqueInput
+    create: XOR<AdminActivityLogCreateWithoutUserInput, AdminActivityLogUncheckedCreateWithoutUserInput>
+  }
+
+  export type AdminActivityLogCreateManyUserInputEnvelope = {
+    data: AdminActivityLogCreateManyUserInput | AdminActivityLogCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type RoleUpsertWithoutUsersInput = {
     update: XOR<RoleUpdateWithoutUsersInput, RoleUncheckedUpdateWithoutUsersInput>
     create: XOR<RoleCreateWithoutUsersInput, RoleUncheckedCreateWithoutUsersInput>
@@ -89029,6 +92666,81 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"BankDepositSubmission"> | Date | string
   }
 
+  export type VerificationChallengeUpsertWithWhereUniqueWithoutUserInput = {
+    where: VerificationChallengeWhereUniqueInput
+    update: XOR<VerificationChallengeUpdateWithoutUserInput, VerificationChallengeUncheckedUpdateWithoutUserInput>
+    create: XOR<VerificationChallengeCreateWithoutUserInput, VerificationChallengeUncheckedCreateWithoutUserInput>
+  }
+
+  export type VerificationChallengeUpdateWithWhereUniqueWithoutUserInput = {
+    where: VerificationChallengeWhereUniqueInput
+    data: XOR<VerificationChallengeUpdateWithoutUserInput, VerificationChallengeUncheckedUpdateWithoutUserInput>
+  }
+
+  export type VerificationChallengeUpdateManyWithWhereWithoutUserInput = {
+    where: VerificationChallengeScalarWhereInput
+    data: XOR<VerificationChallengeUpdateManyMutationInput, VerificationChallengeUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type VerificationChallengeScalarWhereInput = {
+    AND?: VerificationChallengeScalarWhereInput | VerificationChallengeScalarWhereInput[]
+    OR?: VerificationChallengeScalarWhereInput[]
+    NOT?: VerificationChallengeScalarWhereInput | VerificationChallengeScalarWhereInput[]
+    id?: StringFilter<"VerificationChallenge"> | string
+    userId?: StringFilter<"VerificationChallenge"> | string
+    action?: StringFilter<"VerificationChallenge"> | string
+    codeHash?: StringFilter<"VerificationChallenge"> | string
+    resourceType?: StringNullableFilter<"VerificationChallenge"> | string | null
+    resourceId?: StringNullableFilter<"VerificationChallenge"> | string | null
+    metadata?: JsonNullableFilter<"VerificationChallenge">
+    attempts?: IntFilter<"VerificationChallenge"> | number
+    maxAttempts?: IntFilter<"VerificationChallenge"> | number
+    status?: EnumVerificationChallengeStatusFilter<"VerificationChallenge"> | $Enums.VerificationChallengeStatus
+    expiresAt?: DateTimeFilter<"VerificationChallenge"> | Date | string
+    verifiedAt?: DateTimeNullableFilter<"VerificationChallenge"> | Date | string | null
+    consumedAt?: DateTimeNullableFilter<"VerificationChallenge"> | Date | string | null
+    createdAt?: DateTimeFilter<"VerificationChallenge"> | Date | string
+    updatedAt?: DateTimeFilter<"VerificationChallenge"> | Date | string
+  }
+
+  export type AdminActivityLogUpsertWithWhereUniqueWithoutUserInput = {
+    where: AdminActivityLogWhereUniqueInput
+    update: XOR<AdminActivityLogUpdateWithoutUserInput, AdminActivityLogUncheckedUpdateWithoutUserInput>
+    create: XOR<AdminActivityLogCreateWithoutUserInput, AdminActivityLogUncheckedCreateWithoutUserInput>
+  }
+
+  export type AdminActivityLogUpdateWithWhereUniqueWithoutUserInput = {
+    where: AdminActivityLogWhereUniqueInput
+    data: XOR<AdminActivityLogUpdateWithoutUserInput, AdminActivityLogUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AdminActivityLogUpdateManyWithWhereWithoutUserInput = {
+    where: AdminActivityLogScalarWhereInput
+    data: XOR<AdminActivityLogUpdateManyMutationInput, AdminActivityLogUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type AdminActivityLogScalarWhereInput = {
+    AND?: AdminActivityLogScalarWhereInput | AdminActivityLogScalarWhereInput[]
+    OR?: AdminActivityLogScalarWhereInput[]
+    NOT?: AdminActivityLogScalarWhereInput | AdminActivityLogScalarWhereInput[]
+    id?: StringFilter<"AdminActivityLog"> | string
+    userId?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userEmail?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userName?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userRole?: StringNullableFilter<"AdminActivityLog"> | string | null
+    action?: StringFilter<"AdminActivityLog"> | string
+    entityType?: StringFilter<"AdminActivityLog"> | string
+    entityId?: StringNullableFilter<"AdminActivityLog"> | string | null
+    description?: StringFilter<"AdminActivityLog"> | string
+    status?: StringFilter<"AdminActivityLog"> | string
+    ipAddress?: StringNullableFilter<"AdminActivityLog"> | string | null
+    userAgent?: StringNullableFilter<"AdminActivityLog"> | string | null
+    beforeState?: JsonNullableFilter<"AdminActivityLog">
+    afterState?: JsonNullableFilter<"AdminActivityLog">
+    challengeId?: StringNullableFilter<"AdminActivityLog"> | string | null
+    createdAt?: DateTimeFilter<"AdminActivityLog"> | Date | string
+  }
+
   export type UserCreateWithoutAddressesInput = {
     id?: string
     email: string
@@ -89065,6 +92777,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAddressesInput = {
@@ -89103,6 +92817,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAddressesInput = {
@@ -89157,6 +92873,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAddressesInput = {
@@ -89195,6 +92913,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutRefreshTokensInput = {
@@ -89233,6 +92953,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -89271,6 +92993,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -89325,6 +93049,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -89363,6 +93089,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CategoryCreateWithoutChildrenInput = {
@@ -91771,6 +95499,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOrdersInput = {
@@ -91809,6 +95539,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOrdersInput = {
@@ -92326,6 +96058,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOrdersInput = {
@@ -92364,6 +96098,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type PromotionUpsertWithoutOrdersInput = {
@@ -94400,6 +98136,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReservationsInput = {
@@ -94438,6 +98176,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReservationsInput = {
@@ -94639,6 +98379,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReservationsInput = {
@@ -94677,6 +98419,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrderUpsertWithoutReservationInput = {
@@ -95566,6 +99310,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReviewedBankDepositsInput = {
@@ -95604,6 +99350,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReviewedBankDepositsInput = {
@@ -95784,6 +99532,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewedBankDepositsInput = {
@@ -95822,6 +99572,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type PromotionCodeCreateWithoutPromotionInput = {
@@ -96963,6 +100715,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPromotionRedemptionsInput = {
@@ -97001,6 +100755,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPromotionRedemptionsInput = {
@@ -97240,6 +100996,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPromotionRedemptionsInput = {
@@ -97278,6 +101036,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrderUpsertWithoutPromotionRedemptionsInput = {
@@ -97399,6 +101159,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutWishlistInput = {
@@ -97437,6 +101199,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutWishlistInput = {
@@ -97574,6 +101338,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWishlistInput = {
@@ -97612,6 +101378,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProductUpsertWithoutWishlistItemsInput = {
@@ -97739,6 +101507,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSavedStationeryListsInput = {
@@ -97777,6 +101547,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSavedStationeryListsInput = {
@@ -97831,6 +101603,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSavedStationeryListsInput = {
@@ -97869,6 +101643,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSavedListsInput = {
@@ -97907,6 +101683,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSavedListsInput = {
@@ -97945,6 +101723,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSavedListsInput = {
@@ -98025,6 +101805,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSavedListsInput = {
@@ -98063,6 +101845,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type SavedListItemUpsertWithWhereUniqueWithoutSavedListInput = {
@@ -98337,6 +102121,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedBannersInput = {
@@ -98375,6 +102161,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedBannersInput = {
@@ -98418,6 +102206,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUpdatedBannersInput = {
@@ -98456,6 +102246,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUpdatedBannersInput = {
@@ -98510,6 +102302,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedBannersInput = {
@@ -98548,6 +102342,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutUpdatedBannersInput = {
@@ -98597,6 +102393,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUpdatedBannersInput = {
@@ -98635,6 +102433,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutAuditLogsInput = {
@@ -98673,6 +102473,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -98711,6 +102513,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -98765,6 +102569,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -98803,6 +102609,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutCartInput = {
@@ -98841,6 +102649,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCartInput = {
@@ -98879,6 +102689,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCartInput = {
@@ -98961,6 +102773,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCartInput = {
@@ -98999,6 +102813,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CartItemUpsertWithWhereUniqueWithoutCartInput = {
@@ -99361,6 +103177,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBackInStockAlertsInput = {
@@ -99399,6 +103217,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBackInStockAlertsInput = {
@@ -99536,6 +103356,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBackInStockAlertsInput = {
@@ -99574,6 +103396,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProductUpsertWithoutBackInStockAlertsInput = {
@@ -99995,6 +103819,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInvitationsSentInput = {
@@ -100033,6 +103859,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInvitationsSentInput = {
@@ -100124,6 +103952,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInvitationsSentInput = {
@@ -100162,6 +103992,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutAssignedRoleInput = {
@@ -100200,6 +104032,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAssignedRoleInput = {
@@ -100238,6 +104072,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAssignedRoleInput = {
@@ -100846,6 +104682,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutImportPreviewsInput = {
@@ -100884,6 +104722,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutImportPreviewsInput = {
@@ -100990,6 +104830,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutImportPreviewsInput = {
@@ -101028,6 +104870,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProductImportBatchUpsertWithWhereUniqueWithoutPreviewInput = {
@@ -101082,6 +104926,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
     reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutImportBatchesInput = {
@@ -101120,6 +104966,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
     importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutImportBatchesInput = {
@@ -101241,6 +105089,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutImportBatchesInput = {
@@ -101279,6 +105129,8 @@ export namespace Prisma {
     invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProductImportPreviewUpsertWithoutBatchesInput = {
@@ -101449,6 +105301,358 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserCreateWithoutVerificationChallengesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    role?: $Enums.UserRole
+    passwordHash?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    passwordResetTokenHash?: string | null
+    passwordResetExpiresAt?: Date | string | null
+    isEmailVerified?: boolean
+    emailVerificationOtpHash?: string | null
+    emailVerificationExpiresAt?: Date | string | null
+    emailVerificationAttempts?: number
+    emailVerificationLastSentAt?: Date | string | null
+    assignedRole?: RoleCreateNestedOneWithoutUsersInput
+    addresses?: AddressCreateNestedManyWithoutUserInput
+    orders?: OrderCreateNestedManyWithoutUserInput
+    wishlist?: WishlistItemCreateNestedManyWithoutUserInput
+    savedLists?: SavedListCreateNestedManyWithoutUserInput
+    savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    cart?: CartCreateNestedOneWithoutUserInput
+    reservations?: StockReservationCreateNestedManyWithoutUserInput
+    backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutUserInput
+    createdBanners?: HomepageBannerCreateNestedManyWithoutCreatedByInput
+    updatedBanners?: HomepageBannerCreateNestedManyWithoutUpdatedByInput
+    promotionRedemptions?: PromotionRedemptionCreateNestedManyWithoutCustomerInput
+    invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
+    importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
+    importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    adminActivities?: AdminActivityLogCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutVerificationChallengesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    role?: $Enums.UserRole
+    roleId?: string | null
+    passwordHash?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    passwordResetTokenHash?: string | null
+    passwordResetExpiresAt?: Date | string | null
+    isEmailVerified?: boolean
+    emailVerificationOtpHash?: string | null
+    emailVerificationExpiresAt?: Date | string | null
+    emailVerificationAttempts?: number
+    emailVerificationLastSentAt?: Date | string | null
+    addresses?: AddressUncheckedCreateNestedManyWithoutUserInput
+    orders?: OrderUncheckedCreateNestedManyWithoutUserInput
+    wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
+    savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
+    savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    cart?: CartUncheckedCreateNestedOneWithoutUserInput
+    reservations?: StockReservationUncheckedCreateNestedManyWithoutUserInput
+    backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutUserInput
+    createdBanners?: HomepageBannerUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedBanners?: HomepageBannerUncheckedCreateNestedManyWithoutUpdatedByInput
+    promotionRedemptions?: PromotionRedemptionUncheckedCreateNestedManyWithoutCustomerInput
+    invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+    importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
+    importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    adminActivities?: AdminActivityLogUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutVerificationChallengesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutVerificationChallengesInput, UserUncheckedCreateWithoutVerificationChallengesInput>
+  }
+
+  export type UserUpsertWithoutVerificationChallengesInput = {
+    update: XOR<UserUpdateWithoutVerificationChallengesInput, UserUncheckedUpdateWithoutVerificationChallengesInput>
+    create: XOR<UserCreateWithoutVerificationChallengesInput, UserUncheckedCreateWithoutVerificationChallengesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutVerificationChallengesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutVerificationChallengesInput, UserUncheckedUpdateWithoutVerificationChallengesInput>
+  }
+
+  export type UserUpdateWithoutVerificationChallengesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordResetTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordResetExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerificationOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationAttempts?: IntFieldUpdateOperationsInput | number
+    emailVerificationLastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedRole?: RoleUpdateOneWithoutUsersNestedInput
+    addresses?: AddressUpdateManyWithoutUserNestedInput
+    orders?: OrderUpdateManyWithoutUserNestedInput
+    wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
+    savedLists?: SavedListUpdateManyWithoutUserNestedInput
+    savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    cart?: CartUpdateOneWithoutUserNestedInput
+    reservations?: StockReservationUpdateManyWithoutUserNestedInput
+    backInStockAlerts?: BackInStockAlertUpdateManyWithoutUserNestedInput
+    createdBanners?: HomepageBannerUpdateManyWithoutCreatedByNestedInput
+    updatedBanners?: HomepageBannerUpdateManyWithoutUpdatedByNestedInput
+    promotionRedemptions?: PromotionRedemptionUpdateManyWithoutCustomerNestedInput
+    invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
+    importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
+    importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutVerificationChallengesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordResetTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordResetExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerificationOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationAttempts?: IntFieldUpdateOperationsInput | number
+    emailVerificationLastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    addresses?: AddressUncheckedUpdateManyWithoutUserNestedInput
+    orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
+    wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
+    savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
+    savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    cart?: CartUncheckedUpdateOneWithoutUserNestedInput
+    reservations?: StockReservationUncheckedUpdateManyWithoutUserNestedInput
+    backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutUserNestedInput
+    createdBanners?: HomepageBannerUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedBanners?: HomepageBannerUncheckedUpdateManyWithoutUpdatedByNestedInput
+    promotionRedemptions?: PromotionRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
+    invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+    importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
+    importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutAdminActivitiesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    role?: $Enums.UserRole
+    passwordHash?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    passwordResetTokenHash?: string | null
+    passwordResetExpiresAt?: Date | string | null
+    isEmailVerified?: boolean
+    emailVerificationOtpHash?: string | null
+    emailVerificationExpiresAt?: Date | string | null
+    emailVerificationAttempts?: number
+    emailVerificationLastSentAt?: Date | string | null
+    assignedRole?: RoleCreateNestedOneWithoutUsersInput
+    addresses?: AddressCreateNestedManyWithoutUserInput
+    orders?: OrderCreateNestedManyWithoutUserInput
+    wishlist?: WishlistItemCreateNestedManyWithoutUserInput
+    savedLists?: SavedListCreateNestedManyWithoutUserInput
+    savedStationeryLists?: SavedStationeryListCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    cart?: CartCreateNestedOneWithoutUserInput
+    reservations?: StockReservationCreateNestedManyWithoutUserInput
+    backInStockAlerts?: BackInStockAlertCreateNestedManyWithoutUserInput
+    createdBanners?: HomepageBannerCreateNestedManyWithoutCreatedByInput
+    updatedBanners?: HomepageBannerCreateNestedManyWithoutUpdatedByInput
+    promotionRedemptions?: PromotionRedemptionCreateNestedManyWithoutCustomerInput
+    invitationsSent?: AdminInvitationCreateNestedManyWithoutInvitedByInput
+    importPreviews?: ProductImportPreviewCreateNestedManyWithoutCreatedByInput
+    importBatches?: ProductImportBatchCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAdminActivitiesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    role?: $Enums.UserRole
+    roleId?: string | null
+    passwordHash?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    passwordResetTokenHash?: string | null
+    passwordResetExpiresAt?: Date | string | null
+    isEmailVerified?: boolean
+    emailVerificationOtpHash?: string | null
+    emailVerificationExpiresAt?: Date | string | null
+    emailVerificationAttempts?: number
+    emailVerificationLastSentAt?: Date | string | null
+    addresses?: AddressUncheckedCreateNestedManyWithoutUserInput
+    orders?: OrderUncheckedCreateNestedManyWithoutUserInput
+    wishlist?: WishlistItemUncheckedCreateNestedManyWithoutUserInput
+    savedLists?: SavedListUncheckedCreateNestedManyWithoutUserInput
+    savedStationeryLists?: SavedStationeryListUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    cart?: CartUncheckedCreateNestedOneWithoutUserInput
+    reservations?: StockReservationUncheckedCreateNestedManyWithoutUserInput
+    backInStockAlerts?: BackInStockAlertUncheckedCreateNestedManyWithoutUserInput
+    createdBanners?: HomepageBannerUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedBanners?: HomepageBannerUncheckedCreateNestedManyWithoutUpdatedByInput
+    promotionRedemptions?: PromotionRedemptionUncheckedCreateNestedManyWithoutCustomerInput
+    invitationsSent?: AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+    importPreviews?: ProductImportPreviewUncheckedCreateNestedManyWithoutCreatedByInput
+    importBatches?: ProductImportBatchUncheckedCreateNestedManyWithoutAdminInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedCreateNestedManyWithoutReviewedByInput
+    verificationChallenges?: VerificationChallengeUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAdminActivitiesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAdminActivitiesInput, UserUncheckedCreateWithoutAdminActivitiesInput>
+  }
+
+  export type UserUpsertWithoutAdminActivitiesInput = {
+    update: XOR<UserUpdateWithoutAdminActivitiesInput, UserUncheckedUpdateWithoutAdminActivitiesInput>
+    create: XOR<UserCreateWithoutAdminActivitiesInput, UserUncheckedCreateWithoutAdminActivitiesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAdminActivitiesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAdminActivitiesInput, UserUncheckedUpdateWithoutAdminActivitiesInput>
+  }
+
+  export type UserUpdateWithoutAdminActivitiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordResetTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordResetExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerificationOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationAttempts?: IntFieldUpdateOperationsInput | number
+    emailVerificationLastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedRole?: RoleUpdateOneWithoutUsersNestedInput
+    addresses?: AddressUpdateManyWithoutUserNestedInput
+    orders?: OrderUpdateManyWithoutUserNestedInput
+    wishlist?: WishlistItemUpdateManyWithoutUserNestedInput
+    savedLists?: SavedListUpdateManyWithoutUserNestedInput
+    savedStationeryLists?: SavedStationeryListUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    cart?: CartUpdateOneWithoutUserNestedInput
+    reservations?: StockReservationUpdateManyWithoutUserNestedInput
+    backInStockAlerts?: BackInStockAlertUpdateManyWithoutUserNestedInput
+    createdBanners?: HomepageBannerUpdateManyWithoutCreatedByNestedInput
+    updatedBanners?: HomepageBannerUpdateManyWithoutUpdatedByNestedInput
+    promotionRedemptions?: PromotionRedemptionUpdateManyWithoutCustomerNestedInput
+    invitationsSent?: AdminInvitationUpdateManyWithoutInvitedByNestedInput
+    importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
+    importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAdminActivitiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordResetTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordResetExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerificationOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationAttempts?: IntFieldUpdateOperationsInput | number
+    emailVerificationLastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    addresses?: AddressUncheckedUpdateManyWithoutUserNestedInput
+    orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
+    wishlist?: WishlistItemUncheckedUpdateManyWithoutUserNestedInput
+    savedLists?: SavedListUncheckedUpdateManyWithoutUserNestedInput
+    savedStationeryLists?: SavedStationeryListUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    cart?: CartUncheckedUpdateOneWithoutUserNestedInput
+    reservations?: StockReservationUncheckedUpdateManyWithoutUserNestedInput
+    backInStockAlerts?: BackInStockAlertUncheckedUpdateManyWithoutUserNestedInput
+    createdBanners?: HomepageBannerUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedBanners?: HomepageBannerUncheckedUpdateManyWithoutUpdatedByNestedInput
+    promotionRedemptions?: PromotionRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
+    invitationsSent?: AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+    importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
+    importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
+    reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AddressCreateManyUserInput = {
@@ -101672,6 +105876,41 @@ export namespace Prisma {
     reviewedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type VerificationChallengeCreateManyUserInput = {
+    id?: string
+    action: string
+    codeHash: string
+    resourceType?: string | null
+    resourceId?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: number
+    maxAttempts?: number
+    status?: $Enums.VerificationChallengeStatus
+    expiresAt: Date | string
+    verifiedAt?: Date | string | null
+    consumedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AdminActivityLogCreateManyUserInput = {
+    id?: string
+    userEmail?: string | null
+    userName?: string | null
+    userRole?: string | null
+    action: string
+    entityType: string
+    entityId?: string | null
+    description: string
+    status?: string
+    ipAddress?: string | null
+    userAgent?: string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: string | null
+    createdAt?: Date | string
   }
 
   export type AddressUpdateWithoutUserInput = {
@@ -102371,6 +106610,111 @@ export namespace Prisma {
     reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VerificationChallengeUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    codeHash?: StringFieldUpdateOperationsInput | string
+    resourceType?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    status?: EnumVerificationChallengeStatusFieldUpdateOperationsInput | $Enums.VerificationChallengeStatus
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VerificationChallengeUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    codeHash?: StringFieldUpdateOperationsInput | string
+    resourceType?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    status?: EnumVerificationChallengeStatusFieldUpdateOperationsInput | $Enums.VerificationChallengeStatus
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VerificationChallengeUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    codeHash?: StringFieldUpdateOperationsInput | string
+    resourceType?: NullableStringFieldUpdateOperationsInput | string | null
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    status?: EnumVerificationChallengeStatusFieldUpdateOperationsInput | $Enums.VerificationChallengeStatus
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consumedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminActivityLogUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    userRole?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminActivityLogUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    userRole?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminActivityLogUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    userRole?: NullableStringFieldUpdateOperationsInput | string | null
+    action?: StringFieldUpdateOperationsInput | string
+    entityType?: StringFieldUpdateOperationsInput | string
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    beforeState?: NullableJsonNullValueInput | InputJsonValue
+    afterState?: NullableJsonNullValueInput | InputJsonValue
+    challengeId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CategoryCreateManyParentInput = {
@@ -104849,6 +109193,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedRoleInput = {
@@ -104887,6 +109233,8 @@ export namespace Prisma {
     importPreviews?: ProductImportPreviewUncheckedUpdateManyWithoutCreatedByNestedInput
     importBatches?: ProductImportBatchUncheckedUpdateManyWithoutAdminNestedInput
     reviewedBankDeposits?: BankDepositSubmissionUncheckedUpdateManyWithoutReviewedByNestedInput
+    verificationChallenges?: VerificationChallengeUncheckedUpdateManyWithoutUserNestedInput
+    adminActivities?: AdminActivityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutAssignedRoleInput = {

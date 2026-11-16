@@ -26,16 +26,15 @@ import {
 } from './dto/banner.dto';
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
 import { CurrentUser, AuthenticatedUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../../generated/prisma';
 import { createApiResponse } from '../../common/interfaces/api-response.interface';
 
 @ApiTags('Banners (Admin)')
 @Controller('admin/banners')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.MANAGER)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @ApiBearerAuth('bearerAuth')
 export class AdminBannersController {
   constructor(
@@ -44,6 +43,7 @@ export class AdminBannersController {
   ) {}
 
   @Get()
+  @RequirePermissions('banners.view')
   @ApiOperation({ summary: 'List all banners with filter and search' })
   @ApiResponse({ status: 200, description: 'List of banners returned' })
   async getAllBanners(
@@ -54,6 +54,7 @@ export class AdminBannersController {
   }
 
   @Get(':id')
+  @RequirePermissions('banners.view')
   @ApiOperation({ summary: 'Get a banner by ID' })
   @ApiResponse({ status: 200, description: 'Banner returned' })
   @ApiResponse({ status: 404, description: 'Banner not found' })
@@ -63,6 +64,7 @@ export class AdminBannersController {
   }
 
   @Post()
+  @RequirePermissions('banners.manage')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new banner' })
   @ApiResponse({ status: 201, description: 'Banner created successfully' })
@@ -75,6 +77,7 @@ export class AdminBannersController {
   }
 
   @Patch('reorder')
+  @RequirePermissions('banners.manage')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reorder banners in bulk' })
   @ApiResponse({ status: 200, description: 'Banners reordered successfully' })
@@ -86,6 +89,7 @@ export class AdminBannersController {
   }
 
   @Patch(':id')
+  @RequirePermissions('banners.manage')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update an existing banner' })
   @ApiResponse({ status: 200, description: 'Banner updated successfully' })
@@ -100,6 +104,7 @@ export class AdminBannersController {
   }
 
   @Post(':id/duplicate')
+  @RequirePermissions('banners.manage')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Duplicate an existing banner' })
   @ApiResponse({ status: 201, description: 'Banner duplicated successfully' })
@@ -113,6 +118,7 @@ export class AdminBannersController {
   }
 
   @Delete(':id')
+  @RequirePermissions('banners.manage')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete a banner by ID' })
   @ApiResponse({ status: 200, description: 'Banner deleted successfully' })

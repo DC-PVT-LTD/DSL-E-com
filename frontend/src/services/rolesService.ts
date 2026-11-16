@@ -50,21 +50,27 @@ export const rolesService = {
    * List all dynamic roles with permission and user counts.
    */
   async getRoles(): Promise<{ success: boolean; data: DynamicRole[] }> {
-    return apiClient.get<{ success: boolean; data: DynamicRole[] }>('/admin/roles');
+    const res = await apiClient.get<any>('/admin/roles');
+    const data = Array.isArray(res) ? res : res?.data || [];
+    return { success: true, data };
   },
 
   /**
    * Get role details with assigned permissions and users.
    */
   async getRole(id: string): Promise<{ success: boolean; data: DynamicRole }> {
-    return apiClient.get<{ success: boolean; data: DynamicRole }>(`/admin/roles/${id}`);
+    const res = await apiClient.get<any>(`/admin/roles/${id}`);
+    const data = res?.data || res;
+    return { success: true, data };
   },
 
   /**
-   * List all 38 system permissions grouped by category.
+   * List all system permissions grouped by category.
    */
   async getPermissions(): Promise<{ success: boolean; data: Permission[] }> {
-    return apiClient.get<{ success: boolean; data: Permission[] }>('/admin/roles/permissions');
+    const res = await apiClient.get<any>('/admin/roles/permissions');
+    const data = Array.isArray(res) ? res : res?.data || [];
+    return { success: true, data };
   },
 
   /**
@@ -84,15 +90,44 @@ export const rolesService = {
   /**
    * Delete an unassigned custom role (Super Admin only).
    */
-  async deleteRole(id: string): Promise<{ success: boolean; message: string }> {
-    return apiClient.delete<{ success: boolean; message: string }>(`/admin/roles/${id}`);
+  async deleteRole(id: string, confirmationPhrase?: string): Promise<{ success: boolean; message: string }> {
+    const options = confirmationPhrase
+      ? { headers: { 'x-action-confirmation': confirmationPhrase } }
+      : undefined;
+    return apiClient.delete<{ success: boolean; message: string }>(`/admin/roles/${id}`, options);
   },
 
   /**
    * Overwrite permission assignments for a role (Super Admin only).
    */
-  async assignPermissions(id: string, permissionKeys: string[]): Promise<{ success: boolean; message: string; data: any }> {
-    return apiClient.put<{ success: boolean; message: string; data: any }>(`/admin/roles/${id}/permissions`, { permissionKeys });
+  async assignPermissions(
+    id: string,
+    permissionKeys: string[],
+    confirmationPhrase?: string
+  ): Promise<{ success: boolean; message: string; data: any }> {
+    const options = confirmationPhrase
+      ? { headers: { 'x-action-confirmation': confirmationPhrase } }
+      : undefined;
+    return apiClient.put<{ success: boolean; message: string; data: any }>(
+      `/admin/roles/${id}/permissions`,
+      { permissionKeys },
+      options
+    );
+  },
+
+  /**
+   * Get role audit history.
+   */
+  async getAuditHistory(id: string): Promise<{ success: boolean; data: any[] }> {
+    return apiClient.get<{ success: boolean; data: any[] }>(`/admin/roles/${id}/audit-history`);
+  },
+
+  /**
+   * Get roles export download URL.
+   */
+  getExportUrl(format: 'csv' | 'xlsx' = 'csv'): string {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    return `${baseUrl}/admin/roles/export?format=${format}`;
   },
 };
 

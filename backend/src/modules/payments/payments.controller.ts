@@ -15,6 +15,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { PaymentsService } from './payments.service';
+import { ConfirmationService } from '../security/confirmation.service';
 import {
   bankTransferQuerySchema,
   BankTransferQueryDto,
@@ -29,17 +30,21 @@ import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { createApiResponse } from '../../common/interfaces/api-response.interface';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../../generated/prisma';
 
 @ApiTags('Admin Payments & Bank Transfer Verification')
 @Controller('admin/payments')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 @ApiBearerAuth('bearerAuth')
 export class PaymentsController {
   constructor(
     @Inject(PaymentsService)
-    private readonly paymentsService: PaymentsService
+    private readonly paymentsService: PaymentsService,
+    @Inject(ConfirmationService)
+    private readonly confirmationService: ConfirmationService,
   ) {}
 
   // ============================================================================
@@ -47,6 +52,7 @@ export class PaymentsController {
   // ============================================================================
 
   @Get('summary')
+  @RequirePermissions('orders.view')
   @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
   @ApiOperation({
     summary: 'Consolidated payment operation metrics across all payment methods',
@@ -60,6 +66,7 @@ export class PaymentsController {
   }
 
   @Get('transactions')
+  @RequirePermissions('orders.view')
   @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
   @ApiOperation({
     summary: 'Paginated consolidated payment transactions table across PayHere, Bank, and COD',
@@ -72,6 +79,7 @@ export class PaymentsController {
   }
 
   @Get('export/csv')
+  @RequirePermissions('orders.view')
   @Roles(UserRole.MANAGER, UserRole.ADMIN)
   @ApiOperation({
     summary: 'Export filtered transactions to CSV with formula-injection protection',
@@ -95,6 +103,7 @@ export class PaymentsController {
   // ============================================================================
 
   @Get('bank-transfers')
+  @RequirePermissions('orders.view')
   @Roles(UserRole.MANAGER, UserRole.ADMIN)
   @ApiOperation({
     summary: 'Pending Bank Transfer verification queue',
@@ -107,6 +116,7 @@ export class PaymentsController {
   }
 
   @Get('bank-transfers/:submissionId')
+  @RequirePermissions('orders.view')
   @Roles(UserRole.MANAGER, UserRole.ADMIN)
   @ApiOperation({
     summary: 'Detailed Bank Transfer submission details with order snapshot for review drawer',
@@ -117,6 +127,7 @@ export class PaymentsController {
   }
 
   @Post('bank-transfers/:submissionId/approve')
+  @RequirePermissions('payments.verify_bank_deposit')
   @HttpCode(HttpStatus.OK)
   @Roles(UserRole.MANAGER, UserRole.ADMIN)
   @ApiOperation({
@@ -128,11 +139,27 @@ export class PaymentsController {
     @Req() req: Request
   ) {
     const user = (req as any).user;
+
+    await this.confirmationService.validateConfirmation({
+      action: 'APPROVE_BANK_DEPOSIT',
+      req,
+      targetEntity: 'BankDepositSubmission',
+      targetId: submissionId,
+      expectedValue: 'APPROVE BANK DEPOSIT',
+      actor: {
+        id: user?.id || 'admin',
+        email: user?.email,
+        name: user?.name,
+        roleSlug: user?.assignedRole?.slug || user?.roleSlug,
+      },
+    });
+
     const result = await this.paymentsService.approveBankTransfer(submissionId, dto, user);
     return createApiResponse(result, 'Bank transfer approved successfully');
   }
 
   @Post('bank-transfers/:submissionId/reject')
+  @RequirePermissions('payments.verify_bank_deposit')
   @HttpCode(HttpStatus.OK)
   @Roles(UserRole.MANAGER, UserRole.ADMIN)
   @ApiOperation({
@@ -144,6 +171,21 @@ export class PaymentsController {
     @Req() req: Request
   ) {
     const user = (req as any).user;
+
+    await this.confirmationService.validateConfirmation({
+      action: 'REJECT_BANK_DEPOSIT',
+      req,
+      targetEntity: 'BankDepositSubmission',
+      targetId: submissionId,
+      expectedValue: 'REJECT BANK DEPOSIT',
+      actor: {
+        id: user?.id || 'admin',
+        email: user?.email,
+        name: user?.name,
+        roleSlug: user?.assignedRole?.slug || user?.roleSlug,
+      },
+    });
+
     const result = await this.paymentsService.rejectBankTransfer(submissionId, dto, user);
     return createApiResponse(result, 'Bank transfer rejected successfully');
   }
@@ -153,6 +195,7 @@ export class PaymentsController {
   // ============================================================================
 
   @Get('reconciliation-report')
+  @RequirePermissions('orders.view')
   @Roles(UserRole.MANAGER, UserRole.ADMIN)
   @ApiOperation({
     summary: 'Read-only financial and payment state consistency verification report',

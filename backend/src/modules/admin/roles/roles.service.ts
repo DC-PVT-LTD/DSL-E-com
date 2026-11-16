@@ -6,6 +6,7 @@ import {
   ConflictException,
   ForbiddenException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { PrismaService } from '../../../prisma/prisma.service';
 import {
   CreateRoleDto,
@@ -250,6 +251,16 @@ export class RolesService {
         throw new BadRequestException('One or more specified permission keys are invalid.');
       }
 
+      // Check existing permissions to track added and removed keys for audit logging
+      const existingRolePerms = await tx.rolePermission.findMany({
+        where: { roleId: id },
+        include: { permission: true },
+      });
+      const oldKeys = new Set(existingRolePerms.map((rp) => rp.permission.key));
+      const newKeys = new Set(dto.permissionKeys);
+      const addedKeys = dto.permissionKeys.filter((k) => !oldKeys.has(k));
+      const removedKeys = Array.from(oldKeys).filter((k) => !newKeys.has(k));
+
       // Replace permissions: delete existing role permissions and insert new ones
       await tx.rolePermission.deleteMany({ where: { roleId: id } });
 
@@ -271,18 +282,174 @@ export class RolesService {
         },
       });
 
+      const auditAction = removedKeys.length > 0 && addedKeys.length === 0 ? 'ROLE_PERMISSIONS_REMOVED' : 'ROLE_PERMISSIONS_ASSIGNED';
       await tx.auditLog.create({
         data: {
-          action: 'ROLE_PERMISSIONS_ASSIGNED',
+          action: auditAction,
           entityType: 'Role',
           entityId: role.id,
-          description: `Assigned ${permissions.length} permissions to role '${role.slug}'.`,
+          description: `Permissions updated for role '${role.slug}'. Added: [${addedKeys.join(', ') || 'none'}]. Removed: [${removedKeys.join(', ') || 'none'}]. Total: ${permissions.length}.`,
           userId: actorId,
+        },
+      });
+
+      await tx.adminActivityLog.create({
+        data: {
+          userId: actorId,
+          action: 'UPDATE_ROLE_PERMISSIONS',
+          entityType: 'Role',
+          entityId: role.id,
+          description: `Updated permissions for role '${role.slug}' (Added: ${addedKeys.length}, Removed: ${removedKeys.length})`,
+          status: 'SUCCESS',
+          beforeState: { permissionKeys: Array.from(oldKeys) },
+          afterState: { permissionKeys: dto.permissionKeys },
         },
       });
 
       return updated;
     });
   }
-}
 
+  /**
+   * Retrieve chronological audit history for a role.
+   */
+  async getAuditHistory(roleId: string) {
+    const logs = await this.prisma.auditLog.findMany({
+      where: {
+        entityType: 'Role',
+        entityId: roleId,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: logs,
+    };
+  }
+
+  /**
+   * Export roles and role-permissions to CSV or Excel (.xlsx) with formula injection protection.
+   */
+  async exportRoles(format: 'csv' | 'xlsx' = 'csv', res: Response) {
+    const roles = await this.prisma.role.findMany({
+      orderBy: [{ isSystem: 'desc' }, { name: 'asc' }],
+      include: {
+        permissions: {
+          include: { permission: true },
+        },
+        _count: {
+          select: { users: true },
+        },
+      },
+    });
+
+    const sanitize = (val: any) => {
+      if (val === null || val === undefined) return '';
+      const str = String(val).trim();
+      if (/^[=+\-@\t\r]/.test(str)) {
+        return `'${str}`;
+      }
+      return str;
+    };
+
+    if (format === 'csv') {
+      const headers = [
+        'Role ID',
+        'Role Name',
+        'Role Slug',
+        'Description',
+        'System Role',
+        'Active Status',
+        'Assigned Administrator Count',
+        'Permission Count',
+        'Assigned Permission Keys',
+      ];
+
+      const rows = roles.map((r) => {
+        const permKeys = r.slug === 'super_admin' ? 'ALL_46_PERMISSIONS' : r.permissions.map((p) => p.permission.key).join('; ');
+        const permCount = r.slug === 'super_admin' ? 46 : r.permissions.length;
+        return [
+          sanitize(r.id),
+          sanitize(r.name),
+          sanitize(r.slug),
+          sanitize(r.description || 'N/A'),
+          sanitize(r.isSystem ? 'System' : 'Custom'),
+          sanitize(r.isActive ? 'Active' : 'Inactive'),
+          String(r._count.users),
+          String(permCount),
+          sanitize(permKeys),
+        ];
+      });
+
+      const csvContent = [headers.join(','), ...rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(','))].join('\r\n');
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="roles_${new Date().toISOString().slice(0, 10)}.csv"`);
+      return res.send(csvContent);
+    } else {
+      const ExcelJS = await import('exceljs');
+      const workbook = new ExcelJS.Workbook();
+      const rolesSheet = workbook.addWorksheet('Roles');
+
+      rolesSheet.columns = [
+        { header: 'Role ID', key: 'id', width: 28 },
+        { header: 'Role Name', key: 'name', width: 22 },
+        { header: 'Role Slug', key: 'slug', width: 22 },
+        { header: 'Description', key: 'description', width: 36 },
+        { header: 'System / Custom', key: 'isSystem', width: 16 },
+        { header: 'Active Status', key: 'isActive', width: 14 },
+        { header: 'Admin Count', key: 'usersCount', width: 14 },
+        { header: 'Permission Count', key: 'permCount', width: 18 },
+      ];
+      rolesSheet.getRow(1).font = { bold: true };
+
+      for (const r of roles) {
+        rolesSheet.addRow({
+          id: sanitize(r.id),
+          name: sanitize(r.name),
+          slug: sanitize(r.slug),
+          description: sanitize(r.description || 'N/A'),
+          isSystem: sanitize(r.isSystem ? 'System' : 'Custom'),
+          isActive: sanitize(r.isActive ? 'Active' : 'Inactive'),
+          usersCount: r._count.users,
+          permCount: r.slug === 'super_admin' ? 46 : r.permissions.length,
+        });
+      }
+
+      // Sheet 2: Role Permissions Mapping
+      const mappingSheet = workbook.addWorksheet('Role Permissions');
+      mappingSheet.columns = [
+        { header: 'Role Name', key: 'roleName', width: 22 },
+        { header: 'Role Slug', key: 'roleSlug', width: 22 },
+        { header: 'Permission Category', key: 'category', width: 20 },
+        { header: 'Permission Key', key: 'key', width: 26 },
+        { header: 'Display Name', key: 'displayName', width: 26 },
+      ];
+      mappingSheet.getRow(1).font = { bold: true };
+
+      for (const r of roles) {
+        for (const rp of r.permissions) {
+          mappingSheet.addRow({
+            roleName: sanitize(r.name),
+            roleSlug: sanitize(r.slug),
+            category: sanitize(rp.permission.category),
+            key: sanitize(rp.permission.key),
+            displayName: sanitize(rp.permission.displayName),
+          });
+        }
+      }
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="roles_${new Date().toISOString().slice(0, 10)}.xlsx"`);
+      await workbook.xlsx.write(res);
+      return res.end();
+    }
+  }
+}

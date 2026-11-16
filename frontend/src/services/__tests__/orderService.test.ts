@@ -185,4 +185,39 @@ describe('orderService', () => {
       expect(res.error).toBe('Return request has already been completed');
     });
   });
+
+  describe('fetchOrderReturns (AUD-01)', () => {
+    it('returns returns list on successful API response', async () => {
+      const mockReturns = [
+        { id: 'ret-1', returnNumber: 'RET-001', orderId: 'ord-100', status: 'PENDING', items: [] },
+      ];
+      vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
+        success: true,
+        data: mockReturns,
+      } as any);
+
+      const res = await orderService.fetchOrderReturns('ord-100');
+      expect(res).toEqual(mockReturns);
+    });
+
+    it('returns empty array when API legitimately returns empty data', async () => {
+      vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
+        success: true,
+        data: [],
+      } as any);
+
+      const res = await orderService.fetchOrderReturns('ord-100');
+      expect(res).toEqual([]);
+    });
+
+    it('rethrows error on API failure instead of swallowing into empty array', async () => {
+      vi.spyOn(apiClient, 'get').mockRejectedValueOnce(
+        new Error('Network timeout or 500 error')
+      );
+
+      await expect(orderService.fetchOrderReturns('ord-100')).rejects.toThrow(
+        'Network timeout or 500 error'
+      );
+    });
+  });
 });

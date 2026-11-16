@@ -9,6 +9,7 @@ import { categoryService } from '@/services/categoryService';
 import { brandService } from '@/services/brandService';
 import { ProductCategory, Brand } from '@/types/product';
 import { rupeesToCents } from '@/lib/currency';
+import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 
 export default function AdminNewProductPage() {
   const router = useRouter();
@@ -162,7 +163,8 @@ export default function AdminNewProductPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <AdminPageAccess permission="products.create" pageTitle="Create Product">
+      <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between pb-4 border-b border-slate-200">
         <div>
           <Link href="/admin/products" className="text-xs font-semibold text-[#08275E] hover:underline flex items-center gap-1 mb-1">
@@ -450,5 +452,6 @@ export default function AdminNewProductPage() {
         </div>
       </form>
     </div>
+    </AdminPageAccess>
   );
 }

@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import SplitText from '@/components/common/SplitText';
+import LightCardWavesBackground from '@/components/common/LightCardWavesBackground';
+import ChromaGrid from '@/components/common/ChromaGrid';
 
 // ============================================================================
 // BRAND SHOWCASE DATA DEFINITION
@@ -87,12 +89,9 @@ export const InteractiveBrandShowcaseCard: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-full min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] flex items-center justify-center p-5 sm:p-8 lg:p-12 overflow-hidden select-none">
-      {/* Ambient Radial Floor Glow */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[320px] bg-[#0066FF]/10 rounded-full blur-3xl pointer-events-none"
-        aria-hidden="true"
-      />
+    <div className="relative w-full h-full min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] flex items-center justify-center p-5 sm:p-8 lg:p-12 overflow-hidden rounded-[28px] bg-transparent select-none">
+      {/* Light Silk Waves Background matching uploaded reference */}
+      <LightCardWavesBackground />
 
       {/* Main Content Grid: Left (Selected Info) + Right (Fixed 3x2 Grid) */}
       <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center">
@@ -111,33 +110,22 @@ export const InteractiveBrandShowcaseCard: React.FC = () => {
             >
               {/* Selected Brand Official Logo */}
               <div className="h-14 sm:h-16 md:h-18 max-w-[200px] mb-3 sm:mb-4 flex items-center justify-start">
-                {selectedBrand.id === 'speed' ? (
-                  <img
-                    src={selectedBrand.logo}
-                    alt={`${selectedBrand.name} logo`}
-                    className="max-h-full max-w-full object-contain filter drop-shadow-md select-none"
-                    draggable={false}
-                  />
-                ) : (
-                  <div className="h-full px-3.5 py-1.5 rounded-xl bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-md">
-                    <img
-                      src={selectedBrand.logo}
-                      alt={`${selectedBrand.name} logo`}
-                      className="max-h-full max-w-full object-contain select-none"
-                      draggable={false}
-                    />
-                  </div>
-                )}
+                <img
+                  src={selectedBrand.logo}
+                  alt={`${selectedBrand.name} logo`}
+                  className="max-h-full max-w-full object-contain filter drop-shadow-sm select-none"
+                  draggable={false}
+                />
               </div>
 
               {/* Small Yellow Accent Detail */}
               <div
-                className="w-12 sm:w-16 h-1 sm:h-1.5 bg-[#FFD84D] rounded-full mb-3 sm:mb-4 shadow-[0_0_12px_rgba(255,216,77,0.45)]"
+                className="w-12 sm:w-16 h-1 sm:h-1.5 bg-[#FFC72C] rounded-full mb-3 sm:mb-4 shadow-[0_0_12px_rgba(255,199,44,0.45)]"
                 aria-hidden="true"
               />
 
               {/* Heading: Manufacturer and Distributor of: */}
-              <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight tracking-tight">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#0F2752] leading-tight tracking-tight">
                 <SplitText
                   key={`head-${selectedBrand.id}`}
                   text="Manufacturer and Distributor of:"
@@ -148,7 +136,7 @@ export const InteractiveBrandShowcaseCard: React.FC = () => {
                   duration={0.9}
                   trigger="load"
                   textAlign="left"
-                  className="text-white inline-block"
+                  className="text-[#0F2752] inline-block font-black"
                 />
               </h3>
 
@@ -164,7 +152,7 @@ export const InteractiveBrandShowcaseCard: React.FC = () => {
                   duration={0.7}
                   trigger="load"
                   textAlign="left"
-                  className="text-blue-100/90 text-sm sm:text-base md:text-lg leading-relaxed font-normal"
+                  className="text-[#334155] text-sm sm:text-base md:text-lg leading-relaxed font-medium"
                 />
               </div>
             </motion.div>
@@ -172,56 +160,43 @@ export const InteractiveBrandShowcaseCard: React.FC = () => {
         </div>
 
         {/* ========================================================= */}
-        {/* RIGHT SIDE: FIXED 3x2 BRAND LOGO COLLECTION               */}
+        {/* RIGHT SIDE: CHROMAGRID INTERACTIVE LOGO COLLAGE           */}
         {/* ========================================================= */}
         <div className="md:col-span-7 w-full">
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 md:gap-4 lg:gap-5 w-full items-stretch">
-            {SHOWCASE_BRANDS.map((brand) => {
-              const isSelected = selectedBrandId === brand.id;
-              const isSpeed = brand.id === 'speed';
+          <ChromaGrid
+            items={SHOWCASE_BRANDS.map((brand) => {
+              const brandAccents: Record<string, string> = {
+                linc: '#0052cc',
+                doms: '#e11d48',
+                speed: '#ff5a00',
+                flexoffice: '#0284c7',
+                amico: '#16a34a',
+                pentonic: '#7c3aed',
+              };
 
-              // When SPEED is selected, use dark glass background with cyan glow matching reference design.
-              // Other cards use white background with glowing cyan border when selected.
-              const cardBgClass =
-                isSelected && isSpeed
-                  ? 'bg-[#071d47]/85 backdrop-blur-sm'
-                  : 'bg-white';
-
-              const cardBorderClass = isSelected
-                ? 'ring-2 sm:ring-[3px] ring-[#00D0FF] shadow-[0_0_24px_rgba(0,208,255,0.75),inset_0_0_12px_rgba(0,208,255,0.25)] scale-[1.02]'
-                : 'border border-white/60 shadow-md hover:shadow-lg hover:scale-[1.02] hover:border-blue-300/80';
-
-              return (
-                <button
-                  key={brand.id}
-                  type="button"
-                  onClick={() => handleSelectBrand(brand.id)}
-                  className={`group/card relative w-full h-20 sm:h-24 md:h-28 lg:h-32 rounded-2xl flex items-center justify-center p-2.5 sm:p-3.5 md:p-4.5 transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#00D0FF] ${cardBgClass} ${cardBorderClass}`}
-                  aria-label={`Select ${brand.name} brand information`}
-                  aria-pressed={isSelected}
-                >
-                  {/* Subtle top specular sheen */}
-                  <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/20 to-transparent pointer-events-none rounded-t-2xl" />
-
-                  {/* Brand Logo */}
-                  <img
-                    src={brand.logo}
-                    alt={`${brand.name} Logo`}
-                    className="max-h-full max-w-full object-contain select-none transition-transform duration-300 group-hover/card:scale-105"
-                    draggable={false}
-                  />
-
-                  {/* Cyan Glowing Corner Indicator when Selected */}
-                  {isSelected && (
-                    <div
-                      className="absolute -top-1 -right-1 w-3 h-3 bg-[#00D0FF] rounded-full blur-[2px] pointer-events-none"
-                      aria-hidden="true"
-                    />
-                  )}
-                </button>
-              );
+              return {
+                id: brand.id,
+                image: brand.logo,
+                title: brand.name,
+                accent: brandAccents[brand.id] || '#087BFF',
+                selected: selectedBrandId === brand.id,
+                onClick: () => handleSelectBrand(brand.id),
+              };
             })}
-          </div>
+            columns={3}
+            radius={220}
+            gap={12}
+            cardRadius={18}
+            aspectRatio="16 / 10"
+            objectFit="contain"
+            mediaPadding={14}
+            theme="light"
+            glow={0.7}
+            borderGlow={1}
+            showInfo={false}
+            reveal="spotlight"
+            className="w-full"
+          />
         </div>
       </div>
     </div>

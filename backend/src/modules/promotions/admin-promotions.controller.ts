@@ -29,14 +29,13 @@ import {
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { createApiResponse } from '../../common/interfaces/api-response.interface';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
 import { UserRole } from '../../generated/prisma';
 
 @ApiTags('Promotions & Discounts (Admin)')
 @Controller('admin/promotions')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.MANAGER)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @ApiBearerAuth('bearerAuth')
 export class AdminPromotionsController {
   constructor(
@@ -45,6 +44,7 @@ export class AdminPromotionsController {
   ) {}
 
   @Get()
+  @RequirePermissions('promotions.view')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'List all promotions with filters, pagination and effective status' })
   @ApiResponse({ status: 200, description: 'Paginated list of promotions' })
@@ -54,6 +54,7 @@ export class AdminPromotionsController {
   }
 
   @Get('reporting/summary')
+  @RequirePermissions('promotions.view')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get overall promotions reporting summary' })
   @ApiResponse({ status: 200, description: 'Promotions reporting metrics' })
@@ -63,6 +64,7 @@ export class AdminPromotionsController {
   }
 
   @Post('generate-code')
+  @RequirePermissions('promotions.manage')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Generate a unique random promo code' })
   @ApiResponse({ status: 200, description: 'Random unique promo code generated' })
@@ -72,6 +74,7 @@ export class AdminPromotionsController {
   }
 
   @Post()
+  @RequirePermissions('promotions.manage')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new promotion with codes, products and stacking settings' })
   @ApiResponse({ status: 201, description: 'Promotion created successfully' })
@@ -85,6 +88,7 @@ export class AdminPromotionsController {
   }
 
   @Get(':id')
+  @RequirePermissions('promotions.view')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get promotion details by ID' })
   @ApiResponse({ status: 200, description: 'Promotion details' })
@@ -94,6 +98,7 @@ export class AdminPromotionsController {
   }
 
   @Patch(':id')
+  @RequirePermissions('promotions.manage')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update promotion settings and eligibility' })
   @ApiResponse({ status: 200, description: 'Promotion updated successfully' })
@@ -108,6 +113,7 @@ export class AdminPromotionsController {
   }
 
   @Delete(':id')
+  @RequirePermissions('promotions.manage')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete draft promotion or safely disable if order history exists' })
   @ApiResponse({ status: 200, description: 'Promotion deleted or disabled' })
@@ -118,6 +124,7 @@ export class AdminPromotionsController {
   }
 
   @Post(':id/activate')
+  @RequirePermissions('promotions.manage')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Activate a promotion' })
   @ApiResponse({ status: 200, description: 'Promotion activated' })
@@ -127,6 +134,7 @@ export class AdminPromotionsController {
   }
 
   @Post(':id/deactivate')
+  @RequirePermissions('promotions.manage')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Deactivate a promotion' })
   @ApiResponse({ status: 200, description: 'Promotion deactivated' })
@@ -136,6 +144,7 @@ export class AdminPromotionsController {
   }
 
   @Post(':id/codes')
+  @RequirePermissions('promotions.manage')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Add a new promo code to a promotion' })
   @ApiResponse({ status: 201, description: 'Promo code added' })
@@ -148,6 +157,7 @@ export class AdminPromotionsController {
   }
 
   @Get(':id/redemptions')
+  @RequirePermissions('promotions.view')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get redemption history for a promotion' })
   @ApiResponse({ status: 200, description: 'Promotion redemption records' })

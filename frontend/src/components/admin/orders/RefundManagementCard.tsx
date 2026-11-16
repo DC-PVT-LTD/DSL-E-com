@@ -28,6 +28,7 @@ import {
   RefundStatus,
 } from '@/types/order';
 import { CreateRefundModal } from './CreateRefundModal';
+import { useUserStore } from '@/services/userStore';
 
 interface RefundManagementCardProps {
   orderId: string;
@@ -53,6 +54,8 @@ export const RefundManagementCard: React.FC<RefundManagementCardProps> = ({
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
+  const hasPermission = useUserStore((state) => state.hasPermission);
+  const canManageRefunds = hasPermission('orders.refund');
 
   // Modals & Action State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
@@ -222,15 +225,21 @@ export const RefundManagementCard: React.FC<RefundManagementCardProps> = ({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsCreateModalOpen(true)}
-          disabled={isCod || isKoko || availableBalanceCents <= 0}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#08275E] hover:bg-[#103b8c] text-white text-xs font-bold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <PlusCircle className="w-3.5 h-3.5" />
-          <span>Request New Refund</span>
-        </button>
+        {canManageRefunds ? (
+          <button
+            type="button"
+            onClick={() => setIsCreateModalOpen(true)}
+            disabled={isCod || isKoko || availableBalanceCents <= 0}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#08275E] hover:bg-[#103b8c] text-white text-xs font-bold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span>Request New Refund</span>
+          </button>
+        ) : (
+          <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-xl">
+            Requires orders.refund
+          </span>
+        )}
       </div>
 
       {/* Notices */}

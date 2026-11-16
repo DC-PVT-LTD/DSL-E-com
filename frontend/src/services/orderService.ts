@@ -662,10 +662,11 @@ class OrderService {
       if (res?.data && Array.isArray(res.data)) {
         return res.data;
       }
-    } catch {
-      // Missing backend returns endpoint
+      return [];
+    } catch (err: any) {
+      console.error(`Failed to fetch return requests for order ${orderId}:`, err);
+      throw err;
     }
-    return [];
   }
 
   /**

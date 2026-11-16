@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   RotateCcw,
   CheckCircle2,
@@ -36,6 +36,8 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
   const [rejectionReason, setRejectionReason] = useState<string>('');
   const [actionLoading, setActionLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [errorNotice, setErrorNotice] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [restockMap, setRestockMap] = useState<Record<string, boolean>>({});
   const [refundModalReturnId, setRefundModalReturnId] = useState<string | null>(null);
 
@@ -44,21 +46,26 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
     setRestockMap((prev) => ({ ...prev, [returnId]: value }));
   };
 
-  useEffect(() => {
-    let mounted = true;
-    const loadReturns = async () => {
-      setIsLoading(true);
+  const loadReturns = useCallback(async () => {
+    setIsLoading(true);
+    setFetchError(null);
+    try {
       const res = await orderService.fetchOrderReturns(orderId);
-      if (mounted) {
-        setReturns(res);
-        setIsLoading(false);
-      }
-    };
-    loadReturns();
-    return () => {
-      mounted = false;
-    };
+      setReturns(res);
+    } catch (err: any) {
+      const isNetwork = err?.isNetworkError || err?.message?.toLowerCase().includes('network') || err?.status === 0;
+      const errorMsg = isNetwork
+        ? 'Unable to connect to the server. Please check your network connection.'
+        : 'Failed to retrieve return requests. Please try again.';
+      setFetchError(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
   }, [orderId]);
+
+  useEffect(() => {
+    loadReturns();
+  }, [loadReturns]);
 
   const handleAction = async (
     returnId: string,
@@ -67,16 +74,23 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
   ) => {
     setActionLoading(true);
     setNotice(null);
+    setErrorNotice(null);
     const res = await orderService.processReturnAction(orderId, returnId, action, payload);
     setActionLoading(false);
 
     if (res.success) {
-      const refreshed = await orderService.fetchOrderReturns(orderId);
-      setReturns(refreshed);
+      await loadReturns();
       setRejectingId(null);
       setRejectionReason('');
+      setNotice(
+        action === 'APPROVE'
+          ? 'Return request approved successfully.'
+          : action === 'REJECT'
+          ? 'Return request rejected.'
+          : 'Products marked as received and return completed.'
+      );
     } else {
-      alert(res.error || 'Failed to process return');
+      setErrorNotice(res.error || 'Failed to process return request');
     }
   };
 
@@ -101,12 +115,35 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
       </div>
 
       {notice && (
-        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-2 animate-fade-in">
-          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <div>
-            <strong className="block font-bold">API Coordination Notice:</strong>
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-start gap-2 animate-fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
             <span>{notice}</span>
           </div>
+          <button
+            type="button"
+            onClick={() => setNotice(null)}
+            className="text-emerald-600 hover:text-emerald-800 text-xs font-bold px-1"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {errorNotice && (
+        <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-2 animate-fade-in">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <strong className="block font-bold">Action Failed:</strong>
+            <span>{errorNotice}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setErrorNotice(null)}
+            className="text-rose-600 hover:text-rose-800 text-xs font-bold px-1"
+          >
+            ×
+          </button>
         </div>
       )}
 
@@ -114,6 +151,28 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
         <div className="py-6 text-center text-slate-400 flex items-center justify-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin text-[#08275E]" />
           <span>Checking return requests...</span>
+        </div>
+      ) : fetchError ? (
+        <div className="p-6 rounded-2xl bg-rose-50/70 border border-rose-200 text-center space-y-3 animate-fade-in">
+          <div className="flex justify-center">
+            <AlertCircle className="w-8 h-8 text-rose-500" />
+          </div>
+          <div className="space-y-1">
+            <div className="text-xs font-bold text-rose-800">Failed to Load Return Requests</div>
+            <p className="text-[11px] text-rose-600 max-w-sm mx-auto">
+              {fetchError}
+            </p>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={loadReturns}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Retry</span>
+            </button>
+          </div>
         </div>
       ) : returns.length === 0 ? (
         <div className="p-6 rounded-2xl bg-slate-50/70 border border-slate-200 text-center space-y-1">
@@ -366,12 +425,6 @@ export const ReturnManagementCard: React.FC<ReturnManagementCardProps> = ({
           onClose={() => setRefundModalReturnId(null)}
           onSuccess={() => {
             setRefundModalReturnId(null);
-            const loadReturns = async () => {
-              setIsLoading(true);
-              const res = await orderService.fetchOrderReturns(orderId);
-              setReturns(res);
-              setIsLoading(false);
-            };
             loadReturns();
             if (onRefundInitiated) onRefundInitiated();
           }}

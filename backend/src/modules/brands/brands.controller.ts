@@ -35,7 +35,9 @@ import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { AdminAuthGuard } from '../../common/guards/admin-auth.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
 import { CurrentUser, AuthenticatedUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../../generated/prisma';
 import {
@@ -74,8 +76,8 @@ export class BrandsController {
 
   @ApiTags('Admin API', 'Brands')
   @Get('admin/analytics')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('brands.view')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -89,8 +91,8 @@ export class BrandsController {
 
   @ApiTags('Admin API', 'Brands', 'Export')
   @Get('export')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('brands.view')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -186,11 +188,11 @@ export class BrandsController {
     return this.brandsService.findBrandProducts(id, query);
   }
 
-  // Management endpoints strictly protected by JwtAuthGuard + RolesGuard
+  // Management endpoints strictly protected by JwtAuthGuard + PermissionsGuard
   @ApiTags('Admin API')
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('brands.create')
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
@@ -230,8 +232,8 @@ export class BrandsController {
 
   @ApiTags('Admin API')
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('brands.edit')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -280,8 +282,8 @@ export class BrandsController {
 
   @ApiTags('Admin API')
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('brands.delete')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({

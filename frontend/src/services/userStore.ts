@@ -10,7 +10,12 @@ interface UserState {
   currentUser: CustomerUser | null;
   isAdminLoggedIn: boolean;
   adminEmail: string | null;
+  roleSlug: string | null;
+  permissions: string[];
   isLoading: boolean;
+
+  // RBAC Helper
+  hasPermission: (permissionKey: string) => boolean;
 
   // Real backend auth actions
   loginCustomer: (email: string, password?: string) => Promise<boolean>;
@@ -45,7 +50,21 @@ export const useUserStore = create<UserState>()(
       currentUser: null,
       isAdminLoggedIn: false,
       adminEmail: null,
+      roleSlug: null,
+      permissions: [],
       isLoading: false,
+
+      hasPermission: (key: string) => {
+        const state = get();
+        const user = state.currentUser;
+        if (!state.isAdminLoggedIn || !user) return false;
+        // Super Admin has unrestricted sovereignty over all modules
+        if (state.roleSlug === 'super_admin' || user.roleSlug === 'super_admin') return true;
+        // Quarantined administrators (no roleId or roleSlug) have no dynamic privileges
+        if (!user.roleId && !state.roleSlug) return false;
+        const perms = state.permissions.length > 0 ? state.permissions : (user.permissions || []);
+        return perms.includes('*') || perms.includes(key);
+      },
 
       fetchCurrentUser: async () => {
         try {
@@ -60,6 +79,11 @@ export const useUserStore = create<UserState>()(
               ? addrRes.data
               : current?.addresses || [];
 
+            const isAdministrative = u.role === 'ADMIN' || u.role === 'MANAGER' || u.role === 'STAFF';
+            const userPermissions = Array.isArray(u.permissions) ? u.permissions : [];
+            const roleSlug = u.roleSlug || u.assignedRole?.slug || null;
+            const roleName = u.roleName || u.assignedRole?.name || null;
+
             set({
               currentUser: {
                 id: u.id,
@@ -67,12 +91,19 @@ export const useUserStore = create<UserState>()(
                 email: u.email,
                 phone: u.phone || '',
                 role: u.role,
+                roleId: u.roleId || null,
+                roleName,
+                roleSlug,
+                permissions: userPermissions,
+                isActive: u.isActive,
                 addresses: savedAddresses,
                 wishlistProductIds: current?.wishlistProductIds || [],
                 savedLists: current?.savedLists || [],
               },
-              isAdminLoggedIn: u.role === 'ADMIN' || u.role === 'MANAGER',
-              adminEmail: u.role === 'ADMIN' || u.role === 'MANAGER' ? u.email : null,
+              isAdminLoggedIn: isAdministrative,
+              adminEmail: isAdministrative ? u.email : null,
+              roleSlug,
+              permissions: userPermissions,
             });
             // Synchronize customer cart and wishlist from authoritative backend
             useCartStore.getState().fetchCart();
@@ -85,6 +116,8 @@ export const useUserStore = create<UserState>()(
             currentUser: null,
             isAdminLoggedIn: false,
             adminEmail: null,
+            roleSlug: null,
+            permissions: [],
           });
         }
       },
@@ -275,14 +308,26 @@ export const useUserStore = create<UserState>()(
             if (u.role !== 'ADMIN' && u.role !== 'MANAGER' && u.role !== 'STAFF') {
               throw new Error('Access denied: administrative role required');
             }
+            const userPermissions = Array.isArray(u.permissions) ? u.permissions : [];
+            const roleSlug = u.roleSlug || null;
+            const roleName = u.roleName || null;
+
             set({
               isAdminLoggedIn: true,
               adminEmail: u.email,
+              roleSlug,
+              permissions: userPermissions,
               currentUser: {
                 id: u.id,
                 name: u.name,
                 email: u.email,
+                phone: u.phone || '',
                 role: u.role,
+                roleId: u.roleId || null,
+                roleName,
+                roleSlug,
+                permissions: userPermissions,
+                isActive: u.isActive,
                 addresses: [],
                 wishlistProductIds: [],
                 savedLists: [],
@@ -303,7 +348,7 @@ export const useUserStore = create<UserState>()(
         try {
           await apiClient.post('/auth/admin/logout').catch(() => apiClient.post('/auth/logout'));
         } catch {}
-        set({ isAdminLoggedIn: false, adminEmail: null });
+        set({ isAdminLoggedIn: false, adminEmail: null, roleSlug: null, permissions: [] });
       },
 
       toggleWishlist: (productId: string) => {

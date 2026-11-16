@@ -30,16 +30,15 @@ import {
 } from './dto/inventory-query.dto';
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
 import { CurrentUser, AuthenticatedUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../../generated/prisma';
 import { createApiResponse } from '../../common/interfaces/api-response.interface';
 
 @ApiTags('Admin API', 'Inventory')
 @Controller('inventory')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class InventoryController {
   constructor(
     @Inject(InventoryService)
@@ -47,6 +46,7 @@ export class InventoryController {
   ) {}
 
   @Post('adjust')
+  @RequirePermissions('inventory.update')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
@@ -84,6 +84,7 @@ export class InventoryController {
   }
 
   @Get('movements')
+  @RequirePermissions('inventory.view')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -110,6 +111,7 @@ export class InventoryController {
   }
 
   @Get('low-stock')
+  @RequirePermissions('inventory.view')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -136,6 +138,7 @@ export class InventoryController {
   }
 
   @Get('products/:id/status')
+  @RequirePermissions('inventory.view')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({

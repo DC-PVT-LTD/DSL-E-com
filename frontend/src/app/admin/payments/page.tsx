@@ -36,6 +36,7 @@ import {
 import { formatLKR } from '@/lib/currency';
 import { useUserStore } from '@/services/userStore';
 import Link from 'next/link';
+import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 
 function AdminPaymentsDashboardContent() {
   const router = useRouter();
@@ -348,12 +349,12 @@ function AdminPaymentsDashboardContent() {
             </Link>
           </div>
           <div className="text-2xl font-black text-[#0066CC]">
-            {isSummaryLoading ? '...' : summary?.bankTransfers.pending || 0}
+            {isSummaryLoading ? '...' : summary?.bankTransfers?.pending || 0}
             <span className="text-xs font-normal text-slate-400 ml-1">pending</span>
           </div>
           <div className="text-[11px] text-slate-500 flex justify-between">
-            <span>Verified: {summary?.bankTransfers.verified || 0}</span>
-            <span>Rejected: {summary?.bankTransfers.rejected || 0}</span>
+            <span>Verified: {summary?.bankTransfers?.verified || 0}</span>
+            <span>Rejected: {summary?.bankTransfers?.rejected || 0}</span>
           </div>
         </div>
 
@@ -366,12 +367,12 @@ function AdminPaymentsDashboardContent() {
             </span>
           </div>
           <div className="text-2xl font-black text-indigo-900">
-            {isSummaryLoading ? '...' : summary?.payhereCards.succeeded || 0}
+            {isSummaryLoading ? '...' : summary?.payhereCards?.succeeded || 0}
             <span className="text-xs font-normal text-slate-400 ml-1">succeeded</span>
           </div>
           <div className="text-[11px] text-slate-500 flex justify-between">
-            <span>Volume: {formatLKR(summary?.payhereCards.totalVolumeCents || 0)}</span>
-            <span className="text-rose-600">Failed: {summary?.payhereCards.failed || 0}</span>
+            <span>Volume: {formatLKR(summary?.payhereCards?.totalVolumeCents || 0)}</span>
+            <span className="text-rose-600">Failed: {summary?.payhereCards?.failed || 0}</span>
           </div>
         </div>
 
@@ -384,12 +385,12 @@ function AdminPaymentsDashboardContent() {
             </span>
           </div>
           <div className="text-2xl font-black text-emerald-900">
-            {isSummaryLoading ? '...' : summary?.cashOnDelivery.pendingCollection || 0}
+            {isSummaryLoading ? '...' : summary?.cashOnDelivery?.pendingCollection || 0}
             <span className="text-xs font-normal text-slate-400 ml-1">pending dispatch</span>
           </div>
           <div className="text-[11px] text-slate-500 flex justify-between">
-            <span>Collected: {summary?.cashOnDelivery.deliveredPaid || 0}</span>
-            <span>{formatLKR(summary?.cashOnDelivery.totalVolumeCents || 0)}</span>
+            <span>Collected: {summary?.cashOnDelivery?.deliveredPaid || 0}</span>
+            <span>{formatLKR(summary?.cashOnDelivery?.totalVolumeCents || 0)}</span>
           </div>
         </div>
       </div>
@@ -510,9 +511,8 @@ function AdminPaymentsDashboardContent() {
                 transactions.map((tx) => (
                   <tr
                     key={tx.id}
-                    className={`hover:bg-blue-50/40 transition-colors ${
-                      selectedTx?.id === tx.id ? 'bg-blue-50/60' : ''
-                    }`}
+                    className={`hover:bg-blue-50/40 transition-colors ${selectedTx?.id === tx.id ? 'bg-blue-50/60' : ''
+                      }`}
                   >
                     <td className="py-3 px-4 font-mono font-bold text-[#0066CC]">
                       {tx.orderNumber}
@@ -742,11 +742,10 @@ function AdminPaymentsDashboardContent() {
             ) : reconciliation ? (
               <div className="space-y-4 text-xs">
                 <div
-                  className={`p-4 rounded-2xl flex items-start gap-3 ${
-                    reconciliation.summary.healthy
-                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-900'
-                      : 'bg-rose-50 border border-rose-200 text-rose-900'
-                  }`}
+                  className={`p-4 rounded-2xl flex items-start gap-3 ${reconciliation.summary.healthy
+                    ? 'bg-emerald-50 border border-emerald-200 text-emerald-900'
+                    : 'bg-rose-50 border border-rose-200 text-rose-900'
+                    }`}
                 >
                   {reconciliation.summary.healthy ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
@@ -810,14 +809,16 @@ function AdminPaymentsDashboardContent() {
 
 export default function AdminPaymentsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="p-12 text-center text-xs text-slate-400">
-          Loading payments dashboard...
-        </div>
-      }
-    >
-      <AdminPaymentsDashboardContent />
-    </Suspense>
+    <AdminPageAccess permission="orders.view" pageTitle="Payments Dashboard">
+      <Suspense
+        fallback={
+          <div className="p-12 text-center text-xs text-slate-400">
+            Loading payments dashboard...
+          </div>
+        }
+      >
+        <AdminPaymentsDashboardContent />
+      </Suspense>
+    </AdminPageAccess>
   );
 }

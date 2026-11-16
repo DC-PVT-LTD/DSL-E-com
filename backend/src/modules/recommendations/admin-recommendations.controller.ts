@@ -28,16 +28,15 @@ import {
 } from './dto/recommendation-rule.dto';
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
 import { UserRole } from '../../generated/prisma';
 import { createApiResponse } from '../../common/interfaces/api-response.interface';
 import { StationeryPurpose } from './recommendations.types';
 
 @ApiTags('Admin Recommendations Management')
 @Controller('admin/recommendations')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.MANAGER)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @ApiBearerAuth('bearerAuth')
 @ApiCookieAuth('dsl_access_token')
 export class AdminRecommendationsController {
@@ -47,6 +46,7 @@ export class AdminRecommendationsController {
   ) {}
 
   @Get('rules')
+  @RequirePermissions('recommendations.view')
   @ApiOperation({ summary: 'Get all recommendation rules (with optional purpose filter)' })
   @ApiResponse({ status: 200, description: 'List of recommendation rules' })
   getAllRules(@Query('purpose') purpose?: StationeryPurpose) {
@@ -55,6 +55,7 @@ export class AdminRecommendationsController {
   }
 
   @Get('rules/:id')
+  @RequirePermissions('recommendations.view')
   @ApiOperation({ summary: 'Get recommendation rule by ID' })
   @ApiResponse({ status: 200, description: 'Recommendation rule details' })
   getRuleById(@Param('id') id: string) {
@@ -63,6 +64,7 @@ export class AdminRecommendationsController {
   }
 
   @Post('rules')
+  @RequirePermissions('recommendations.manage')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new recommendation rule' })
   @ApiResponse({ status: 201, description: 'Rule successfully created' })
@@ -74,6 +76,7 @@ export class AdminRecommendationsController {
   }
 
   @Patch('rules/:id')
+  @RequirePermissions('recommendations.manage')
   @ApiOperation({ summary: 'Update an existing recommendation rule' })
   @ApiResponse({ status: 200, description: 'Rule successfully updated' })
   async updateRule(
@@ -85,6 +88,7 @@ export class AdminRecommendationsController {
   }
 
   @Delete('rules/:id')
+  @RequirePermissions('recommendations.manage')
   @ApiOperation({ summary: 'Delete a recommendation rule' })
   @ApiResponse({ status: 200, description: 'Rule deleted' })
   deleteRule(@Param('id') id: string) {
@@ -93,6 +97,7 @@ export class AdminRecommendationsController {
   }
 
   @Patch('rules/:id/toggle')
+  @RequirePermissions('recommendations.manage')
   @ApiOperation({ summary: 'Toggle active status of a recommendation rule' })
   @ApiResponse({ status: 200, description: 'Rule status toggled' })
   toggleRule(@Param('id') id: string, @Body('isActive') isActive?: boolean) {

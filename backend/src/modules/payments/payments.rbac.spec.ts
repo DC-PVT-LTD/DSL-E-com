@@ -81,6 +81,12 @@ describe('PaymentsController — RBAC & Authorization Tests', () => {
       const managerContext = createMockContext(PaymentsController.prototype.getBankTransfers, {
         id: 'manager-1',
         role: UserRole.MANAGER,
+        roleId: 'role-mgr',
+        assignedRole: {
+          slug: 'order_manager',
+          isActive: true,
+          permissions: ['orders.view', 'orders.update_status'],
+        },
       });
 
       expect(rolesGuard.canActivate(managerContext)).toBe(true);
@@ -90,6 +96,12 @@ describe('PaymentsController — RBAC & Authorization Tests', () => {
       const adminContext = createMockContext(PaymentsController.prototype.getBankTransfers, {
         id: 'admin-1',
         role: UserRole.ADMIN,
+        roleId: 'role-admin',
+        assignedRole: {
+          slug: 'super_admin',
+          isActive: true,
+          permissions: ['orders.view', 'orders.update_status'],
+        },
       });
 
       expect(rolesGuard.canActivate(adminContext)).toBe(true);
@@ -101,12 +113,24 @@ describe('PaymentsController — RBAC & Authorization Tests', () => {
       const staffSummaryContext = createMockContext(PaymentsController.prototype.getPaymentsSummary, {
         id: 'staff-1',
         role: UserRole.STAFF,
+        roleId: 'role-staff',
+        assignedRole: {
+          slug: 'order_manager',
+          isActive: true,
+          permissions: ['orders.view'],
+        },
       });
       expect(rolesGuard.canActivate(staffSummaryContext)).toBe(true);
 
       const staffTxContext = createMockContext(PaymentsController.prototype.getPaymentTransactions, {
         id: 'staff-1',
         role: UserRole.STAFF,
+        roleId: 'role-staff',
+        assignedRole: {
+          slug: 'order_manager',
+          isActive: true,
+          permissions: ['orders.view'],
+        },
       });
       expect(rolesGuard.canActivate(staffTxContext)).toBe(true);
     });

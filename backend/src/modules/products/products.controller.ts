@@ -13,8 +13,10 @@ import {
   Inject,
   BadRequestException,
   Res,
+  Req,
   UseInterceptors,
   UploadedFile,
+  NotFoundException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -58,6 +60,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser, AuthenticatedUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../../generated/prisma';
 import { createApiResponse } from '../../common/interfaces/api-response.interface';
+import { ConfirmationService } from '../security/confirmation.service';
 
 @Controller('products')
 export class ProductsController {
@@ -65,7 +68,9 @@ export class ProductsController {
     @Inject(ProductsService)
     private readonly productsService: ProductsService,
     @Inject(ProductImportService)
-    private readonly productImportService: ProductImportService
+    private readonly productImportService: ProductImportService,
+    @Inject(ConfirmationService)
+    private readonly confirmationService: ConfirmationService,
   ) {}
 
   @ApiTags('Products')
@@ -116,8 +121,8 @@ export class ProductsController {
 
   @ApiTags('Admin API', 'Products')
   @Get('admin/analytics')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.view')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -131,8 +136,8 @@ export class ProductsController {
 
   @ApiTags('Admin API', 'Products', 'Export')
   @Get('export')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.view')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -155,8 +160,8 @@ export class ProductsController {
   @ApiTags('Products')
   @ApiTags('Admin API', 'Products', 'SKU')
   @Get('generate-sku')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.create')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -273,8 +278,23 @@ export class ProductsController {
   })
   async executeImport(
     @Body(createZodPipe(executeImportSchema)) dto: ExecuteImportDto,
+    @Req() req: any,
     @CurrentUser() actor: AuthenticatedUser
   ) {
+    await this.confirmationService.validateConfirmation({
+      action: 'CONFIRM_PRODUCT_IMPORT',
+      req,
+      targetEntity: 'ProductImportBatch',
+      targetId: dto.previewId,
+      expectedValue: 'CONFIRM PRODUCT IMPORT',
+      actor: {
+        id: actor?.id || 'admin',
+        email: actor?.email,
+        name: actor?.name,
+        role: actor?.role,
+      },
+    });
+
     const result = await this.productImportService.executeImport(actor, dto);
     return createApiResponse(result, 'Product import execution completed.');
   }
@@ -423,11 +443,11 @@ export class ProductsController {
     return createApiResponse(product);
   }
 
-  // Management endpoints strictly protected by JwtAuthGuard + RolesGuard
+  // Management endpoints strictly protected by JwtAuthGuard + PermissionsGuard
   @ApiTags('Admin API')
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.create')
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
@@ -467,8 +487,8 @@ export class ProductsController {
 
   @ApiTags('Admin API')
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.edit')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -517,8 +537,8 @@ export class ProductsController {
 
   @ApiTags('Admin API')
   @Patch(':id/status')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.edit')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -557,8 +577,8 @@ export class ProductsController {
 
   @ApiTags('Admin API')
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.delete')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -589,8 +609,28 @@ export class ProductsController {
   })
   async deleteProduct(
     @Param('id') id: string,
+    @Req() req: any,
     @CurrentUser() actor?: AuthenticatedUser
   ) {
+    const product = await this.productsService.findById(id, true);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    await this.confirmationService.validateConfirmation({
+      action: 'DELETE_PRODUCT',
+      req,
+      targetEntity: 'Product',
+      targetId: id,
+      expectedValue: product.name,
+      actor: {
+        id: actor?.id || 'admin',
+        email: actor?.email,
+        name: actor?.name,
+        role: actor?.role,
+      },
+    });
+
     await this.productsService.delete(id, actor?.id);
     return createApiResponse({ id }, 'Product deactivated successfully');
   }
@@ -615,8 +655,8 @@ export class ProductsController {
 
   @ApiTags('Admin API', 'Variants', 'SKU')
   @Get(':productId/variants/generate-sku')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.create')
   @ApiParam({ name: 'productId', description: 'Parent product ID' })
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
@@ -652,8 +692,8 @@ export class ProductsController {
 
   @ApiTags('Admin API', 'Variants')
   @Post(':productId/variants')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.create')
   @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
@@ -681,8 +721,8 @@ export class ProductsController {
 
   @ApiTags('Admin API', 'Variants')
   @Patch(':productId/variants/:variantId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.edit')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -710,8 +750,8 @@ export class ProductsController {
 
   @ApiTags('Admin API', 'Variants')
   @Patch(':productId/variants/:variantId/status')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.edit')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({
@@ -733,8 +773,8 @@ export class ProductsController {
 
   @ApiTags('Admin API', 'Variants')
   @Delete(':productId/variants/:variantId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('products.delete')
   @ApiBearerAuth('bearerAuth')
   @ApiCookieAuth('dsl_access_token')
   @ApiOperation({

@@ -9,6 +9,7 @@ import { Order, OrderStats, OrderQueryParams } from '@/types/order';
 import { OrderStatsCards } from '@/components/admin/orders/OrderStatsCards';
 import { OrderFilterToolbar } from '@/components/admin/orders/OrderFilterToolbar';
 import { OrderTable } from '@/components/admin/orders/OrderTable';
+import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 
 function AdminOrdersDashboardContent() {
   const router = useRouter();
@@ -230,21 +231,23 @@ function AdminOrdersDashboardContent() {
 
 export default function AdminOrdersPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="space-y-6 animate-pulse">
-          <div className="h-10 w-64 bg-slate-200 rounded-xl" />
-          <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-24 bg-slate-200 rounded-2xl" />
-            ))}
+    <AdminPageAccess permission="orders.view" pageTitle="Orders Management">
+      <Suspense
+        fallback={
+          <div className="space-y-6 animate-pulse">
+            <div className="h-10 w-64 bg-slate-200 rounded-xl" />
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-24 bg-slate-200 rounded-2xl" />
+              ))}
+            </div>
+            <div className="h-28 bg-slate-200 rounded-3xl" />
+            <div className="h-96 bg-slate-200 rounded-3xl" />
           </div>
-          <div className="h-28 bg-slate-200 rounded-3xl" />
-          <div className="h-96 bg-slate-200 rounded-3xl" />
-        </div>
-      }
-    >
-      <AdminOrdersDashboardContent />
-    </Suspense>
+        }
+      >
+        <AdminOrdersDashboardContent />
+      </Suspense>
+    </AdminPageAccess>
   );
 }

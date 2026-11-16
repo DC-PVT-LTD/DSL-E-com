@@ -7,11 +7,15 @@ import {
   Param,
   Body,
   Query,
+  Res,
+  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
   Inject,
+  NotFoundException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -21,6 +25,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { AdminUsersService } from './admin-users.service';
+import { ConfirmationService } from '../security/confirmation.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
 import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
@@ -38,6 +43,10 @@ import {
   UpdateAdminStatusDto,
   updateAdminRoleSchema,
   UpdateAdminRoleDto,
+  updateAdminProfileSchema,
+  UpdateAdminProfileDto,
+  adminExportQuerySchema,
+  AdminExportQueryDto,
 } from './dto/admin-users.dto';
 
 @ApiTags('Admin User Management')
@@ -47,8 +56,33 @@ import {
 @ApiBearerAuth('bearerAuth')
 export class AdminUsersController {
   constructor(
-    @Inject(AdminUsersService) private readonly adminUsersService: AdminUsersService
+    @Inject(AdminUsersService) private readonly adminUsersService: AdminUsersService,
+    @Inject(ConfirmationService) private readonly confirmationService: ConfirmationService,
   ) {}
+
+  @Get('stats')
+  @RequirePermissions('admins.view')
+  @ApiOperation({
+    summary: 'Get administrator overview card metrics',
+    description: 'Returns real database counts for total, active, inactive admins, invitations, and roles.',
+  })
+  @ApiResponse({ status: 200, description: 'Overview statistics' })
+  async getStats() {
+    return this.adminUsersService.getStats();
+  }
+
+  @Get('export')
+  @RequirePermissions('admins.view')
+  @ApiOperation({
+    summary: 'Export administrator accounts',
+    description: 'Streams filtered administrator accounts to CSV or Excel (.xlsx) with formula injection protection.',
+  })
+  async export(
+    @Query(createZodPipe(adminExportQuerySchema)) query: AdminExportQueryDto,
+    @Res() res: Response
+  ) {
+    return this.adminUsersService.exportAdminUsers(query, res);
+  }
 
   @Get()
   @RequirePermissions('admins.view')
@@ -85,6 +119,18 @@ export class AdminUsersController {
     return this.adminUsersService.findById(id);
   }
 
+  @Get(':id/audit-history')
+  @RequirePermissions('admins.view')
+  @ApiOperation({
+    summary: 'Get administrator activity and audit history',
+    description: 'Returns real chronological audit history logs for this administrator.',
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'List of audit events' })
+  async getAuditHistory(@Param('id') id: string) {
+    return this.adminUsersService.getAuditHistory(id);
+  }
+
   @Post()
   @RequireSuperAdmin()
   @ApiOperation({
@@ -117,6 +163,23 @@ export class AdminUsersController {
     return this.adminUsersService.inviteAdmin(dto, actor);
   }
 
+  @Patch(':id')
+  @RequirePermissions('admins.manage')
+  @ApiOperation({
+    summary: 'Update administrator profile details',
+    description: 'Updates full name and phone number for an administrator.',
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'Profile updated' })
+  @ApiResponse({ status: 404, description: 'Administrator account not found' })
+  async updateProfile(
+    @Param('id') id: string,
+    @Body(createZodPipe(updateAdminProfileSchema)) dto: UpdateAdminProfileDto,
+    @CurrentUser() actor: AuthenticatedUser
+  ) {
+    return this.adminUsersService.updateProfile(id, dto, actor);
+  }
+
   @Patch(':id/status')
   @RequirePermissions('admins.manage')
   @ApiOperation({
@@ -130,8 +193,32 @@ export class AdminUsersController {
   async updateStatus(
     @Param('id') id: string,
     @Body(createZodPipe(updateAdminStatusSchema)) dto: UpdateAdminStatusDto,
+    @Req() req: any,
     @CurrentUser() actor: AuthenticatedUser
   ) {
+    if (dto.isActive === false) {
+      const targetUserRes = await this.adminUsersService.findById(id);
+      const targetUser = (targetUserRes as any)?.data || targetUserRes;
+      if (!targetUser) {
+        throw new NotFoundException('Administrator account not found');
+      }
+
+      await this.confirmationService.validateConfirmation({
+        action: 'DEACTIVATE_ADMIN',
+        req,
+        targetEntity: 'User',
+        targetId: id,
+        expectedValue: targetUser.email,
+        actor: {
+          id: actor.id,
+          email: actor.email,
+          name: actor.name,
+          role: actor.role,
+        },
+        isEmail: true,
+      });
+    }
+
     return this.adminUsersService.updateStatus(id, dto, actor);
   }
 
@@ -139,7 +226,7 @@ export class AdminUsersController {
   @RequireSuperAdmin()
   @ApiOperation({
     summary: 'Change administrator role (Super Admin only)',
-    description: 'Updates administrative dynamic role. Cannot change own role, and cannot demote the last active admin.',
+    description: 'Updates administrative dynamic role or removes role assignment. Cannot change own role, and cannot demote the last admin.',
   })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({ status: 200, description: 'Role updated' })
@@ -148,9 +235,45 @@ export class AdminUsersController {
   async updateRole(
     @Param('id') id: string,
     @Body(createZodPipe(updateAdminRoleSchema)) dto: UpdateAdminRoleDto,
+    @Req() req: any,
     @CurrentUser() actor: AuthenticatedUser
   ) {
+    const targetUserRes = await this.adminUsersService.findById(id);
+    const targetUser = (targetUserRes as any)?.data || targetUserRes;
+    if (!targetUser) {
+      throw new NotFoundException('Administrator account not found');
+    }
+
+    await this.confirmationService.validateConfirmation({
+      action: 'CHANGE_ADMIN_ROLE',
+      req,
+      targetEntity: 'User',
+      targetId: id,
+      expectedValue: 'CHANGE ADMIN ROLE',
+      actor: {
+        id: actor.id,
+        email: actor.email,
+        name: actor.name,
+        role: actor.role,
+      },
+    });
+
     return this.adminUsersService.updateRole(id, dto, actor);
+  }
+
+  @Post(':id/reset-password')
+  @RequirePermissions('admins.manage')
+  @ApiOperation({
+    summary: 'Trigger administrator password reset',
+    description: 'Generates a secure password reset token and dispatches an email instructions link.',
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'Password reset link dispatched' })
+  async triggerPasswordReset(
+    @Param('id') id: string,
+    @CurrentUser() actor: AuthenticatedUser
+  ) {
+    return this.adminUsersService.triggerPasswordReset(id, actor);
   }
 
   @Delete('invitations/:id')

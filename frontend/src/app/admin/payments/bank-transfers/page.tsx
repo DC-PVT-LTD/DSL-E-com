@@ -33,6 +33,8 @@ import {
 } from '@/services/paymentsService';
 import { formatLKR } from '@/lib/currency';
 import { useUserStore } from '@/services/userStore';
+import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
+import { SensitiveActionConfirmationModal } from '@/components/admin/security/SensitiveActionConfirmationModal';
 
 function BankTransfersQueueContent() {
   const router = useRouter();
@@ -40,8 +42,11 @@ function BankTransfersQueueContent() {
   const searchParams = useSearchParams();
 
   const currentUser = useUserStore((state) => state.currentUser);
+  const hasPermission = useUserStore((state) => state.hasPermission);
   const isManagerOrAdmin =
     currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER';
+  const canVerifyBankDeposit = hasPermission('payments.verify_bank_deposit');
+  const [showStepUpModal, setShowStepUpModal] = useState(false);
 
   // URL state
   const initialPage = Number(searchParams.get('page')) || 1;
@@ -151,15 +156,20 @@ function BankTransfersQueueContent() {
     };
   }, [selectedId]);
 
-  const handleApprove = async () => {
+  const executeApprove = async (confirmationPhrase?: string) => {
     if (!selectedId) return;
     setIsSubmittingAction(true);
     try {
-      await paymentsService.approveBankTransfer(selectedId, {
-        adminNotes: adminNotes.trim() || undefined,
-      });
+      await paymentsService.approveBankTransfer(
+        selectedId,
+        {
+          adminNotes: adminNotes.trim() || undefined,
+        },
+        confirmationPhrase
+      );
       setActionSuccessMsg('Bank transfer verified successfully! Order is now confirmed.');
       setIsApproveModalOpen(false);
+      setShowStepUpModal(false);
       setAdminNotes('');
       // Reload details and list
       const updated = await paymentsService.getBankTransferDetails(selectedId);
@@ -167,9 +177,15 @@ function BankTransfersQueueContent() {
       loadSubmissions();
     } catch (err: any) {
       alert(err?.message || 'Failed to approve bank transfer');
+      throw err;
     } finally {
       setIsSubmittingAction(false);
     }
+  };
+
+  const handleApprove = async () => {
+    setIsApproveModalOpen(false);
+    setShowStepUpModal(true);
   };
 
   const handleReject = async () => {
@@ -660,24 +676,33 @@ function BankTransfersQueueContent() {
 
             {/* Action Bar (Manager / Admin Only) */}
             {isManagerOrAdmin && detailItem?.status === 'PENDING' && (
-              <div className="p-5 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3 sticky bottom-0 z-10">
-                <button
-                  type="button"
-                  onClick={() => setIsRejectModalOpen(true)}
-                  disabled={isSubmittingAction}
-                  className="px-5 py-2.5 rounded-full border border-rose-200 bg-white hover:bg-rose-50 text-rose-700 text-xs font-bold transition-all shadow-xs cursor-pointer"
-                >
-                  Reject Submission
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsApproveModalOpen(true)}
-                  disabled={isSubmittingAction}
-                  className="px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
-                >
-                  Verify & Confirm Order
-                </button>
-              </div>
+              canVerifyBankDeposit ? (
+                <div className="p-5 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3 sticky bottom-0 z-10">
+                  <button
+                    type="button"
+                    onClick={() => setIsRejectModalOpen(true)}
+                    disabled={isSubmittingAction}
+                    className="px-5 py-2.5 rounded-full border border-rose-200 bg-white hover:bg-rose-50 text-rose-700 text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  >
+                    Reject Submission
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsApproveModalOpen(true)}
+                    disabled={isSubmittingAction}
+                    className="px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  >
+                    Verify & Confirm Order
+                  </button>
+                </div>
+              ) : (
+                <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-xs text-slate-500 sticky bottom-0 z-10">
+                  <span>Manual bank verification actions restricted.</span>
+                  <span className="font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
+                    Requires payments.verify_bank_deposit
+                  </span>
+                </div>
+              )
             )}
           </div>
         </div>
@@ -796,20 +821,39 @@ function BankTransfersQueueContent() {
           </div>
         </div>
       )}
+
+      {/* Sensitive Action Typed Confirmation Modal */}
+      <SensitiveActionConfirmationModal
+        isOpen={showStepUpModal}
+        onClose={() => setShowStepUpModal(false)}
+        actionTitle="Approve Bank Deposit Slip"
+        actionDescription={`Verify and confirm bank transfer payment of ${detailItem?.order ? formatLKR(detailItem.order.totalAmountCents) : ''} for Order #${detailItem?.order?.orderNumber || ''}`}
+        targetResourceType="BankDepositSubmission"
+        targetResourceName={selectedId || undefined}
+        expectedConfirmationPhrase="APPROVE BANK DEPOSIT"
+        confirmButtonLabel="Confirm & Approve Deposit"
+        impactWarning="Approving this bank transfer will immediately confirm the customer's order and mark funds as received."
+        isDestructive={false}
+        onConfirmed={async (phrase) => {
+          await executeApprove(phrase);
+        }}
+      />
     </div>
   );
 }
 
 export default function BankTransfersQueuePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="p-12 text-center text-xs text-slate-400">
-          Loading Bank Transfers review queue...
-        </div>
-      }
-    >
-      <BankTransfersQueueContent />
-    </Suspense>
+    <AdminPageAccess permission="orders.view" pageTitle="Bank Transfers Review">
+      <Suspense
+        fallback={
+          <div className="p-12 text-center text-xs text-slate-400">
+            Loading Bank Transfers review queue...
+          </div>
+        }
+      >
+        <BankTransfersQueueContent />
+      </Suspense>
+    </AdminPageAccess>
   );
 }

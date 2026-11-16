@@ -20,8 +20,11 @@ import { apiClient } from '@/lib/api/apiClient';
 import { Product, ProductVariant } from '@/types/product';
 import { InventoryMovement, InventoryChangeReason } from '@/types/admin';
 import { formatLKR } from '@/lib/currency';
+import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
+import { useUserStore } from '@/services/userStore';
 
 export default function AdminInventoryPage() {
+  const hasPermission = useUserStore((state) => state.hasPermission);
   const [products, setProducts] = useState<Product[]>([]);
   const [movements, setMovements] = useState<InventoryMovement[]>([]);
   const [filterLowStock, setFilterLowStock] = useState(false);
@@ -247,7 +250,8 @@ export default function AdminInventoryPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <AdminPageAccess permission="inventory.view" pageTitle="Inventory Operations">
+      <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -430,12 +434,14 @@ export default function AdminInventoryPage() {
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <button
-                          onClick={() => openAdjustModal(p)}
-                          className="bg-slate-100 hover:bg-[#08275E] hover:text-white text-[#08275E] font-bold text-[11px] px-3 py-1.5 rounded-xl transition-colors"
-                        >
-                          Adjust Stock
-                        </button>
+                        {hasPermission('inventory.update') && (
+                          <button
+                            onClick={() => openAdjustModal(p)}
+                            className="bg-slate-100 hover:bg-[#08275E] hover:text-white text-[#08275E] font-bold text-[11px] px-3 py-1.5 rounded-xl transition-colors"
+                          >
+                            Adjust Stock
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
@@ -766,5 +772,6 @@ export default function AdminInventoryPage() {
         </div>
       )}
     </div>
+    </AdminPageAccess>
   );
 }

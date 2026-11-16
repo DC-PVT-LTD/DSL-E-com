@@ -14,6 +14,11 @@ export interface CustomerUser {
   email: string;
   phone?: string;
   role?: string;
+  roleId?: string | null;
+  roleName?: string | null;
+  roleSlug?: string | null;
+  permissions?: string[];
+  isActive?: boolean;
   addresses: (ShippingAddress & { id: string; isDefault?: boolean })[];
   wishlistProductIds: string[];
   savedLists: SavedList[];

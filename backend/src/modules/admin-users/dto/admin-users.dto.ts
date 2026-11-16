@@ -107,14 +107,55 @@ export const updateAdminRoleSchema = z.object({
   role: z.enum([UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF], {
     errorMap: () => ({ message: 'Role must be ADMIN, MANAGER, or STAFF' }),
   }),
-  roleId: z.string().min(1, 'roleId is required').optional(),
+  roleId: z.string().nullable().optional(),
 });
 
 export class UpdateAdminRoleDto {
   @ApiProperty({ description: 'New administrative role', enum: [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF], example: UserRole.MANAGER })
   role: UserRole;
 
-  @ApiPropertyOptional({ description: 'New dynamic role ID' })
+  @ApiPropertyOptional({ description: 'New dynamic role ID or null to remove role access' })
+  roleId?: string | null;
+}
+
+export const updateAdminProfileSchema = z.object({
+  name: z.string().trim().min(2, 'Name must be at least 2 characters').max(100).optional(),
+  phone: z.string().trim().max(30).nullable().optional(),
+});
+
+export class UpdateAdminProfileDto {
+  @ApiPropertyOptional({ description: 'Updated full name', example: 'Kamal Perera' })
+  name?: string;
+
+  @ApiPropertyOptional({ description: 'Updated phone number', example: '+94771234567' })
+  phone?: string | null;
+}
+
+export const adminExportQuerySchema = z.object({
+  search: z.string().trim().optional(),
+  role: z.enum([UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF]).optional(),
+  roleId: z.string().optional(),
+  isActive: z
+    .string()
+    .optional()
+    .transform((val) => (val === 'true' ? true : val === 'false' ? false : undefined)),
+  format: z.enum(['csv', 'xlsx']).default('csv'),
+});
+
+export class AdminExportQueryDto {
+  @ApiPropertyOptional({ description: 'Search term for name or email' })
+  search?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by static role enum' })
+  role?: UserRole;
+
+  @ApiPropertyOptional({ description: 'Filter by dynamic role ID' })
   roleId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by active status' })
+  isActive?: boolean;
+
+  @ApiPropertyOptional({ description: 'Export format: csv or xlsx', default: 'csv' })
+  format?: 'csv' | 'xlsx';
 }
 

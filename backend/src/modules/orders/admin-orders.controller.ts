@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -52,14 +53,13 @@ import {
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { createApiResponse } from '../../common/interfaces/api-response.interface';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '../../generated/prisma';
+import { PermissionsGuard, hasUserPermission } from '../admin/roles/guards/permissions.guard';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
+import { OrderStatus } from '../../generated/prisma';
 
 @ApiTags('Admin Orders')
 @Controller('admin/orders')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @ApiBearerAuth('bearerAuth')
 export class AdminOrdersController {
   constructor(
@@ -68,6 +68,7 @@ export class AdminOrdersController {
   ) {}
 
   @Get('stats')
+  @RequirePermissions('orders.view')
   @ApiOperation({ summary: 'Get aggregated order fulfillment metrics for dashboard' })
   async getOrderStats() {
     const stats = await this.adminOrdersService.getOrderStats();
@@ -75,6 +76,7 @@ export class AdminOrdersController {
   }
 
   @Get()
+  @RequirePermissions('orders.view')
   @ApiOperation({ summary: 'Get paginated orders for Admin Portal with filtering and search' })
   async getOrders(@Query(createZodPipe(adminOrdersQuerySchema)) query: AdminOrdersQueryDto) {
     const result = await this.adminOrdersService.getOrders(query);
@@ -82,6 +84,7 @@ export class AdminOrdersController {
   }
 
   @Get('reconciliation/summary')
+  @RequirePermissions('orders.view')
   @ApiOperation({ summary: 'Get high-level financial reconciliation summary across all orders' })
   async getFinancialReconciliationSummary(
     @Query(createZodPipe(adminReconciliationQuerySchema)) query: AdminReconciliationQueryDto
@@ -91,6 +94,7 @@ export class AdminOrdersController {
   }
 
   @Get('reconciliation')
+  @RequirePermissions('orders.view')
   @ApiOperation({ summary: 'Get paginated financial reconciliation records with verified audit details' })
   async getFinancialReconciliation(
     @Query(createZodPipe(adminReconciliationQuerySchema)) query: AdminReconciliationQueryDto
@@ -100,6 +104,7 @@ export class AdminOrdersController {
   }
 
   @Get(':id')
+  @RequirePermissions('orders.view')
   @ApiOperation({ summary: 'Get full order details with address, audit, notes, returns' })
   async getOrderById(@Param('id') id: string) {
     const order = await this.adminOrdersService.getOrderById(id);
@@ -115,11 +120,16 @@ export class AdminOrdersController {
     @Req() req: Request
   ) {
     const user = (req as any).user;
+    const requiredPermission = dto.status === OrderStatus.CANCELLED ? 'orders.cancel' : 'orders.fulfill';
+    if (!hasUserPermission(user, requiredPermission)) {
+      throw new ForbiddenException(`Access denied: missing required permissions (${requiredPermission}).`);
+    }
     const updated = await this.adminOrdersService.updateStatus(id, dto, user);
     return createApiResponse(updated, 'Order status updated successfully');
   }
 
   @Patch(':id/customer')
+  @RequirePermissions('orders.update_status')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update customer contact info for this order snapshot' })
   async updateCustomerInfo(
@@ -133,6 +143,7 @@ export class AdminOrdersController {
   }
 
   @Patch(':id/delivery')
+  @RequirePermissions('orders.update_status')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update delivery address details for this order' })
   async updateDeliveryInfo(
@@ -146,6 +157,7 @@ export class AdminOrdersController {
   }
 
   @Patch(':id/items')
+  @RequirePermissions('orders.update_status')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Modify order items and recalculate financial totals' })
   async updateOrderItems(
@@ -159,6 +171,7 @@ export class AdminOrdersController {
   }
 
   @Post(':id/cancel')
+  @RequirePermissions('orders.cancel')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Cancel order with inventory restoration and refund options' })
   async cancelOrder(
@@ -172,6 +185,7 @@ export class AdminOrdersController {
   }
 
   @Get(':id/returns')
+  @RequirePermissions('orders.view')
   @ApiOperation({ summary: 'Get return requests for order' })
   async getOrderReturns(@Param('id') id: string) {
     const returns = await this.adminOrdersService.getOrderReturns(id);
@@ -179,6 +193,7 @@ export class AdminOrdersController {
   }
 
   @Post(':id/returns')
+  @RequirePermissions('orders.update_status')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Initiate a formal return request for order' })
   async createReturnRequest(
@@ -192,6 +207,7 @@ export class AdminOrdersController {
   }
 
   @Patch(':id/returns/:returnId/status')
+  @RequirePermissions('orders.update_status')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Process return action (APPROVE, REJECT, CONFIRM_RECEIVED)' })
   async processReturnStatus(
@@ -206,6 +222,7 @@ export class AdminOrdersController {
   }
 
   @Get(':id/refunds')
+  @RequirePermissions('orders.view')
   @ApiOperation({ summary: 'Get all refunds and financial balance summary for order' })
   async getOrderRefunds(@Param('id') id: string) {
     const data = await this.adminOrdersService.getOrderRefunds(id);
@@ -213,6 +230,7 @@ export class AdminOrdersController {
   }
 
   @Post(':id/refund')
+  @RequirePermissions('orders.refund')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Record official or manual refund request for order' })
   async processRefund(
@@ -226,6 +244,7 @@ export class AdminOrdersController {
   }
 
   @Post(':id/refunds/:refundId/approve')
+  @RequirePermissions('orders.refund')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Authorize a requested refund' })
   async approveRefund(
@@ -240,6 +259,7 @@ export class AdminOrdersController {
   }
 
   @Post(':id/refunds/:refundId/process')
+  @RequirePermissions('orders.refund')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Transition refund to processing/in-flight status' })
   async processRefundExecution(
@@ -254,6 +274,7 @@ export class AdminOrdersController {
   }
 
   @Post(':id/refunds/:refundId/complete')
+  @RequirePermissions('orders.refund')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Confirm execution and complete refund with external reference' })
   async completeRefund(
@@ -268,6 +289,7 @@ export class AdminOrdersController {
   }
 
   @Post(':id/refunds/:refundId/reject')
+  @RequirePermissions('orders.refund')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reject a requested or approved refund' })
   async rejectRefund(
@@ -282,6 +304,7 @@ export class AdminOrdersController {
   }
 
   @Post(':id/refunds/:refundId/fail')
+  @RequirePermissions('orders.refund')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mark an in-flight refund as failed' })
   async failRefund(
@@ -296,6 +319,7 @@ export class AdminOrdersController {
   }
 
   @Get(':id/audit-history')
+  @RequirePermissions('orders.view')
   @ApiOperation({ summary: 'Get comprehensive audit log history for order' })
   async getAuditHistory(@Param('id') id: string) {
     const logs = await this.adminOrdersService.getAuditHistory(id);
@@ -303,6 +327,7 @@ export class AdminOrdersController {
   }
 
   @Post(':id/notes')
+  @RequirePermissions('orders.add_notes')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Add internal staff note to order' })
   async addAdminNote(

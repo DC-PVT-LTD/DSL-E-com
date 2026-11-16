@@ -34,6 +34,8 @@ import {
   KpiCardData,
   CatalogExportModal,
 } from '@/components/admin/catalog';
+import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
+import { useUserStore } from '@/services/userStore';
 
 interface CategoryFormData {
   id?: string;
@@ -75,6 +77,7 @@ const DEFAULT_CATEGORY_COLUMNS: ColumnDefinition[] = [
 ];
 
 export default function AdminCategoriesPage() {
+  const hasPermission = useUserStore((state) => state.hasPermission);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [analytics, setAnalytics] = useState<CategoryAnalyticsData | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -425,7 +428,8 @@ export default function AdminCategoriesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <AdminPageAccess permission="categories.view" pageTitle="Categories Management">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -464,14 +468,16 @@ export default function AdminCategoriesPage() {
             <span>Export</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => openAddModal()}
-            className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5 text-[#FFD21C]" />
-            <span>Add Category</span>
-          </button>
+          {hasPermission('categories.create') && (
+            <button
+              type="button"
+              onClick={() => openAddModal()}
+              className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5 text-[#FFD21C]" />
+              <span>Add Category</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -693,31 +699,37 @@ export default function AdminCategoriesPage() {
                         {isColVisible('actions') && (
                           <td className="py-3 px-4 text-right whitespace-nowrap">
                             <div className="flex items-center justify-end gap-1">
-                              <button
-                                type="button"
-                                onClick={() => openAddModal(root.id)}
-                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="Add subcategory"
-                              >
-                                <Plus className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => openEditModal(root)}
-                                className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
-                                title="Edit category"
-                              >
-                                <Edit2 className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteCategory(root)}
-                                disabled={isMutating}
-                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                                title="Delete category"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              {hasPermission('categories.create') && (
+                                <button
+                                  type="button"
+                                  onClick={() => openAddModal(root.id)}
+                                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                  title="Add subcategory"
+                                >
+                                  <Plus className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              {hasPermission('categories.edit') && (
+                                <button
+                                  type="button"
+                                  onClick={() => openEditModal(root)}
+                                  className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
+                                  title="Edit category"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              {hasPermission('categories.delete') && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCategory(root)}
+                                  disabled={isMutating}
+                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                  title="Delete category"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
                             </div>
                           </td>
                         )}
@@ -796,23 +808,27 @@ export default function AdminCategoriesPage() {
                               {isColVisible('actions') && (
                                 <td className="py-2.5 px-4 text-right whitespace-nowrap">
                                   <div className="flex items-center justify-end gap-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => openEditModal(child)}
-                                      className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
-                                      title="Edit subcategory"
-                                    >
-                                      <Edit2 className="w-3.5 h-3.5" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleDeleteCategory(child)}
-                                      disabled={isMutating}
-                                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                                      title="Delete subcategory"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
+                                    {hasPermission('categories.edit') && (
+                                      <button
+                                        type="button"
+                                        onClick={() => openEditModal(child)}
+                                        className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded-lg transition-colors"
+                                        title="Edit subcategory"
+                                      >
+                                        <Edit2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                    {hasPermission('categories.delete') && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteCategory(child)}
+                                        disabled={isMutating}
+                                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                        title="Delete subcategory"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
                                   </div>
                                 </td>
                               )}
@@ -948,5 +964,6 @@ export default function AdminCategoriesPage() {
         </div>
       )}
     </div>
+    </AdminPageAccess>
   );
 }

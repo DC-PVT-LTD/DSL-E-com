@@ -16,15 +16,14 @@ import {
 } from './dto/newsletter.dto';
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { PermissionsGuard } from '../admin/roles/guards/permissions.guard';
+import { RequirePermissions } from '../admin/roles/decorators/require-permissions.decorator';
 import { UserRole } from '../../generated/prisma';
 import { createApiResponse } from '../../common/interfaces/api-response.interface';
 
 @ApiTags('Newsletter (Admin)')
 @Controller('admin/newsletter')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.MANAGER)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @ApiBearerAuth('bearerAuth')
 export class AdminNewsletterController {
   constructor(
@@ -33,6 +32,7 @@ export class AdminNewsletterController {
   ) {}
 
   @Get('subscribers')
+  @RequirePermissions('newsletter.view')
   @ApiOperation({ summary: 'List newsletter subscribers with pagination and filters' })
   @ApiResponse({ status: 200, description: 'Subscribers returned' })
   async getSubscribers(
@@ -43,6 +43,7 @@ export class AdminNewsletterController {
   }
 
   @Get('export')
+  @RequirePermissions('newsletter.export')
   @ApiOperation({ summary: 'Export eligible marketing subscribers to CSV' })
   @ApiResponse({ status: 200, description: 'CSV file download' })
   async exportCsv(@Res() res: Response) {
@@ -55,6 +56,7 @@ export class AdminNewsletterController {
   }
 
   @Get('subscribers/:id')
+  @RequirePermissions('newsletter.view')
   @ApiOperation({ summary: 'Get subscriber details' })
   @ApiResponse({ status: 200, description: 'Subscriber details returned' })
   @ApiResponse({ status: 404, description: 'Subscriber not found' })
@@ -64,6 +66,7 @@ export class AdminNewsletterController {
   }
 
   @Get('subscribers/:id/consent-history')
+  @RequirePermissions('newsletter.view')
   @ApiOperation({ summary: 'Get subscriber consent audit history' })
   @ApiResponse({ status: 200, description: 'Consent history returned' })
   @ApiResponse({ status: 404, description: 'Subscriber not found' })

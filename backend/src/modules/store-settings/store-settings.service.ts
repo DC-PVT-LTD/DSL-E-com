@@ -121,9 +121,13 @@ export class StoreSettingsService {
    * Admin store settings endpoint.
    * Returns complete settings for administrative editing with completeness indicator.
    */
-  async getAdminSettings(): Promise<AdminStoreSettingsResponse> {
+  async getAdminSettings(user?: any): Promise<AdminStoreSettingsResponse> {
     const settings = await this.getOrCreateSettingsRecord();
     const isComplete = this.isBankConfigComplete(settings);
+    const roleSlug = user?.assignedRole?.slug || user?.roleSlug;
+    const isSuperAdmin = user === true || roleSlug === 'super_admin';
+    const perms: string[] = user?.assignedRole?.permissions?.map((p: any) => p.permission?.key || p.key || p) || user?.permissions || [];
+    const hasFinancialPermission = user === true || isSuperAdmin || perms.includes('settings.financial');
 
     return {
       id: settings.id,
@@ -138,7 +142,7 @@ export class StoreSettingsService {
       bankTransfer: {
         bankName: settings.bankName,
         accountHolderName: settings.accountHolderName,
-        accountNumber: settings.accountNumber,
+        accountNumber: hasFinancialPermission ? settings.accountNumber : maskAccountNumber(settings.accountNumber),
         maskedAccountNumber: maskAccountNumber(settings.accountNumber),
         branchName: settings.branchName,
         branchCode: settings.branchCode,

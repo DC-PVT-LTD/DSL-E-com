@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   AlertCircle,
@@ -52,6 +52,19 @@ export const CreateRefundModal: React.FC<CreateRefundModalProps> = ({
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Stable idempotency key for this logical refund submission session
+  const [idempotencyKey, setIdempotencyKey] = useState<string>(() => `ref-req-${orderId}-${Date.now()}`);
+  const lastSubmittedPayloadSigRef = useRef<string | null>(null);
+
+  // Generate a fresh stable idempotency key when the modal is opened for a new refund workflow
+  useEffect(() => {
+    if (isOpen) {
+      setIdempotencyKey(`ref-req-${orderId}-${Date.now()}`);
+      lastSubmittedPayloadSigRef.current = null;
+      setError(null);
+    }
+  }, [isOpen, orderId]);
 
   if (!isOpen) return null;
 
@@ -109,13 +122,25 @@ export const CreateRefundModal: React.FC<CreateRefundModalProps> = ({
 
     setIsLoading(true);
 
+    // Form a signature of the logical payload to verify if the admin edited inputs between retries
+    const payloadSignature = `${orderId}:${amountCents}:${method}:${selectedReturnId || ''}:${reason.trim()}`;
+    let activeKey = idempotencyKey;
+
+    // If inputs were changed after a previous submission attempt, this is a distinct logical request:
+    // Generate a new idempotency key so we don't send conflicting parameters with an existing key.
+    if (lastSubmittedPayloadSigRef.current && lastSubmittedPayloadSigRef.current !== payloadSignature) {
+      activeKey = `ref-req-${orderId}-${Date.now()}`;
+      setIdempotencyKey(activeKey);
+    }
+    lastSubmittedPayloadSigRef.current = payloadSignature;
+
     const payload = {
       amountCents,
       method,
       reason: reason.trim(),
       maskedAccountNumber: maskedAcc,
       orderReturnRequestId: selectedReturnId || undefined,
-      idempotencyKey: `ref-req-${orderId}-${Date.now()}`,
+      idempotencyKey: activeKey,
     };
 
     const res = await orderService.requestRefund(orderId, payload);

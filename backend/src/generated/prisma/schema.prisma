@@ -147,23 +147,25 @@ model User {
   emailVerificationAttempts   Int       @default(0)
   emailVerificationLastSentAt DateTime?
 
-  addresses            Address[]
-  orders               Order[]
-  wishlist             WishlistItem[]
-  savedLists           SavedList[]
-  savedStationeryLists SavedStationeryList[]
-  auditLogs            AuditLog[]
-  refreshTokens        RefreshToken[]
-  cart                 Cart?
-  reservations         StockReservation[]
-  backInStockAlerts    BackInStockAlert[]
-  createdBanners       HomepageBanner[]        @relation("BannerCreatedBy")
-  updatedBanners       HomepageBanner[]        @relation("BannerUpdatedBy")
-  promotionRedemptions PromotionRedemption[]
-  invitationsSent      AdminInvitation[]       @relation("InvitedAdmins")
-  importPreviews       ProductImportPreview[]  @relation("ImportPreviewsCreated")
-  importBatches        ProductImportBatch[]    @relation("ImportBatchesCreated")
-  reviewedBankDeposits BankDepositSubmission[] @relation("ReviewedBankDeposits")
+  addresses              Address[]
+  orders                 Order[]
+  wishlist               WishlistItem[]
+  savedLists             SavedList[]
+  savedStationeryLists   SavedStationeryList[]
+  auditLogs              AuditLog[]
+  refreshTokens          RefreshToken[]
+  cart                   Cart?
+  reservations           StockReservation[]
+  backInStockAlerts      BackInStockAlert[]
+  createdBanners         HomepageBanner[]        @relation("BannerCreatedBy")
+  updatedBanners         HomepageBanner[]        @relation("BannerUpdatedBy")
+  promotionRedemptions   PromotionRedemption[]
+  invitationsSent        AdminInvitation[]       @relation("InvitedAdmins")
+  importPreviews         ProductImportPreview[]  @relation("ImportPreviewsCreated")
+  importBatches          ProductImportBatch[]    @relation("ImportBatchesCreated")
+  reviewedBankDeposits   BankDepositSubmission[] @relation("ReviewedBankDeposits")
+  verificationChallenges VerificationChallenge[]
+  adminActivities        AdminActivityLog[]
 
   @@index([email])
   @@index([phone])
@@ -1299,4 +1301,66 @@ model ProductImportRowResult {
 
   @@index([batchId, rowNumber])
   @@index([batchId, status])
+}
+
+// ------------------------------------------------------------------------------
+// PHASE 2: SECURITY STEP-UP DOUBLE VERIFICATION & ADMINISTRATIVE AUDIT
+// ------------------------------------------------------------------------------
+
+enum VerificationChallengeStatus {
+  PENDING
+  VERIFIED
+  CONSUMED
+  EXPIRED
+  FAILED
+}
+
+model VerificationChallenge {
+  id           String                      @id @default(cuid())
+  userId       String
+  action       String
+  codeHash     String
+  resourceType String?
+  resourceId   String?
+  metadata     Json?
+  attempts     Int                         @default(0)
+  maxAttempts  Int                         @default(3)
+  status       VerificationChallengeStatus @default(PENDING)
+  expiresAt    DateTime
+  verifiedAt   DateTime?
+  consumedAt   DateTime?
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([expiresAt])
+}
+
+model AdminActivityLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  userEmail   String?
+  userName    String?
+  userRole    String?
+  action      String
+  entityType  String
+  entityId    String?
+  description String
+  status      String   @default("SUCCESS")
+  ipAddress   String?
+  userAgent   String?
+  beforeState Json?
+  afterState  Json?
+  challengeId String?
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([status])
 }

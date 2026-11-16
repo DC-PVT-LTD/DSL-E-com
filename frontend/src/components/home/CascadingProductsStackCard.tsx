@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useReducedMotion } from 'framer-motion';
+import LightCardWavesBackground from '@/components/common/LightCardWavesBackground';
 
 // ============================================================================
 // PRODUCT CARD SPECIFICATION (THIRD SECTION SCROLLSTACK CARD)
@@ -271,23 +272,16 @@ export const CascadingProductsStackCard: React.FC = () => {
   return (
     <div
       ref={rootRef}
-      className="relative w-full flex-1 min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] flex items-center justify-center overflow-hidden bg-[#071836] select-none rounded-[28px]"
+      className="relative w-full flex-1 min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] flex items-center justify-center overflow-hidden bg-transparent select-none rounded-[28px]"
     >
+      {/* Light Silk Waves Background matching uploaded reference */}
+      <LightCardWavesBackground />
+
       {/* Aspect-Ratio Preserving Inner Stage */}
       <div
         ref={stageRef}
-        className="relative w-full h-full min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] flex items-center justify-center overflow-hidden self-stretch rounded-[28px]"
+        className="relative z-10 w-full h-full min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] flex items-center justify-center overflow-hidden self-stretch rounded-[28px]"
       >
-        {/* ========================================================= */}
-        {/* 1. DARK NAVY BLUE GLOSSY BACKGROUND                       */}
-        {/* ========================================================= */}
-        <img
-          src="/images/third-section/background image.png"
-          alt="DSL Stationery Brands Collection"
-          className="absolute inset-0 w-full h-full object-cover object-center select-none pointer-events-none rounded-[28px]"
-          draggable={false}
-        />
-
         {/* Ambient Radial Floor Glow */}
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[350px] bg-[#0066FF]/10 rounded-full blur-3xl pointer-events-none"

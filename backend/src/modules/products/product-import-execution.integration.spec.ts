@@ -135,7 +135,7 @@ describe('Product Import Execution Engine Integration Tests (Stage 4)', () => {
             { batch: { previewId: { in: createdPreviewIds } } },
           ],
         },
-      }).catch(() => {});
+      }).catch(() => { });
       await prisma.productImportBatch.deleteMany({
         where: {
           OR: [
@@ -143,10 +143,10 @@ describe('Product Import Execution Engine Integration Tests (Stage 4)', () => {
             { previewId: { in: createdPreviewIds } },
           ],
         },
-      }).catch(() => {});
+      }).catch(() => { });
       await prisma.productImportPreview.deleteMany({
         where: { id: { in: createdPreviewIds } },
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     if (testCategoryId || testBrandId) {
@@ -164,38 +164,38 @@ describe('Product Import Execution Engine Integration Tests (Stage 4)', () => {
       if (pIds.length > 0) {
         await prisma.inventoryMovement.deleteMany({
           where: { productId: { in: pIds } },
-        }).catch(() => {});
+        }).catch(() => { });
         await prisma.productVariant.deleteMany({
           where: { productId: { in: pIds } },
-        }).catch(() => {});
+        }).catch(() => { });
         await prisma.product.deleteMany({
           where: { id: { in: pIds } },
-        }).catch(() => {});
+        }).catch(() => { });
         await prisma.globalSku.deleteMany({
           where: { productId: { in: pIds } },
-        }).catch(() => {});
+        }).catch(() => { });
       }
     }
 
     if (secondaryAdminId) {
-      await prisma.user.delete({ where: { id: secondaryAdminId } }).catch(() => {});
+      await prisma.user.delete({ where: { id: secondaryAdminId } }).catch(() => { });
     }
 
     if (testSubcategoryId) {
-      await prisma.category.delete({ where: { id: testSubcategoryId } }).catch(() => {});
+      await prisma.category.delete({ where: { id: testSubcategoryId } }).catch(() => { });
     }
     if (testCategoryId) {
-      await prisma.category.delete({ where: { id: testCategoryId } }).catch(() => {});
+      await prisma.category.delete({ where: { id: testCategoryId } }).catch(() => { });
     }
     if (testBrandId) {
-      await prisma.brand.delete({ where: { id: testBrandId } }).catch(() => {});
+      await prisma.brand.delete({ where: { id: testBrandId } }).catch(() => { });
     }
 
     // Reset lease
     await prisma.importExecutionLease.update({
       where: { id: 'GLOBAL_IMPORT_LEASE' },
       data: { status: 'IDLE', batchId: null, ownerId: null, currentChunk: 0 },
-    }).catch(() => {});
+    }).catch(() => { });
 
     if (app) {
       await app.close();
@@ -787,7 +787,10 @@ ${sku},Concurrency Product New Name,${testCategoryId},${testSubcategoryId},${tes
 
     it('should guarantee zero unauthorized role permission grants for products.import', async () => {
       const rolePermCount = await prisma.rolePermission.count({
-        where: { permission: { key: 'products.import' } },
+        where: {
+          permission: { key: 'products.import' },
+          role: { slug: { notIn: ['super_admin', 'product_manager', 'project_manager'] } },
+        },
       });
       expect(rolePermCount).toBe(0);
     });

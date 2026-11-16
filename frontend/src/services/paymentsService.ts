@@ -228,10 +228,18 @@ export const paymentsService = {
   /**
    * Approve a bank transfer submission (Manager / Admin).
    */
-  async approveBankTransfer(id: string, payload?: { adminNotes?: string }): Promise<{ success: boolean; message: string }> {
+  async approveBankTransfer(
+    id: string,
+    payload?: { adminNotes?: string },
+    confirmationPhrase?: string
+  ): Promise<{ success: boolean; message: string }> {
+    const options = confirmationPhrase
+      ? { headers: { 'x-action-confirmation': confirmationPhrase } }
+      : undefined;
     const response = await apiClient.post<BackendApiResponse<{ success: boolean; message: string }>>(
       `/admin/payments/bank-transfers/${id}/approve`,
-      payload || {}
+      payload || {},
+      options
     );
     return response.data;
   },
@@ -241,11 +249,16 @@ export const paymentsService = {
    */
   async rejectBankTransfer(
     id: string,
-    payload: { category: RejectionCategory; explanation: string }
+    payload: { category: RejectionCategory; explanation: string },
+    confirmationPhrase?: string
   ): Promise<{ success: boolean; message: string; stockRestored: boolean }> {
+    const options = confirmationPhrase
+      ? { headers: { 'x-action-confirmation': confirmationPhrase } }
+      : undefined;
     const response = await apiClient.post<BackendApiResponse<{ success: boolean; message: string; stockRestored: boolean }>>(
       `/admin/payments/bank-transfers/${id}/reject`,
-      payload
+      payload,
+      options
     );
     return response.data;
   },

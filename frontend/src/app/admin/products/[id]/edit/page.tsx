@@ -9,6 +9,7 @@ import { categoryService } from '@/services/categoryService';
 import { brandService } from '@/services/brandService';
 import { ProductCategory, Brand, Product } from '@/types/product';
 import { rupeesToCents, centsToRupees, formatLKR } from '@/lib/currency';
+import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
 
 function AdminEditProductContent() {
   const params = useParams();
@@ -664,15 +665,17 @@ function AdminEditProductContent() {
 
 export default function AdminEditProductPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="max-w-4xl mx-auto py-12 text-center text-xs text-slate-500">
-          Loading product editor...
-        </div>
-      }
-    >
-      <AdminEditProductContent />
-    </Suspense>
+    <AdminPageAccess permission="products.edit" pageTitle="Edit Product">
+      <Suspense
+        fallback={
+          <div className="max-w-4xl mx-auto py-12 text-center text-xs text-slate-500">
+            Loading product editor...
+          </div>
+        }
+      >
+        <AdminEditProductContent />
+      </Suspense>
+    </AdminPageAccess>
   );
 }
 

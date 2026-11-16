@@ -2,16 +2,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { SpeedWriteHeroSlide } from './SpeedWriteHeroSlide';
 import { FirstHeroSlide } from './FirstHeroSlide';
 import { SchoolPackHeroSlide } from './SchoolPackHeroSlide';
+import { FindStationeryHeroSlide } from './FindStationeryHeroSlide';
 
 export const HeroRibbonSection: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const totalSlides = 2; // Supplies Without Limits and School Pack
+  const totalSlides = 4; // 1: Speed, 2: Supplies Without Limits, 3: School Pack, 4: Find My Stationery
 
-  // Autoplay: each slide stays visible for 8.5 seconds to allow slow, graceful animations to unfold
-  // Pauses automatically on hover so user can comfortably read without rushing
+  // Autoplay: slide transition every 6.5s, pauses on hover
   useEffect(() => {
     if (isPaused) return;
 
@@ -62,7 +63,10 @@ export const HeroRibbonSection: React.FC = () => {
   return (
     <section
       aria-label="Homepage Hero Carousel"
-      className="relative w-full overflow-hidden select-none"
+      className="relative w-full h-[535px] sm:h-[580px] md:h-[632px] lg:h-[calc(100vh_-_102px)] lg:max-h-[640px] xl:max-h-[680px] overflow-hidden select-none"
+      style={{
+        maxHeight: '640px',
+      }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={onTouchStart}
@@ -70,35 +74,61 @@ export const HeroRibbonSection: React.FC = () => {
       onTouchEnd={onTouchEnd}
     >
       {/* ========================================================= */}
-      {/* SLIDES CONTAINER WITH SMOOTH CROSS-FADE (GRID STACKED)    */}
+      {/* 4 FULL-SCREEN HERO SLIDES CONTAINER (EDGE-TO-EDGE)        */}
+      {/* 1: Speed | 2: Supplies Without Limits | 3: School Pack | 4: Find Stationery */}
       {/* ========================================================= */}
-      <div className="grid grid-cols-1 grid-rows-1 w-full relative">
-        {/* Slide 1: Supplies Without Limits (Ribbon & Mascot) */}
+      <div className="relative w-full h-full overflow-hidden">
+        {/* Slide 1: Speed (Write Beyond Limits) */}
         <div
-          className={`col-start-1 row-start-1 w-full transition-opacity duration-700 ease-in-out ${currentSlide === 0
-              ? 'opacity-100 z-10 pointer-events-auto'
-              : 'opacity-0 z-0 pointer-events-none'
-            }`}
+          className={`w-full h-full transition-opacity duration-700 ease-in-out ${
+            currentSlide === 0
+              ? 'opacity-100 relative z-10 pointer-events-auto'
+              : 'opacity-0 absolute inset-0 z-0 pointer-events-none'
+          }`}
           aria-hidden={currentSlide !== 0}
+        >
+          <SpeedWriteHeroSlide />
+        </div>
+
+        {/* Slide 2: Supplies Without Limits (7 Photopea Layers) */}
+        <div
+          className={`w-full h-full transition-opacity duration-700 ease-in-out ${
+            currentSlide === 1
+              ? 'opacity-100 relative z-10 pointer-events-auto'
+              : 'opacity-0 absolute inset-0 z-0 pointer-events-none'
+          }`}
+          aria-hidden={currentSlide !== 1}
         >
           <FirstHeroSlide />
         </div>
 
-        {/* Slide 2: Find Your School Pack */}
+        {/* Slide 3: School Pack (Find Your School Pack) */}
         <div
-          className={`col-start-1 row-start-1 w-full transition-opacity duration-700 ease-in-out ${currentSlide === 1
-              ? 'opacity-100 z-10 pointer-events-auto'
-              : 'opacity-0 z-0 pointer-events-none'
-            }`}
-          aria-hidden={currentSlide !== 1}
+          className={`w-full h-full transition-opacity duration-700 ease-in-out ${
+            currentSlide === 2
+              ? 'opacity-100 relative z-10 pointer-events-auto'
+              : 'opacity-0 absolute inset-0 z-0 pointer-events-none'
+          }`}
+          aria-hidden={currentSlide !== 2}
         >
           <SchoolPackHeroSlide />
         </div>
 
+        {/* Slide 4: Find My Stationery */}
+        <div
+          className={`w-full h-full transition-opacity duration-700 ease-in-out ${
+            currentSlide === 3
+              ? 'opacity-100 relative z-10 pointer-events-auto'
+              : 'opacity-0 absolute inset-0 z-0 pointer-events-none'
+          }`}
+          aria-hidden={currentSlide !== 3}
+        >
+          <FindStationeryHeroSlide />
+        </div>
       </div>
 
       {/* ========================================================= */}
-      {/* NAVIGATION CONTROLS: PREVIOUS & NEXT ARROWS (Desktop/Tablet) */}
+      {/* NAVIGATION CONTROLS: PREVIOUS & NEXT ARROWS               */}
       {/* ========================================================= */}
       <button
         type="button"
@@ -119,9 +149,9 @@ export const HeroRibbonSection: React.FC = () => {
       </button>
 
       {/* ========================================================= */}
-      {/* UNIFIED CONTROLS PILL (INDICATORS & TABLET/DESKTOP DOTS)   */}
+      {/* UNIFIED CONTROLS PILL (4 SLIDE INDICATOR DOTS)            */}
       {/* ========================================================= */}
-      <div className="hidden sm:flex absolute bottom-6 left-1/2 -translate-x-1/2 z-30 items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200/80 shadow-md shadow-blue-950/10">
+      <div className="flex absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 items-center gap-2 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200/80 shadow-md shadow-blue-950/10">
         <button
           type="button"
           onClick={handlePrev}
@@ -137,10 +167,11 @@ export const HeroRibbonSection: React.FC = () => {
             type="button"
             onClick={() => handleGoTo(idx)}
             aria-label={`Go to slide ${idx + 1}`}
-            className={`transition-all duration-300 rounded-full cursor-pointer ${currentSlide === idx
+            className={`transition-all duration-300 rounded-full cursor-pointer ${
+              currentSlide === idx
                 ? 'w-6 sm:w-8 h-2 sm:h-2.5 bg-[#087BFF]'
                 : 'w-2 sm:w-2.5 h-2 sm:h-2.5 bg-slate-300 hover:bg-slate-400'
-              }`}
+            }`}
           />
         ))}
 

@@ -444,6 +444,17 @@ export class AuthService {
     const normalizedEmail = dto.email.trim().toLowerCase();
     const user = await this.prisma.user.findUnique({
       where: { email: normalizedEmail },
+      include: {
+        assignedRole: {
+          include: {
+            permissions: {
+              include: {
+                permission: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     // Equalize timing if user not found
@@ -499,6 +510,10 @@ export class AuthService {
 
     this.logger.log(`Admin logged in successfully: ${user.email} (${user.role})`);
 
+    const permissions: string[] = user.assignedRole?.slug === 'super_admin'
+      ? ['*']
+      : (user.assignedRole?.permissions || []).map((rp: any) => rp.permission?.key).filter(Boolean);
+
     return {
       success: true,
       message: 'Administrator logged in successfully',
@@ -508,6 +523,10 @@ export class AuthService {
         name: user.name,
         phone: user.phone,
         role: user.role,
+        roleId: user.roleId,
+        roleName: user.assignedRole?.name || null,
+        roleSlug: user.assignedRole?.slug || null,
+        permissions,
         isActive: user.isActive,
       },
     };
@@ -824,7 +843,19 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    return { success: true, data: user };
+    const permissions: string[] = user.assignedRole?.slug === 'super_admin'
+      ? ['*']
+      : (user.assignedRole?.permissions || []).map((rp: any) => rp.permission?.key).filter(Boolean);
+
+    return {
+      success: true,
+      data: {
+        ...user,
+        roleName: user.assignedRole?.name || null,
+        roleSlug: user.assignedRole?.slug || null,
+        permissions,
+      },
+    };
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {

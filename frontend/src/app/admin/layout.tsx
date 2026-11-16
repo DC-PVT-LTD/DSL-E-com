@@ -19,6 +19,7 @@ export default function AdminLayout({
   const [isChecking, setIsChecking] = useState(true);
 
   const isLoginPage = pathname === '/admin/login';
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -72,11 +73,14 @@ export default function AdminLayout({
     }
 
     return (
-      <div className="min-h-screen flex bg-slate-100 text-slate-900">
-        <AdminSidebar />
+      <div className="min-h-screen flex bg-slate-50/70 text-slate-900">
+        <AdminSidebar
+          isMobileOpen={isMobileNavOpen}
+          onCloseMobile={() => setIsMobileNavOpen(false)}
+        />
         <div className="flex-1 flex flex-col min-w-0">
-          <AdminHeader />
-          <main className="flex-1 p-6 sm:p-8 overflow-y-auto">
+          <AdminHeader onOpenMobileNav={() => setIsMobileNavOpen(true)} />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
             {children}
           </main>
         </div>

@@ -27,6 +27,8 @@ import {
   KpiCardData,
   CatalogExportModal,
 } from '@/components/admin/catalog';
+import { AdminPageAccess } from '@/components/admin/AdminPageAccess';
+import { useUserStore } from '@/services/userStore';
 
 interface BrandAnalyticsData {
   totalBrands: number;
@@ -49,6 +51,7 @@ const DEFAULT_BRAND_COLUMNS: ColumnDefinition[] = [
 ];
 
 export default function AdminBrandsPage() {
+  const hasPermission = useUserStore((state) => state.hasPermission);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [analytics, setAnalytics] = useState<BrandAnalyticsData | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -266,7 +269,8 @@ export default function AdminBrandsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <AdminPageAccess permission="brands.view" pageTitle="Brands Management">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -300,14 +304,16 @@ export default function AdminBrandsPage() {
             <span>Export</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => setIsAdding(!isAdding)}
-            className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5 text-[#FFD21C]" />
-            <span>Add Brand</span>
-          </button>
+          {hasPermission('brands.create') && (
+            <button
+              type="button"
+              onClick={() => setIsAdding(!isAdding)}
+              className="inline-flex items-center gap-1.5 bg-[#08275E] hover:bg-[#103b8c] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5 text-[#FFD21C]" />
+              <span>Add Brand</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -560,15 +566,17 @@ export default function AdminBrandsPage() {
 
                       {isColVisible('actions') && (
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteBrand(b.id, b.name, prodCount)}
-                            disabled={isMutating}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                            title="Delete brand"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {hasPermission('brands.delete') && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBrand(b.id, b.name, prodCount)}
+                              disabled={isMutating}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                              title="Delete brand"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </td>
                       )}
                     </tr>
@@ -589,5 +597,6 @@ export default function AdminBrandsPage() {
         totalFilteredCount={filteredBrands.length}
       />
     </div>
+    </AdminPageAccess>
   );
 }

@@ -9,6 +9,8 @@ describe('AuditController', () => {
   beforeEach(() => {
     mockAuditService = {
       findAll: vi.fn(),
+      getSummary: vi.fn(),
+      findById: vi.fn(),
     };
     controller = new AuditController(mockAuditService as unknown as AuditService);
   });
@@ -18,13 +20,14 @@ describe('AuditController', () => {
       data: [
         {
           id: 'log-1',
+          source: 'AUDIT_LOG',
           action: 'PRODUCT_CREATE',
-          entityType: 'product',
+          entityType: 'PRODUCT',
           entityId: 'p-1',
           description: 'Created product "Test Item"',
-          userId: 'admin-1',
-          createdAt: new Date().toISOString(),
-          user: { id: 'admin-1', name: 'Admin', email: 'admin@dsl.lk', role: 'ADMIN' },
+          actor: { id: 'admin-1', name: 'Admin', email: 'admin@dsl.lk', role: 'ADMIN' },
+          timestamp: new Date().toISOString(),
+          ipAddress: 'Not available',
         },
       ],
       meta: {
@@ -45,5 +48,40 @@ describe('AuditController', () => {
     expect(mockAuditService.findAll).toHaveBeenCalledWith(query);
     expect(result).toEqual(mockResponse);
   });
-});
 
+  it('delegates summary retrieval to auditService.getSummary', async () => {
+    const mockSummary = {
+      totalEvents: 120,
+      generalAuditEvents: 90,
+      orderAuditEvents: 30,
+      todayEvents: 8,
+    };
+    mockAuditService.getSummary.mockResolvedValue(mockSummary);
+
+    const res = await controller.getSummary();
+    expect(mockAuditService.getSummary).toHaveBeenCalled();
+    expect(res).toEqual({
+      success: true,
+      data: mockSummary,
+      message: 'Audit log summary metrics retrieved successfully',
+    });
+  });
+
+  it('delegates single audit entry retrieval to auditService.findById', async () => {
+    const mockEntry = {
+      id: 'log-123',
+      source: 'ORDER_AUDIT_LOG',
+      action: 'STATUS_CHANGE',
+      actor: { id: 'staff-1', name: 'Staff User' },
+    };
+    mockAuditService.findById.mockResolvedValue(mockEntry);
+
+    const res = await controller.getAuditLogById('log-123', 'ORDER_AUDIT_LOG');
+    expect(mockAuditService.findById).toHaveBeenCalledWith('log-123', 'ORDER_AUDIT_LOG');
+    expect(res).toEqual({
+      success: true,
+      data: mockEntry,
+      message: 'Audit log details retrieved successfully',
+    });
+  });
+});

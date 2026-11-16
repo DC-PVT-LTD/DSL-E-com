@@ -7,9 +7,14 @@ import {
   Put,
   Param,
   Body,
+  Query,
+  Res,
+  Req,
   UseGuards,
   Inject,
+  NotFoundException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiCookieAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
@@ -17,6 +22,7 @@ import { RequirePermissions } from './decorators/require-permissions.decorator';
 import { RequireSuperAdmin } from './decorators/require-super-admin.decorator';
 import { CurrentUser, AuthenticatedUser } from '../../auth/decorators/current-user.decorator';
 import { RolesService } from './roles.service';
+import { ConfirmationService } from '../../security/confirmation.service';
 import { createZodPipe } from '../../../common/pipes/zod-validation.pipe';
 import {
   createRoleSchema,
@@ -33,7 +39,20 @@ import {
 @ApiBearerAuth('bearerAuth')
 @ApiCookieAuth('dsl_access_token')
 export class RolesController {
-  constructor(@Inject(RolesService) private readonly rolesService: RolesService) {}
+  constructor(
+    @Inject(RolesService) private readonly rolesService: RolesService,
+    @Inject(ConfirmationService) private readonly confirmationService: ConfirmationService,
+  ) {}
+
+  @Get('export')
+  @RequirePermissions('roles.view')
+  @ApiOperation({ summary: 'Export roles and role-permission mappings to CSV or Excel' })
+  async export(
+    @Query('format') format: 'csv' | 'xlsx' = 'csv',
+    @Res() res: Response
+  ) {
+    return this.rolesService.exportRoles(format, res);
+  }
 
   @Get()
   @RequirePermissions('roles.view')
@@ -57,6 +76,14 @@ export class RolesController {
   @ApiResponse({ status: 200, description: 'Role details' })
   async findById(@Param('id') id: string) {
     return this.rolesService.findById(id);
+  }
+
+  @Get(':id/audit-history')
+  @RequirePermissions('roles.view')
+  @ApiOperation({ summary: 'Get role audit history' })
+  @ApiResponse({ status: 200, description: 'Role audit logs' })
+  async getAuditHistory(@Param('id') id: string) {
+    return this.rolesService.getAuditHistory(id);
   }
 
   @Post()
@@ -88,8 +115,28 @@ export class RolesController {
   @ApiResponse({ status: 200, description: 'Role deleted' })
   async delete(
     @Param('id') id: string,
+    @Req() req: any,
     @CurrentUser() actor: AuthenticatedUser,
   ) {
+    const role = await this.rolesService.findById(id);
+    if (!role) {
+      throw new NotFoundException('Role not found.');
+    }
+
+    await this.confirmationService.validateConfirmation({
+      action: 'DELETE_ROLE',
+      req,
+      targetEntity: 'Role',
+      targetId: id,
+      expectedValue: role.name,
+      actor: {
+        id: actor.id,
+        email: actor.email,
+        name: actor.name,
+        role: actor.role,
+      },
+    });
+
     return this.rolesService.delete(id, actor.id);
   }
 
@@ -100,9 +147,28 @@ export class RolesController {
   async assignPermissions(
     @Param('id') id: string,
     @Body(createZodPipe(assignRolePermissionsSchema)) dto: AssignRolePermissionsDto,
+    @Req() req: any,
     @CurrentUser() actor: AuthenticatedUser,
   ) {
+    const role = await this.rolesService.findById(id);
+    if (!role) {
+      throw new NotFoundException('Role not found.');
+    }
+
+    await this.confirmationService.validateConfirmation({
+      action: 'UPDATE_ROLE_PERMISSIONS',
+      req,
+      targetEntity: 'Role',
+      targetId: id,
+      expectedValue: 'UPDATE ROLE PERMISSIONS',
+      actor: {
+        id: actor.id,
+        email: actor.email,
+        name: actor.name,
+        role: actor.role,
+      },
+    });
+
     return this.rolesService.assignPermissions(id, dto, actor.id);
   }
 }
-

@@ -34,6 +34,7 @@ import { PromotionalWaveRibbon } from '@/components/home/PromotionalWaveRibbon';
 import { SpeedHeroSlide } from '@/components/home/SpeedHeroSlide';
 import { formatLKR } from '@/lib/currency';
 import { NewsletterSubscriptionForm } from '@/components/newsletter/NewsletterSubscriptionForm';
+import { WelcomeSplashLoader } from '@/components/common/WelcomeSplashLoader';
 import { MOCK_BEST_SELLERS, MOCK_NEW_ARRIVALS } from '@/mocks/products';
 
 export default function HomeStorefrontPage() {
@@ -114,7 +115,9 @@ export default function HomeStorefrontPage() {
   };
 
   return (
-    <div className="bg-white text-[#102C60] space-y-[1.5cm] pb-16 overflow-hidden w-full select-none pt-0">
+    <>
+      <WelcomeSplashLoader durationSeconds={4} />
+      <div className="bg-white text-[#102C60] space-y-[1.5cm] pb-16 overflow-hidden w-full select-none pt-0">
 
       {/* ========================================================= */}
       {/* 1. HERO SECTION WITH 3D RIBBON & TRANSPARENT CHILD         */}
@@ -122,51 +125,63 @@ export default function HomeStorefrontPage() {
       <HeroRibbonSection />
 
       {/* ========================================================= */}
-      {/* FEATURE HIGHLIGHTS (SCROLL STACK COMPONENT)               */}
-      {/* Shifted up higher towards Hero with original rich navy colors */}
+      {/* FEATURE HIGHLIGHTS (SCROLL STACK SECTION)                 */}
+      {/* Full-width blue background spreading across whole section */}
       {/* ========================================================= */}
-      <section className="w-full max-w-[1240px] mx-auto px-3 sm:px-6 lg:px-8 -mt-6 sm:-mt-10 lg:-mt-14 relative z-20" aria-label="Feature Highlights Stack">
-        <div style={{ height: 530 }} className="relative w-full">
-          <ScrollStack
-            itemDistance={220}
-            itemStackDistance={16}
-            stackPosition="2%"
-            holdDistance={320}
-            itemScale={0.015}
-            dimAmount={0.05}
-            blurAmount={0}
-          >
-            {/* ScrollStack Card 1: Trusted by the Best (Our Brands) */}
-            <ScrollStackItem
-              itemClassName="!h-auto min-h-[410px] sm:min-h-[430px] lg:min-h-[450px] !p-6 sm:!p-8 lg:!p-10 !rounded-[28px] !bg-gradient-to-b !from-[#081838] !via-[#0a2048] !to-[#06142e] border border-blue-500/30 shadow-[0_20px_50px_rgba(2,8,24,0.6),0_0_30px_rgba(8,102,232,0.15)] overflow-hidden flex flex-col justify-center"
-            >
-              <TrustedBrandsStackCard />
-            </ScrollStackItem>
+      <section
+        id="our-brands"
+        className="w-full relative z-20 -mt-6 sm:-mt-10 lg:-mt-14 bg-gradient-to-b from-[#081838] via-[#0a2048] to-[#06142e] py-10 sm:py-14 lg:py-16 shadow-[0_25px_60px_rgba(2,8,24,0.45)] border-y border-blue-500/20 overflow-hidden"
+        aria-label="Feature Highlights Stack"
+      >
+        {/* Ambient lighting glows across the full-width blue section */}
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#0066FF]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-[#FFD84D]/10 rounded-full blur-3xl pointer-events-none" />
 
-            {/* ScrollStack Card 2: Authorized Brand Logos */}
-            <ScrollStackItem
-              distance={360}
-              itemClassName="!h-auto min-h-[410px] sm:min-h-[430px] lg:min-h-[450px] !p-0 !rounded-[28px] !bg-[#071836] border border-blue-500/30 shadow-[0_20px_50px_rgba(2,8,24,0.6),0_0_30px_rgba(8,102,232,0.15)] overflow-hidden flex flex-col justify-center"
+        {/* Centered container for the ScrollStack cards */}
+        <div className="w-full max-w-[1240px] mx-auto px-3 sm:px-6 lg:px-8 relative z-10">
+          <div style={{ height: 530 }} className="relative w-full">
+            <ScrollStack
+              itemDistance={220}
+              itemStackDistance={16}
+              stackPosition="2%"
+              holdDistance={320}
+              itemScale={0.015}
+              dimAmount={0.04}
+              blurAmount={0}
             >
-              <AuthorizedBrandsStackCard />
-            </ScrollStackItem>
+              {/* ScrollStack Card 1: Trusted by the Best (Our Brands) */}
+              <ScrollStackItem
+                itemClassName="!h-auto min-h-[410px] sm:min-h-[430px] lg:min-h-[450px] !p-0 !rounded-[28px] overflow-hidden flex flex-col justify-center relative !bg-transparent border border-white/70 shadow-[0_30px_70px_-15px_rgba(2,8,24,0.6),0_10px_25px_rgba(0,0,0,0.2),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-2px_4px_rgba(8,24,56,0.15)] backdrop-blur-2xl"
+              >
+                <TrustedBrandsStackCard />
+              </ScrollStackItem>
 
-            {/* ScrollStack Card 3: Cascading Product Cards */}
-            <ScrollStackItem
-              distance={460}
-              itemClassName="!h-auto min-h-[410px] sm:min-h-[430px] lg:min-h-[450px] !p-0 !rounded-[28px] !bg-[#071836] border border-blue-500/30 shadow-[0_20px_50px_rgba(2,8,24,0.6),0_0_30px_rgba(8,102,232,0.15)] overflow-hidden flex flex-col justify-center"
-            >
-              <CascadingProductsStackCard />
-            </ScrollStackItem>
+              {/* ScrollStack Card 2: Authorized Brand Logos */}
+              <ScrollStackItem
+                distance={360}
+                itemClassName="!h-auto min-h-[410px] sm:min-h-[430px] lg:min-h-[450px] !p-0 !rounded-[28px] overflow-hidden flex flex-col justify-center relative !bg-transparent border border-white/70 shadow-[0_30px_70px_-15px_rgba(2,8,24,0.6),0_10px_25px_rgba(0,0,0,0.2),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-2px_4px_rgba(8,24,56,0.15)] backdrop-blur-2xl"
+              >
+                <AuthorizedBrandsStackCard />
+              </ScrollStackItem>
 
-            {/* ScrollStack Card 4: Interactive Brand Showcase */}
-            <ScrollStackItem
-              distance={460}
-              itemClassName="!h-auto min-h-[410px] sm:min-h-[430px] lg:min-h-[450px] !p-0 !rounded-[28px] !bg-gradient-to-b !from-[#071836] !via-[#09224c] !to-[#051329] border border-blue-500/30 shadow-[0_20px_50px_rgba(2,8,24,0.6),0_0_30px_rgba(8,102,232,0.15)] overflow-hidden flex flex-col justify-center"
-            >
-              <InteractiveBrandShowcaseCard />
-            </ScrollStackItem>
-          </ScrollStack>
+              {/* ScrollStack Card 3: Cascading Product Cards */}
+              <ScrollStackItem
+                distance={460}
+                itemClassName="!h-auto min-h-[410px] sm:min-h-[430px] lg:min-h-[450px] !p-0 !rounded-[28px] overflow-hidden flex flex-col justify-center relative !bg-transparent border border-white/70 shadow-[0_30px_70px_-15px_rgba(2,8,24,0.6),0_10px_25px_rgba(0,0,0,0.2),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-2px_4px_rgba(8,24,56,0.15)] backdrop-blur-2xl"
+              >
+                <CascadingProductsStackCard />
+              </ScrollStackItem>
+
+              {/* ScrollStack Card 4: Interactive Brand Showcase */}
+              <ScrollStackItem
+                distance={460}
+                itemClassName="!h-auto min-h-[410px] sm:min-h-[430px] lg:min-h-[450px] !p-0 !rounded-[28px] overflow-hidden flex flex-col justify-center relative !bg-transparent border border-white/70 shadow-[0_30px_70px_-15px_rgba(2,8,24,0.6),0_10px_25px_rgba(0,0,0,0.2),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-2px_4px_rgba(8,24,56,0.15)] backdrop-blur-2xl"
+              >
+                <InteractiveBrandShowcaseCard />
+              </ScrollStackItem>
+            </ScrollStack>
+          </div>
         </div>
       </section>
 
@@ -607,5 +622,6 @@ export default function HomeStorefrontPage() {
       </section>
 
     </div>
+    </>
   );
 }

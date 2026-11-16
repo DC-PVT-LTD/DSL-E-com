@@ -34,6 +34,9 @@ import { BulkOrderModule } from './modules/bulk-order/bulk-order.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { StoreSettingsModule } from './modules/store-settings/store-settings.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { SecurityModule } from './modules/security/security.module';
 
 @Module({
   imports: [
@@ -76,6 +79,9 @@ import { PaymentsModule } from './modules/payments/payments.module';
     CustomersModule,
     StoreSettingsModule,
     PaymentsModule,
+    ReportsModule,
+    DashboardModule,
+    SecurityModule,
   ],
   providers: [
     {
